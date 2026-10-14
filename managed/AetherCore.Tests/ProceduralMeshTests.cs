@@ -39,4 +39,12 @@ public sealed class ProceduralMeshTests
         Assert.Throws<ArgumentException>(() => ProceduralMesh.SetTextured(default,
             [Vector3.Zero], [Vector3.UnitY], [0,0,0], [new(0,float.PositiveInfinity)]));
     }
+    [Fact]
+    public void CollisionOnlyRejectsMalformedGeometryBeforeInterop()
+    {
+        Assert.Throws<ArgumentException>(() => ProceduralMesh.SetCollision(default, [Vector3.Zero], [0,0,1]));
+        Assert.Throws<ArgumentException>(() => ProceduralMesh.SetCollision(default, [Vector3.Zero], []));
+        Assert.Throws<ArgumentException>(() => ProceduralMesh.SetCollision(default, [Vector3.Zero], [0]));
+        Assert.Throws<ArgumentException>(() => ProceduralMesh.SetCollision(default, [new(float.NaN,0,0)], [0,0,0]));
+    }
 }

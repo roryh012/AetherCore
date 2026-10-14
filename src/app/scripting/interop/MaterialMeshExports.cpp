@@ -167,6 +167,51 @@ AE_SCRIPT_API int aether_set_procedural_mesh_uv(std::uint32_t id, const Vec3* po
 	return SetProceduralMesh(id, positions, normals, colors, vertexCount, indices, indexCount, collision, texcoords);
 }
 
+// Physics-only geometry does not allocate a rendered mesh or drain GPU frames.
+// The game thread owns registry mutations; synchronise only the physics worker.
+AE_SCRIPT_API int aether_set_procedural_collision(std::uint32_t id, const Vec3* positions,
+        int vertexCount, const std::uint32_t* indices, int indexCount)
+{
+    return SafeExport([&]() -> int
+    {
+        auto& ctx = ActiveContext();
+        auto& world = ActiveWorld();
+        if (!EntityAlive(id) || ctx.physics == nullptr || vertexCount < 0 || vertexCount > 1000000 ||
+                indexCount < 0 || indexCount > 6000000 || indexCount % 3 != 0 ||
+                ((vertexCount == 0) != (indexCount == 0)) ||
+                (vertexCount > 0 && (positions == nullptr || indices == nullptr))) return 0;
+        aether::ColliderComponent collider{};
+        collider.shape = aether::PhysicsShapeType::Mesh;
+        collider.layer = aether::PhysicsLayer::NonMoving;
+        collider.meshVertices.reserve(vertexCount);
+        collider.meshIndices.reserve(indexCount);
+        for (int i = 0; i < vertexCount; ++i)
+        {
+            auto p = ToGlm(positions[i]);
+            if (!std::isfinite(p.x) || !std::isfinite(p.y) || !std::isfinite(p.z)) return 0;
+            collider.meshVertices.push_back(p);
+        }
+        for (int i = 0; i < indexCount; ++i)
+        {
+            if (indices[i] >= static_cast<std::uint32_t>(vertexCount)) return 0;
+            collider.meshIndices.push_back(indices[i]);
+        }
+        const aether::Entity entity{id};
+        ctx.physics->WaitForStepIdle();
+        ctx.physics->RemoveBody(world, entity);
+        world.Remove<aether::ColliderComponent>(entity);
+        world.Remove<aether::RigidBodyComponent>(entity);
+        if (vertexCount == 0) return 1;
+        if (!world.Has<aether::TransformComponent>(entity))
+            world.Emplace<aether::TransformComponent>(entity, aether::TransformComponent{});
+        world.EmplaceOrReplace<aether::ColliderComponent>(entity, std::move(collider));
+        world.EmplaceOrReplace<aether::RigidBodyComponent>(entity, aether::RigidBodyComponent{.motionType = aether::PhysicsMotionType::Static});
+        ctx.physics->FlushPendingOnly(world);
+        const auto* body = world.TryGet<aether::RigidBodyComponent>(entity);
+        return body != nullptr && body->body.IsValid() ? 1 : 0;
+    });
+}
+
 AE_SCRIPT_API void aether_load_model(std::uint32_t id, const char* pathC)
 {
 	SafeExport([&] -> void

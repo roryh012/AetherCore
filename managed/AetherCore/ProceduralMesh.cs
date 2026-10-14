@@ -22,6 +22,18 @@ public static unsafe class ProceduralMesh
         }
     }
 
+    /// <summary>Replace only static triangle collision. No rendered mesh or GPU drain.
+    /// Call on the game thread; arrays are copied and the physics worker is synchronised.
+    /// Empty arrays remove collision. Existing visual geometry is unchanged.</summary>
+    public static void SetCollision(Entity entity, ReadOnlySpan<Vector3> positions, ReadOnlySpan<uint> indices)
+    {
+        Validate(positions, positions, indices, default);
+        fixed (Vector3* p = positions)
+        fixed (uint* i = indices)
+            if (Native.aether_set_procedural_collision(entity.Id, p, positions.Length, i, indices.Length) == 0)
+                throw new InvalidOperationException("Procedural collision update failed; inspect the engine log.");
+    }
+
     public static void Clear(Entity entity) => Set(entity, default, default, default);
 
     /// <summary>Upload textured geometry with explicit UVs. Existing ownership and collision rules apply.</summary>

@@ -39,3 +39,18 @@ after publishing the new mesh. It is not a transactional rollback API.
 Live mesh upload and repeated scene teardown still require successful rendering on a supported
 machine. On the local RX 6900 XT, the editor reached scene loading but rendering lost the device
 before terrain scripts ran. See the parent project's GPU compatibility handoff for evidence.
+
+## Collision-only replacement
+
+`ProceduralMesh.SetCollision(entity, positions, indices)` replaces static triangle
+collision without creating a GPU mesh, touching material/visual components, or
+draining render frames. It copies/validates the arrays, waits for the physics step
+to finish, removes the previous body and creates the replacement. Raycasts see the
+new body on return. Empty arrays remove collision. Use a dedicated static entity;
+this is still synchronous physics work, not a worker-thread API or a rollback
+transaction. Entity destruction and scene teardown release the body normally.
+
+The As Above So Below game uses this for hidden full-world collision while separate
+textured/cut meshes provide the visible surface. Native Jolt array-mesh checks,
+managed pre-interop rejection tests and live edited-mesh/raycast comparisons cover
+this path. Visible mesh replacement retains its render-drain limitation.
