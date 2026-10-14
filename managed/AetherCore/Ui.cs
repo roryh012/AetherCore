@@ -116,6 +116,11 @@ public static class Ui
     // ── Image style ───────────────────────────────────────────────────────────────
 
     public static void SetImageColor(Entity e, Vector4 color) => Native.aether_ui_set_image_color(e.Id, color);
+
+    /// <summary>Style a button, slider, or text box. Accent is the button focus color,
+    /// slider fill/handle color, or text-box caret/selection color.</summary>
+    public static void SetWidgetColors(Entity e, Vector4 background, Vector4 accent, Vector4 text)
+        => Native.aether_ui_set_widget_colors(e.Id, background, accent, text);
     public static void SetImageCornerRadius(Entity e, float radius) => Native.aether_ui_set_image_corner_radius(e.Id, radius);
 
     /// <summary>Show a texture (VFS path, e.g. "project://assets/icon.png") on a UI image;

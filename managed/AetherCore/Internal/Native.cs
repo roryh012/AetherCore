@@ -18,6 +18,13 @@ internal static unsafe partial class Native
     internal static partial int aether_set_procedural_mesh(uint entity, Vector3* positions,
         Vector3* normals, Vector3* colors, int vertexCount, uint* indices, int indexCount, int collision);
 
+    [LibraryImport(Lib)]
+    internal static partial int aether_set_procedural_mesh_uv(uint entity, Vector3* positions,
+        Vector3* normals, Vector3* colors, int vertexCount, uint* indices, int indexCount, int collision, Vector2* texcoords);
+
+    [LibraryImport(Lib)]
+    internal static partial void aether_ui_set_widget_colors(uint entity, Vector4 background, Vector4 accent, Vector4 text);
+
 	[LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
 	internal static partial void aether_sprite_set_texture(uint id, string path);
 	[LibraryImport(Lib)] internal static partial Vector4 aether_sprite_get_tint(uint id);

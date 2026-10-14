@@ -22,9 +22,9 @@
 using namespace aether::app::scripting;
 using namespace aether::app::scripting::interop;
 
-AE_SCRIPT_API int aether_set_procedural_mesh(std::uint32_t id, const Vec3* positions,
+static int SetProceduralMesh(std::uint32_t id, const Vec3* positions,
         const Vec3* normals, const Vec3* colors, int vertexCount,
-        const std::uint32_t* indices, int indexCount, int collision)
+        const std::uint32_t* indices, int indexCount, int collision, const Vec2* texcoords)
 {
 	return SafeExport([&]() -> int
 	{
@@ -60,6 +60,14 @@ AE_SCRIPT_API int aether_set_procedural_mesh(std::uint32_t id, const Vec3* posit
 			v.normal = n;
 			v.tangent = glm::vec4(1, 0, 0, 1);
 			v.color = c;
+			if (texcoords != nullptr)
+			{
+				if (!std::isfinite(texcoords[i].x) || !std::isfinite(texcoords[i].y))
+				{
+					return 0;
+				}
+				v.uv = glm::vec2(texcoords[i].x, texcoords[i].y);
+			}
 			vertices.push_back(v);
 			colliderVertices.push_back(p);
 		}
@@ -143,6 +151,20 @@ AE_SCRIPT_API int aether_set_procedural_mesh(std::uint32_t id, const Vec3* posit
 		});
 		return succeeded;
 	});
+}
+
+AE_SCRIPT_API int aether_set_procedural_mesh(std::uint32_t id, const Vec3* positions,
+        const Vec3* normals, const Vec3* colors, int vertexCount,
+        const std::uint32_t* indices, int indexCount, int collision)
+{
+	return SetProceduralMesh(id, positions, normals, colors, vertexCount, indices, indexCount, collision, nullptr);
+}
+
+AE_SCRIPT_API int aether_set_procedural_mesh_uv(std::uint32_t id, const Vec3* positions,
+        const Vec3* normals, const Vec3* colors, int vertexCount,
+        const std::uint32_t* indices, int indexCount, int collision, const Vec2* texcoords)
+{
+	return SetProceduralMesh(id, positions, normals, colors, vertexCount, indices, indexCount, collision, texcoords);
 }
 
 AE_SCRIPT_API void aether_load_model(std::uint32_t id, const char* pathC)

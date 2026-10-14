@@ -24,6 +24,26 @@ public static unsafe class ProceduralMesh
 
     public static void Clear(Entity entity) => Set(entity, default, default, default);
 
+    /// <summary>Upload textured geometry with explicit UVs. Existing ownership and collision rules apply.</summary>
+    public static void SetTextured(Entity entity, ReadOnlySpan<Vector3> positions,
+        ReadOnlySpan<Vector3> normals, ReadOnlySpan<uint> indices, ReadOnlySpan<Vector2> texcoords,
+        ReadOnlySpan<Vector3> colors = default, bool collision = true)
+    {
+        Validate(positions, normals, indices, colors);
+        if (texcoords.Length != positions.Length)
+            throw new ArgumentException("Texture coordinates must match the vertex count.");
+        foreach (Vector2 uv in texcoords)
+            if (!float.IsFinite(uv.X) || !float.IsFinite(uv.Y))
+                throw new ArgumentException("Texture coordinates must be finite.");
+        fixed (Vector3* p = positions, n = normals, c = colors)
+        fixed (Vector2* uv = texcoords)
+        fixed (uint* i = indices)
+        {
+            if (Native.aether_set_procedural_mesh_uv(entity.Id, p, n, c, positions.Length, i, indices.Length, collision ? 1 : 0, uv) == 0)
+                throw new InvalidOperationException("Textured procedural mesh update failed; inspect the engine log.");
+        }
+    }
+
     internal static void Validate(ReadOnlySpan<Vector3> positions, ReadOnlySpan<Vector3> normals,
         ReadOnlySpan<uint> indices, ReadOnlySpan<Vector3> colors)
     {

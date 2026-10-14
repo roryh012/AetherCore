@@ -28,4 +28,15 @@ public sealed class ProceduralMeshTests
         Assert.Throws<ArgumentException>(() => ProceduralMesh.Validate([Vector3.Zero], [new(0,float.PositiveInfinity,0)], [0,0,0], []));
         Assert.Throws<ArgumentException>(() => ProceduralMesh.Validate([Vector3.Zero], [Vector3.UnitY], [0,0,0], [new(0,0,float.NaN)]));
     }
+
+    [Fact]
+    public void TexturedUploadRejectsInvalidUvsBeforeInterop()
+    {
+        Assert.Throws<ArgumentException>(() => ProceduralMesh.SetTextured(default,
+            [Vector3.Zero], [Vector3.UnitY], [0,0,0], []));
+        Assert.Throws<ArgumentException>(() => ProceduralMesh.SetTextured(default,
+            [Vector3.Zero], [Vector3.UnitY], [0,0,0], [new(float.NaN,0)]));
+        Assert.Throws<ArgumentException>(() => ProceduralMesh.SetTextured(default,
+            [Vector3.Zero], [Vector3.UnitY], [0,0,0], [new(0,float.PositiveInfinity)]));
+    }
 }

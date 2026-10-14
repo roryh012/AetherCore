@@ -255,6 +255,36 @@ AE_SCRIPT_API void aether_ui_set_image_color(std::uint32_t id, Vec4 color)
 	});
 }
 
+AE_SCRIPT_API void aether_ui_set_widget_colors(std::uint32_t id, Vec4 background, Vec4 accent, Vec4 text)
+{
+	SafeExport([&] -> void
+	{
+		auto& world = ActiveWorld();
+		const aether::Entity entity{id};
+		if (auto* slider = world.TryGet<aether::ui::UISlider>(entity))
+		{
+			slider->trackColor = ToGlm(background);
+			slider->fillColor = ToGlm(accent);
+			slider->handleColor = ToGlm(accent);
+		}
+		if (auto* button = world.TryGet<aether::ui::UIButton>(entity))
+		{
+			button->bgColor = ToGlm(background);
+			button->bgColorFocused = ToGlm(accent);
+			button->textColor = ToGlm(text);
+			button->textColorFocused = ToGlm(text);
+		}
+		if (auto* box = world.TryGet<aether::ui::UITextBox>(entity))
+		{
+			box->bgColor = ToGlm(background);
+			box->bgColorFocused = glm::mix(ToGlm(background), ToGlm(accent), 0.25f);
+			box->textColor = ToGlm(text);
+			box->caretColor = ToGlm(accent);
+			box->selectionColor = glm::vec4(glm::vec3(ToGlm(accent)), 0.5f);
+		}
+	});
+}
+
 AE_SCRIPT_API void aether_ui_set_image_corner_radius(std::uint32_t id, float radius)
 {
 	SafeExport([&] -> void

@@ -5,6 +5,13 @@ creates or replaces entity-owned runtime mesh geometry and static triangle colli
 Positions are local to the entity; normals match the positions, indices describe triangles,
 and optional RGB colours match the vertex count. Empty arrays clear both geometry and collision.
 
+`ProceduralMesh.SetTextured(entity, positions, normals, indices, texcoords, colors,
+collision: true)` adds explicit `Vector2` texture coordinates, one finite pair per vertex.
+The untextured API remains compatible. Both calls use the same native upload,
+entity ownership, synchronization, clearing, and collision behavior. Use
+`Material.SetTexture(entity, "project://assets/terrain/rock.png")` to bind an albedo.
+Mapping and material selection belong to the game; the engine copies supplied UVs.
+
 Call from a game-thread script callback. Arrays are copied before return.
 The operation drains submitted render frames, parks rendering, waits for GPU idle,
 then rebuilds the mesh and the physics body. Collision is available to raycasts on return.
