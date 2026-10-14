@@ -73,6 +73,9 @@ namespace aether
 		// of path MeshSourceComponent::path uses for Kind::Model. Ignored by every
 		// other shape.
 		std::string meshSource;
+		// Runtime-only Mesh geometry. Never serialized or retained in the shape cache.
+		std::vector<glm::vec3> meshVertices;
+		std::vector<std::uint32_t> meshIndices;
 	};
 
 	struct RigidBodyComponent

@@ -869,6 +869,26 @@ namespace aether
 
 	static JPH::ShapeRefC GetOrCreateColliderShape(std::unordered_map<uint64_t, std::pair<JPH::ShapeRefC, std::uint64_t>>& cache, const ColliderComponent& c)
 	{
+		if (c.shape == PhysicsShapeType::Mesh && !c.meshVertices.empty())
+		{
+			JPH::VertexList vertices;
+			JPH::IndexedTriangleList triangles;
+			for (const auto& p : c.meshVertices)
+			{
+				vertices.emplace_back(p.x, p.y, p.z);
+			}
+			for (std::size_t i = 0; i + 2 < c.meshIndices.size(); i += 3)
+			{
+				triangles.emplace_back(c.meshIndices[i], c.meshIndices[i + 1], c.meshIndices[i + 2], 0);
+			}
+			auto result = JPH::MeshShapeSettings{vertices, triangles}.Create();
+			if (result.HasError())
+			{
+				AE_WARN(LogCategory::Engine, "Procedural collider shape error: {}", result.GetError().c_str());
+				return nullptr;
+			}
+			return result.Get();
+		}
 		uint64_t key = 0;
 		switch (c.shape)
 		{

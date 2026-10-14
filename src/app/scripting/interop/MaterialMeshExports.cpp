@@ -1,10 +1,13 @@
 #include "scripting/interop/InteropCommon.hpp"
 
 #include <string>
+#include <cmath>
 #include <string_view>
 #include <vector>
 
 #include "assets/AssetManager.hpp"
+#include "IEngineRuntime.hpp"
+#include "physics/PhysicsSystem.hpp"
 #include "material/MaterialAsset.hpp"
 #include "material/MaterialAuthoring.hpp"
 #include "material/MaterialSystem.hpp"
@@ -18,6 +21,125 @@
 
 using namespace aether::app::scripting;
 using namespace aether::app::scripting::interop;
+
+AE_SCRIPT_API int aether_set_procedural_mesh(std::uint32_t id, const Vec3* positions,
+        const Vec3* normals, const Vec3* colors, int vertexCount,
+        const std::uint32_t* indices, int indexCount, int collision)
+{
+	return SafeExport([&]() -> int
+	{
+		auto& ctx = ActiveContext();
+		auto& world = ActiveWorld();
+		if (!EntityAlive(id) || ctx.assets == nullptr || ctx.engineRuntime == nullptr ||
+		        (collision != 0 && ctx.physics == nullptr) || vertexCount < 0 || vertexCount > 1000000 ||
+		        indexCount < 0 || indexCount > 6000000 || indexCount % 3 != 0 ||
+		        ((vertexCount == 0) != (indexCount == 0)) ||
+		        (vertexCount > 0 && (positions == nullptr || normals == nullptr || indices == nullptr)))
+		{
+			return 0;
+		}
+		std::vector<aether::Mesh::Vertex> vertices;
+		std::vector<glm::vec3> colliderVertices;
+		std::vector<std::uint32_t> triangleIndices;
+		vertices.reserve(vertexCount);
+		colliderVertices.reserve(vertexCount);
+		for (int i = 0; i < vertexCount; ++i)
+		{
+			const auto p = ToGlm(positions[i]);
+			const auto n = ToGlm(normals[i]);
+			const auto c = colors != nullptr ? ToGlm(colors[i]) : glm::vec3(1.0f);
+			for (int axis = 0; axis < 3; ++axis)
+			{
+				if (!std::isfinite(p[axis]) || !std::isfinite(n[axis]) || !std::isfinite(c[axis]))
+				{
+					return 0;
+				}
+			}
+			aether::Mesh::Vertex v{};
+			v.position = p;
+			v.normal = n;
+			v.tangent = glm::vec4(1, 0, 0, 1);
+			v.color = c;
+			vertices.push_back(v);
+			colliderVertices.push_back(p);
+		}
+		for (int i = 0; i < indexCount; ++i)
+		{
+			if (indices[i] >= static_cast<std::uint32_t>(vertexCount))
+			{
+				return 0;
+			}
+			triangleIndices.push_back(indices[i]);
+		}
+		const aether::Entity entity{id};
+		glm::vec3 boundsMin(0.0f), boundsMax(0.0f);
+		if (!vertices.empty())
+		{
+			boundsMin = boundsMax = vertices.front().position;
+			for (const auto& v : vertices)
+			{
+				boundsMin = glm::min(boundsMin, v.position);
+				boundsMax = glm::max(boundsMax, v.position);
+			}
+		}
+		const glm::vec3 sphereCenter = (boundsMin + boundsMax) * 0.5f;
+		int succeeded = 1;
+		ctx.engineRuntime->RunExclusive(aether::QuiesceMode::Drain, [&]()
+		{
+			std::unique_ptr<aether::Mesh> mesh;
+			if (!vertices.empty())
+			{
+				mesh = std::make_unique<aether::Mesh>(ctx.assets->CreateMesh(vertices, triangleIndices,
+				        &boundsMin.x, &boundsMax.x, &sphereCenter.x, glm::length(boundsMax - sphereCenter)));
+				if (!mesh->IsValid())
+				{
+					succeeded = 0;
+					return;
+				}
+			}
+			if (ctx.physics != nullptr)
+			{
+				ctx.physics->WaitForStepIdle();
+				ctx.physics->RemoveBody(world, entity);
+			}
+			world.Remove<aether::ColliderComponent>(entity);
+			world.Remove<aether::RigidBodyComponent>(entity);
+			world.Remove<aether::MeshComponent>(entity);
+			world.Remove<aether::MeshSourceComponent>(entity);
+			ctx.proceduralMeshes.erase(id);
+			if (mesh == nullptr)
+			{
+				return;
+			}
+			const auto* meshPtr = mesh.get();
+			ctx.proceduralMeshes.emplace(id, std::move(mesh));
+			world.EmplaceOrReplace<aether::MeshComponent>(entity, aether::MeshComponent{.mesh = meshPtr});
+			if (!world.Has<aether::MaterialComponent>(entity))
+			{
+				aether::MaterialAsset material{};
+				material.baseColorFactor = glm::vec4(1.0f);
+				material.roughnessFactor = 0.9f;
+				material.modulateVertexColor = true;
+				material.doubleSided = true;
+				aether::MaterialSystem::AssignMaterial(world, entity, ctx.assets->GetMaterialRegistry(), ctx.assets->GetPipelineCache(), material);
+			}
+			if (collision != 0)
+			{
+				aether::ColliderComponent collider{};
+				collider.shape = aether::PhysicsShapeType::Mesh;
+				collider.layer = aether::PhysicsLayer::NonMoving;
+				collider.meshVertices = std::move(colliderVertices);
+				collider.meshIndices = triangleIndices;
+				world.EmplaceOrReplace<aether::ColliderComponent>(entity, std::move(collider));
+				world.EmplaceOrReplace<aether::RigidBodyComponent>(entity, aether::RigidBodyComponent{.motionType = aether::PhysicsMotionType::Static});
+				ctx.physics->FlushPendingOnly(world);
+				const auto* body = world.TryGet<aether::RigidBodyComponent>(entity);
+				succeeded = body != nullptr && body->body.IsValid() ? 1 : 0;
+			}
+		});
+		return succeeded;
+	});
+}
 
 AE_SCRIPT_API void aether_load_model(std::uint32_t id, const char* pathC)
 {

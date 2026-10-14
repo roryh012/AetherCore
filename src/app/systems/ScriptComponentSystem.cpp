@@ -409,6 +409,28 @@ namespace aether::app
 			}
 		}
 
+		// Runtime geometry is entity-owned, including entities removed by editor or
+		// hierarchy destruction rather than ProceduralMesh.Clear.
+		bool hasOrphanMeshes = false;
+		for (const auto& [id, mesh] : sceneCtx->proceduralMeshes)
+		{
+			if (!world.GetRegistry().valid(World::ToEntt(Entity{id})))
+			{
+				hasOrphanMeshes = true;
+				break;
+			}
+		}
+		if (hasOrphanMeshes && sceneCtx->engineRuntime != nullptr)
+		{
+			sceneCtx->engineRuntime->RunExclusive(QuiesceMode::Drain, [&]()
+			{
+				std::erase_if(sceneCtx->proceduralMeshes, [&](const auto& entry)
+				{
+					return !world.GetRegistry().valid(World::ToEntt(Entity{entry.first}));
+				});
+			});
+		}
+
 		// Scene.Load from script: applied here, after every callback for the
 		// frame has finished, because the switch destroys all entities.
 		if (!sceneCtx->pendingSceneLoad.empty())

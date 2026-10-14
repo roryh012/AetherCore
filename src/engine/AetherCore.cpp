@@ -290,7 +290,15 @@ namespace aether
 		// (D) Mutation runs single-threaded, GPU idle, render thread parked. Any
 		if (mutation)
 		{
-			mutation();
+			try
+			{
+				mutation();
+			}
+			catch (...)
+			{
+				m_renderThread.SetReloadInProgress(false);
+				throw;
+			}
 		}
 
 		m_renderThread.SetReloadInProgress(false);

@@ -59,6 +59,7 @@ namespace aether::app
 		m_sceneCtx.loadedModelMap.clear();
 		m_sceneCtx.loadedModelStamps.clear();
 		m_sceneCtx.meshCache.clear();
+		m_sceneCtx.proceduralMeshes.clear();
 
 		context.Get<AssetManager>().GetMaterialAuthoring().ReleaseAll();
 

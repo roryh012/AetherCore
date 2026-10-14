@@ -1,6 +1,8 @@
 #pragma once
 
 #include <deque>
+#include <memory>
+#include <unordered_map>
 #include <string>
 #include <vector>
 
@@ -90,6 +92,8 @@ namespace aether::app::scripting
 
 		aether::PrimitiveMeshes* primitives = nullptr;
 		std::vector<CachedMesh> meshCache;
+		// Entity-owned runtime geometry; retired only with the frame pipeline quiesced.
+		std::unordered_map<std::uint32_t, std::unique_ptr<aether::Mesh>> proceduralMeshes;
 		aether::MaterialAsset defaultMaterial{};
 		bool defaultMaterialInitialized = false;
 	};
