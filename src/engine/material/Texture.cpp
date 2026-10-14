@@ -152,7 +152,8 @@ namespace aether
 			const gpu::TextureDesc desc{
 			        .format = colorSpace == TextureColorSpace::Srgb ? gpu::Format::R8G8B8A8Srgb : gpu::Format::R8G8B8A8Unorm,
 			        .extent = {static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height)},
-			        .usage = gpu::ImageUsage::TransferDst | gpu::ImageUsage::Sampled | gpu::ImageUsage::HostTransfer,
+			        .usage = gpu::ImageUsage::TransferDst | gpu::ImageUsage::Sampled |
+			                (vkutil::g_hostImageCopySupported ? gpu::ImageUsage::HostTransfer : gpu::ImageUsage::None),
 			        .aspect = gpu::ImageAspect::Color,
 			        .mipLevels = mipLevels,
 			        .debugName = debugName,
@@ -171,7 +172,7 @@ namespace aether
 				// level is filtered from the one above rather than from the original, so
 				// the whole chain costs a third of the base image instead of a copy of it
 				// per level.
-				if (vkutil::HostTransitionImage(static_cast<VkDevice>(device), static_cast<VkImage>(image), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, mipLevels) != VK_SUCCESS)
+				if (vkutil::g_hostImageCopySupported && vkutil::HostTransitionImageToGeneral(device, image, mipLevels) != 0)
 				{
 					Throw(AetherError::Vulkan(0, "UploadRgbaToGpuImage: host transition to GENERAL failed"));
 				}
@@ -181,7 +182,9 @@ namespace aether
 				// PS2 art stores there (see DilateTransparentRgb).
 				std::vector<stbi_uc> base(pixels, pixels + static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * 4u);
 				DilateTransparentRgb(base.data(), width, height, 4);
-				const std::int32_t copyResult = vkutil::HostCopyMipToImage(device, image, base.data(), static_cast<uint32_t>(width), static_cast<uint32_t>(height), 0u);
+				const std::int32_t copyResult = vkutil::g_hostImageCopySupported
+				        ? vkutil::HostCopyMipToImage(device, image, base.data(), static_cast<uint32_t>(width), static_cast<uint32_t>(height), 0u)
+				        : vkutil::StagedCopyMip(device, uploadQueue, uploadPool, image, base.data(), base.size(), width, height);
 				if (copyResult != 0)
 				{
 					Throw(AetherError::Vulkan(copyResult, "UploadRgbaToGpuImage: HostCopyMipToImage failed"));
@@ -199,7 +202,9 @@ namespace aether
 					std::vector<stbi_uc> levelPixels = DownsampleRgba(parent, parentWidth, parentHeight, levelWidth, levelHeight, colorSpace);
 					DilateTransparentRgb(levelPixels.data(), levelWidth, levelHeight, 4);
 					const std::int32_t levelResult =
-					        vkutil::HostCopyMipToImage(device, image, levelPixels.data(), static_cast<uint32_t>(levelWidth), static_cast<uint32_t>(levelHeight), level);
+					        vkutil::g_hostImageCopySupported
+					        ? vkutil::HostCopyMipToImage(device, image, levelPixels.data(), static_cast<uint32_t>(levelWidth), static_cast<uint32_t>(levelHeight), level)
+					        : vkutil::StagedCopyMip(device, uploadQueue, uploadPool, image, levelPixels.data(), levelPixels.size(), levelWidth, levelHeight, level);
 					if (levelResult != 0)
 					{
 						Throw(AetherError::Vulkan(levelResult, "UploadRgbaToGpuImage: HostCopyMipToImage failed for a mip level"));
@@ -223,7 +228,7 @@ namespace aether
 					Throw(AetherError::Vulkan(0, "UploadRgbaToGpuImage: host layout transition failed"));
 				}
 			}
-			else
+			else if (vkutil::g_hostImageCopySupported)
 			{
 				gpu::OneShotCmd cmd;
 				if (!cmd.Begin(device, uploadPool))
@@ -330,7 +335,8 @@ namespace aether
 			const gpu::TextureDesc desc{
 			        .format = *gpuFmt,
 			        .extent = {width, height},
-			        .usage = gpu::ImageUsage::TransferDst | gpu::ImageUsage::Sampled | gpu::ImageUsage::HostTransfer,
+			        .usage = gpu::ImageUsage::TransferDst | gpu::ImageUsage::Sampled |
+			                (vkutil::g_hostImageCopySupported ? gpu::ImageUsage::HostTransfer : gpu::ImageUsage::None),
 			        .aspect = gpu::ImageAspect::Color,
 			        .debugName = ddsName.c_str(),
 			};
@@ -343,7 +349,15 @@ namespace aether
 			const gpu::Image image = gpu::ResourceRegistry::ResolveTextureImage(handle);
 
 			{
-				const std::int32_t copyResult = vkutil::HostCopyToImage(device, image, p, width, height);
+				const std::size_t blockBytes = dx10.dxgiFormat == DXGI_BC4_UNORM ? 8u : 16u;
+				const std::size_t byteCount = ((width + 3u) / 4u) * ((height + 3u) / 4u) * blockBytes;
+				if (byteCount > fileData.size() - kMinSize)
+				{
+					AE_UNEXPECTED(AetherError::Asset("DDS pixel payload is truncated: " + std::string(debugPath)));
+				}
+				const std::int32_t copyResult = vkutil::g_hostImageCopySupported
+				        ? vkutil::HostCopyToImage(device, image, p, width, height)
+				        : vkutil::StagedCopyMip(device, uploadQueue, uploadPool, image, p, byteCount, width, height);
 				if (copyResult != 0)
 				{
 					Throw(AetherError::Vulkan(copyResult, "UploadBcnDds: HostCopyToImage failed"));
@@ -358,7 +372,7 @@ namespace aether
 					Throw(AetherError::Vulkan(0, "UploadBcnDds: host layout transition failed"));
 				}
 			}
-			else
+			else if (vkutil::g_hostImageCopySupported)
 			{
 				gpu::OneShotCmd cmd;
 				if (!cmd.Begin(device, uploadPool))

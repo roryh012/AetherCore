@@ -37,7 +37,6 @@ void main(uint3 tid : SV_DispatchThreadID)
     CullDrawInput    cmd  = pc.inputCmd.Load(drawIdx);
     DrawInstanceData inst = pc.instanceData.Load(cmd.firstInstance);
     CullBatch        batch = pc.batchDesc.Load(cmd.batchIndex);
-    uint8_t* outBase = (uint8_t*)(pc.outputCmd.addr);
 
     const bool forceVisible = (pc.debugFlags & kCullDebugForceVisibleBit) != 0u;
     const uint localOutputSlot = drawIdx - batch.inputStart;
@@ -52,12 +51,14 @@ void main(uint3 tid : SV_DispatchThreadID)
         const bool visible = forceVisible || TestSphereFrustum(inst.worldBoundingSphere, fc);
 
         // Output slot = batch.outputStart + localOutputSlot, offset by cascade * stride.
-        uint* out = (uint*)(outBase + cascade * pc.outputCascadeStride);
-        uint  base = (batch.outputStart + localOutputSlot) * 5u;
-        out[base + 0u] = cmd.indexCount;
-        out[base + 1u] = visible ? cmd.instanceCount : 0u;
-        out[base + 2u] = cmd.firstIndex;
-        out[base + 3u] = asuint(cmd.vertexOffset);
-        out[base + 4u] = cmd.firstInstance;
+        // The stride is bytes, but indirect commands are uint-aligned. Keep the
+        // physical-storage pointer typed as uint: byte-pointer casts trigger an
+        // AMD compiler crash on the RX 6900 XT driver during shader-object creation.
+        uint base = cascade * (pc.outputCascadeStride / 4u) + (batch.outputStart + localOutputSlot) * 5u;
+        pc.outputCmd.Store(base + 0u, cmd.indexCount);
+        pc.outputCmd.Store(base + 1u, visible ? cmd.instanceCount : 0u);
+        pc.outputCmd.Store(base + 2u, cmd.firstIndex);
+        pc.outputCmd.Store(base + 3u, asuint(cmd.vertexOffset));
+        pc.outputCmd.Store(base + 4u, cmd.firstInstance);
     }
 }

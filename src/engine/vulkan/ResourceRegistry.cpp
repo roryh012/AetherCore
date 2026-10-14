@@ -1575,7 +1575,11 @@ namespace aether::gpu
 
 	void ResourceRegistry::DrainPendingDestructions() noexcept
 	{
-		s_reg->DrainAll();
+		// Startup can fail before the forwarding registry is installed.
+		if (s_reg != nullptr)
+		{
+			s_reg->DrainAll();
+		}
 	}
 
 	PipelineHandle ResourceRegistry::CreateComputePipeline(Device device, const ComputePipelineDesc& desc) noexcept

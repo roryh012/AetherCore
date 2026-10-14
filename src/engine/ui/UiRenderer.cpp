@@ -243,7 +243,8 @@ namespace aether::ui
 		const gpu::TextureDesc desc{
 		        .format = gpu::Format::R32G32B32A32Sfloat,
 		        .extent = {font->textureWidth, font->textureHeight},
-		        .usage = gpu::ImageUsage::TransferDst | gpu::ImageUsage::Sampled | gpu::ImageUsage::HostTransfer,
+		        .usage = gpu::ImageUsage::TransferDst | gpu::ImageUsage::Sampled |
+		                (vkutil::g_hostImageCopySupported ? gpu::ImageUsage::HostTransfer : gpu::ImageUsage::None),
 		        .aspect = gpu::ImageAspect::Color,
 		        .debugName = debugName.c_str(),
 		};
@@ -255,7 +256,16 @@ namespace aether::ui
 		}
 
 		const gpu::Image image = gpu::ResourceRegistry::ResolveTextureImage(curves);
-		const std::int32_t copyResult = vkutil::HostCopyToImage(m_gpu->GetDevice(), image, font->texels.data(), font->textureWidth, font->textureHeight);
+		if (!vkutil::g_hostImageCopySupported && m_upload == nullptr)
+		{
+			gpu::ResourceRegistry::Destroy(curves);
+			return false;
+		}
+		const std::int32_t copyResult = vkutil::g_hostImageCopySupported
+		        ? vkutil::HostCopyToImage(m_gpu->GetDevice(), image, font->texels.data(), font->textureWidth, font->textureHeight)
+		        : vkutil::StagedCopyMip(m_gpu->GetDevice(), m_gpu->GetGraphicsQueue(),
+		                m_upload->GetCommandPool(), image, font->texels.data(), font->texels.size() * sizeof(glm::vec4),
+		                font->textureWidth, font->textureHeight);
 		if (copyResult != 0)
 		{
 			gpu::ResourceRegistry::Destroy(curves);
@@ -274,7 +284,7 @@ namespace aether::ui
 				return false;
 			}
 		}
-		else
+		else if (vkutil::g_hostImageCopySupported)
 		{
 			gpu::OneShotCmd cmd;
 			if (m_upload == nullptr || !m_upload->IsValid() || !cmd.Begin(m_gpu->GetDevice(), m_upload->GetCommandPool()))

@@ -68,6 +68,7 @@ namespace aether::vkutil
 #ifdef AETHER_ENABLE_NVIDIA_AFTERMATH
 		AftermathContext::RegisterShaderBinary(spirv->data(), static_cast<uint32_t>(spirv->size()));
 #endif
+		AE_VERBOSE(LogCategory::Vulkan, "Creating compute shader object: {}", owner);
 		const VkResult result = vkCreateShadersEXT(device, 1, &createInfo, nullptr, &shader);
 
 		if (result != VK_SUCCESS)

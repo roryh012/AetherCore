@@ -3,16 +3,75 @@
 #include <algorithm>
 #include <cstdint>
 #include <vector>
+#include <cstring>
 
 #include "vulkan/volk.hpp"
 #include "gpu/GpuEnums.hpp"
 #include "gpu/GpuTypes.hpp"
+#include "gpu/ResourceRegistry.hpp"
+#include "gpu/OneShotCmd.hpp"
 
 namespace aether::vkutil
 {
 	// Host-image-copy destination layouts the device supports, cached once at context
 	// init (vkTransitionImageLayout may only target layouts from this list).
 	inline std::vector<VkImageLayout> g_hostImageCopyDstLayouts;
+	inline bool g_hostImageCopySupported = false;
+
+	// Blocking fallback, each mip transitions independently from undefined to shader-read.
+	inline VkResult StagedCopyMip(gpu::Device device, gpu::Queue queue, gpu::CommandPool pool,
+	        gpu::Image image, const void* data, std::size_t bytes, std::uint32_t width,
+	        std::uint32_t height, std::uint32_t mip = 0)
+	{
+		const gpu::MappedBufferDesc desc{.size = bytes, .usage = gpu::BufferUsage::TransferSrc, .debugName = "Texture.Staging"};
+		const auto staging = gpu::ResourceRegistry::CreateMappedBuffer(desc);
+		if (!staging.IsValid())
+		{
+			return VK_ERROR_OUT_OF_DEVICE_MEMORY;
+		}
+		const auto mapped = gpu::ResourceRegistry::ResolveMappedBuffer(staging);
+		if (mapped.mappedPtr == nullptr)
+		{
+			gpu::ResourceRegistry::Destroy(staging);
+			return VK_ERROR_MEMORY_MAP_FAILED;
+		}
+		std::memcpy(mapped.mappedPtr, data, bytes);
+		gpu::ResourceRegistry::FlushMappedBuffer(staging, 0, bytes);
+		gpu::OneShotCmd cmd;
+		if (!cmd.Begin(device, pool))
+		{
+			gpu::ResourceRegistry::Destroy(staging);
+			return VK_ERROR_INITIALIZATION_FAILED;
+		}
+		const auto command = static_cast<VkCommandBuffer>(cmd.CmdList().GetCommandBuffer());
+		const auto texture = static_cast<VkImage>(image);
+		VkImageMemoryBarrier2 barrier{
+		        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+		        .dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+		        .dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
+		        .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		        .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		        .image = texture,
+		        .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, mip, 1, 0, 1},
+		};
+		const VkDependencyInfo dependency{.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO, .imageMemoryBarrierCount = 1, .pImageMemoryBarriers = &barrier};
+		vkCmdPipelineBarrier2(command, &dependency);
+		const VkBufferImageCopy region{.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, mip, 0, 1}, .imageExtent = {width, height, 1}};
+		vkCmdCopyBufferToImage(command, static_cast<VkBuffer>(gpu::ResourceRegistry::ResolveBufferVkHandle(staging)),
+		        texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+		barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+		barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+		barrier.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+		barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		vkCmdPipelineBarrier2(command, &dependency);
+		const bool submitted = cmd.EndAndSubmit(queue);
+		gpu::ResourceRegistry::Destroy(staging);
+		return submitted ? VK_SUCCESS : VK_ERROR_DEVICE_LOST;
+	}
 
 	inline void SetHostImageCopyDstLayouts(std::vector<VkImageLayout> layouts)
 	{
@@ -35,6 +94,13 @@ namespace aether::vkutil
 		        .subresourceRange = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .baseMipLevel = 0, .levelCount = mipLevels, .baseArrayLayer = 0, .layerCount = 1},
 		};
 		return vkTransitionImageLayout(device, 1, &transition);
+	}
+
+	// Begin a host-copy upload through a backend-neutral call signature.
+	inline std::int32_t HostTransitionImageToGeneral(gpu::Device device, gpu::Image image, std::uint32_t mipLevels)
+	{
+		return static_cast<std::int32_t>(HostTransitionImage(static_cast<VkDevice>(device), static_cast<VkImage>(image),
+		        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, mipLevels));
 	}
 
 	// Finish a host-copied texture on the CPU: GENERAL -> SHADER_READ_ONLY_OPTIMAL with

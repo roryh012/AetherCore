@@ -130,6 +130,7 @@ namespace aether::vkutil
 			AftermathContext::RegisterShaderBinary(fragSpirv->data(), static_cast<uint32_t>(fragSpirv->size()));
 		}
 #endif
+		AE_VERBOSE(LogCategory::Vulkan, "Creating graphics shader objects: {}", desc.debugName != nullptr ? desc.debugName : "GraphicsPipeline");
 		const VkResult result = vkCreateShadersEXT(device, 2, shaderCreateInfos, nullptr, shaders);
 		if (result != VK_SUCCESS)
 		{

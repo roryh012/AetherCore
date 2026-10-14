@@ -499,7 +499,7 @@ namespace aether
 		selector.set_surface(m_surface).set_minimum_version(1, 4).set_required_features(requiredFeatures10).set_required_features_11(requiredFeatures11).set_required_features_12(requiredFeatures12).set_required_features_13(requiredFeatures13);
 		const VkPhysicalDeviceVulkan14Features requiredFeatures14{
 		        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
-		        .hostImageCopy = VK_TRUE,
+		        .hostImageCopy = VK_FALSE,
 		        .pushDescriptor = VK_TRUE,
 		};
 		selector.set_required_features_14(requiredFeatures14);
@@ -600,6 +600,13 @@ namespace aether
 		// and the heap path merely REMAPS those onto a heap buffer, so the exact same SPIR-V
 		// runs against an ordinary update-after-bind descriptor set. BindlessManager carries
 		// both backends; this flag picks which one the device gets.
+		const VkPhysicalDeviceVulkan14Features optionalHostCopy{
+		        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
+		        .hostImageCopy = VK_TRUE,
+		};
+		const bool hostCopySupported = physicalDeviceResult.value().enable_extension_features_if_present(optionalHostCopy);
+		vkutil::g_hostImageCopySupported = hostCopySupported;
+		AE_INFO(LogCategory::Vulkan, "Texture upload backend: {}.", hostCopySupported ? "host image copy" : "staging buffer");
 		m_descriptorHeapSupported = physicalDeviceResult.value().enable_extension_if_present(VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME);
 
 		// VK_EXT_descriptor_buffer is the same idea one generation earlier: descriptors written
@@ -876,9 +883,9 @@ namespace aether
 			vkutil::SetObjectName(m_device->device, reinterpret_cast<std::uint64_t>(static_cast<void*>(m_transferQueue)), VK_OBJECT_TYPE_QUEUE, "Queue.Transfer");
 		}
 
-		// Host image copy: cache which layouts the implementation lets the host
-		// transition to, so texture uploads can finish entirely on the CPU (no queue
+		// Cache optional host-copy layouts so texture uploads can finish on the CPU (no queue
 		// submission) when SHADER_READ_ONLY_OPTIMAL is supported.
+		if (hostCopySupported)
 		{
 			VkPhysicalDeviceHostImageCopyProperties hostCopyProps{.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_PROPERTIES};
 			VkPhysicalDeviceProperties2 props2{.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, .pNext = &hostCopyProps};

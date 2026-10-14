@@ -7,7 +7,6 @@
 # would otherwise renumber it and make the guard report it as new.
 #
 # Regenerate with: pwsh scripts/check-gpu-abstraction.ps1 -UpdateBaseline
-src/engine/material/Texture.cpp: if (vkutil::HostTransitionImage(static_cast<VkDevice>(device), static_cast<VkImage>(image), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, mipLevels) != VK_SUCCESS)
 src/engine/rendering/RenderGraph.cpp: const uint32_t idx = m_storage->AddTransientBufferSlot(static_cast<VkDeviceSize>(size), static_cast<VkBufferUsageFlags2>(usage));
 src/engine/rendering/RenderGraph.cpp: m_diagnosticEngine->WriteBreadcrumb(reinterpret_cast<VkCommandBuffer>(cmd), breadcrumbValue);
 src/engine/rendering/ScreenshotService.cpp
