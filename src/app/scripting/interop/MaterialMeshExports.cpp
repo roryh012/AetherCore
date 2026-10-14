@@ -114,6 +114,10 @@ AE_SCRIPT_API int aether_set_procedural_mesh(std::uint32_t id, const Vec3* posit
 			const auto* meshPtr = mesh.get();
 			ctx.proceduralMeshes.emplace(id, std::move(mesh));
 			world.EmplaceOrReplace<aether::MeshComponent>(entity, aether::MeshComponent{.mesh = meshPtr});
+			if (!world.Has<aether::TransformComponent>(entity))
+			{
+				world.Emplace<aether::TransformComponent>(entity, aether::TransformComponent{});
+			}
 			if (!world.Has<aether::MaterialComponent>(entity))
 			{
 				aether::MaterialAsset material{};

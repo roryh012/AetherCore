@@ -80,6 +80,11 @@ namespace aether
 			m_prePresentCapture = std::move(callback);
 		}
 
+		void SetFaultCallback(std::function<void()> callback)
+		{
+			m_faultCallback = std::move(callback);
+		}
+
 	private:
 		struct FrameSync
 		{
@@ -112,6 +117,7 @@ namespace aether
 		VkImageLayout m_depthLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkDevice m_device = VK_NULL_HANDLE;
 		bool m_shutdown = false;
+		std::function<void()> m_faultCallback;
 		std::function<void(void* cmd, void* image, gpu::Extent2D extent)> m_prePresentCapture;
 	};
 } // namespace aether

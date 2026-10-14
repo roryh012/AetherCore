@@ -461,7 +461,8 @@ namespace aether
 		AE_EXPECT_OR_THROW(skyboxPipeline,
 		        GraphicsPipeline::Create(vk.GetDevice().device,
 		                {
-		                        .shaderVfsPath = "shaders://skybox.spv",
+		                        .shaderVfsPath = "shaders://skybox.vert.spv",
+		                        .fragmentVfsPath = "shaders://skybox.frag.spv",
 		                        .colorFormat = PostProcessStack::GetForwardColorFormat(),
 		                        .depthTestEnable = false,
 		                        .depthWriteEnable = false,
@@ -708,6 +709,7 @@ namespace aether
 		m_localShadowService.ClearAllQueues();
 		m_renderTargetService.ClearAllQueues();
 		DestroySceneViewportDepth();
+		const auto histogramPipeline = m_postProcessStack.ReleaseHistogramPipeline();
 		m_postProcessStack.Destroy();
 		m_renderGraph.Clear();
 		m_postProcessStack = PostProcessStack::Create({
@@ -716,6 +718,7 @@ namespace aether
 		        .swapchainFormat = swapchain.GetImageFormat(),
 		        .bindlessManager = &bindless,
 		        .renderGraph = &m_renderGraph,
+		        .histogramPipeline = histogramPipeline,
 		});
 		LogSceneRenderExtent(m_postProcessStack.GetExtent(), swapchain.GetExtent());
 		CreateSceneViewportDepth(gpu.GetDevice(), swapchain.GetDepthFormat(), m_renderGraph, bindless);
@@ -1001,6 +1004,7 @@ namespace aether
 				                // == 0), so 2D scenes get their background painted too.
 				                gpu::CommandList& cmd = ctx.recorder;
 				                cmd.BindPipeline(m_skyboxPipeline.GetPipeline());
+				                m_bindlessManager->CmdBindGlobalResources(cmd);
 				                const gpu::DeviceAddress frameAddr = ctx.frameConstantsAddr;
 				                std::byte bytes[sizeof(gpu::DeviceAddress)];
 				                std::memcpy(bytes, &frameAddr, sizeof(bytes));

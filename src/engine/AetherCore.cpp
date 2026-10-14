@@ -831,6 +831,12 @@ namespace aether
 		// the producer (main) thread via NeedsSwapchainOrViewportRecreate() +
 		m_gpu->BeginSwapchainFrame();
 		m_currentCmdList = gpu::CommandList(m_gpu->GetSwapchain().GetCurrentCommandBuffer());
+		// Establish every byte of the shared push range before incremental per-pass writes.
+		if (m_gpu->IsSwapchainFrameValid())
+		{
+			const std::array<std::byte, 128> initialPushData{};
+			m_currentCmdList.PushDataRaw(0, initialPushData);
+		}
 	}
 
 	bool AetherCore::NeedsSwapchainOrViewportRecreate()
@@ -1509,6 +1515,28 @@ namespace aether
 			return;
 		}
 
+		// Process-local diagnostics; ordinary rendering is unchanged when unset.
+		static const std::string diagnosticMode = []()
+		{
+			const char* value = std::getenv("AETHER_RENDER_DIAGNOSTIC");
+			return value != nullptr ? std::string(value) : std::string{};
+		}();
+		if (diagnosticMode == "clear")
+		{
+			const auto target = m_gpu->BuildFrameTarget();
+			const gpu::RenderingAttachmentInfo color{
+			        .imageView = target.colorView, .imageLayout = gpu::ImageLayout::ColorAttachment,
+			        .loadOp = gpu::LoadOp::Clear, .storeOp = gpu::StoreOp::Store,
+			        .clearValue = gpu::ClearColor(0.08f, 0.14f, 0.22f, 1.0f),
+			};
+			m_currentCmdList.BeginRendering({.width = target.extent.width, .height = target.extent.height,
+			        .colorAttachments = std::span(&color, 1)});
+			m_currentCmdList.EndRendering();
+			DiscardPendingFrameQueues(packet);
+			SubmitAndAdvance(frameIdx);
+			return;
+		}
+
 		FrameConstants fc = m_gpu->ComposeBaseFrameConstants(packet, glm::mat4(1.0f));
 
 		if (m_profile == RuntimeProfile::Full)
@@ -1526,7 +1554,7 @@ namespace aether
 		}
 
 		UploadFrameConstantsAndExecuteRenderGraph(frameIdx, fc);
-		if (m_uiOverlay && packet.uiOverlay)
+		if (m_uiOverlay && packet.uiOverlay && diagnosticMode != "no-overlay")
 		{
 			m_uiOverlay->RenderFrame(*packet.uiOverlay, m_currentCmdList, m_gpu->BuildFrameTarget());
 		}
@@ -1534,7 +1562,7 @@ namespace aether
 		SubmitAndAdvance(frameIdx);
 
 		// Secondary (torn-out) viewports render + present on the render thread, after the
-		if (m_uiOverlay && packet.uiOverlay)
+		if (m_uiOverlay && packet.uiOverlay && diagnosticMode != "no-overlay")
 		{
 			m_uiOverlay->RenderViewports(*packet.uiOverlay);
 		}

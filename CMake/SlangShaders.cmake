@@ -99,6 +99,29 @@ function(aethercore_declare_shader_compilation)
         )
 
         list(APPEND AETHERCORE_SHADER_OUTPUTS "${_shader_output}")
+        # Keep built-in BDA graphics stages in separate modules. AMD RDNA2 can fault on
+        # fragment BDA reads when Slang emits both entry points in one module.
+        file(READ "${_shader_source}" _shader_text)
+        if (_shader_text MATCHES [=[shader\("fragment"\)]=] AND _shader_text MATCHES "fragmentMain")
+            foreach(_stage IN ITEMS vertex fragment)
+                if (_stage STREQUAL "vertex")
+                    set(_stage_suffix "vert")
+                else()
+                    set(_stage_suffix "frag")
+                endif()
+                set(_stage_output "${AETHERCORE_SHADER_OUTPUT_DIR}/${_shader_parent}/${_shader_stem}.${_stage_suffix}.spv")
+                add_custom_command(
+                    OUTPUT "${_stage_output}"
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${_shader_output_dir}"
+                    COMMAND "${SLANGC_EXECUTABLE}" ${_aethercore_slang_command_args}
+                            -fvk-use-entrypoint-name -entry "${_stage}Main" -stage "${_stage}"
+                            -o "${_stage_output}" "${_shader_source}"
+                    DEPENDS "${_shader_source}" ${AETHERCORE_SHADER_HEADERS}
+                    COMMENT "Compiling separate ${_shader_stem} ${_stage} stage"
+                )
+                list(APPEND AETHERCORE_SHADER_OUTPUTS "${_stage_output}")
+            endforeach()
+        endif()
     endforeach()
 
     # Standalone custom target: shader compilation must not depend on any one consumer

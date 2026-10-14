@@ -28,6 +28,8 @@ namespace aether
 			gpu::Format swapchainFormat = gpu::Format::Undefined;
 			BindlessManager* bindlessManager = nullptr;
 			RenderGraph* renderGraph = nullptr;
+			// Ownership transfers to the new stack; reuse only on the same device/layout.
+			gpu::PipelineHandle histogramPipeline{};
 		};
 
 		PostProcessStack() = default;
@@ -41,6 +43,8 @@ namespace aether
 
 		static PostProcessStack Create(const Desc& desc);
 		void Destroy();
+		// The histogram shader is extent independent. Retain it across viewport resizes.
+		[[nodiscard]] gpu::PipelineHandle ReleaseHistogramPipeline();
 
 		// Format the engine's forward pass must use when writing the HDR buffer.
 		[[nodiscard]] static constexpr gpu::Format GetForwardColorFormat()

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdlib>
 #include <format>
 #include <limits>
 #include <numeric>
@@ -2316,7 +2317,14 @@ namespace aether
 			const bool hasAttachments = pass.kind == PassKind::Graphics && (!scratchColorInfos.empty() || depthInfo.has_value());
 			// legally begin dynamic rendering (renderArea and viewport must be > 0).
 			const bool degenerateExtent = hasAttachments && (passExtent.width == 0 || passExtent.height == 0);
-			const bool skipPassBody = passDebugDisabled || degenerateExtent;
+			static const std::string diagnosticPasses = []()
+			{
+				const char* value = std::getenv("AETHER_DIAGNOSTIC_PASSES");
+				return value != nullptr ? std::string(value) : std::string{};
+			}();
+			const bool diagnosticSkip = !diagnosticPasses.empty() &&
+			        ("," + diagnosticPasses + ",").find("," + pass.name + ",") == std::string::npos;
+			const bool skipPassBody = passDebugDisabled || degenerateExtent || diagnosticSkip;
 			const bool useDynamicRendering = !skipPassBody && hasAttachments;
 			if (useDynamicRendering)
 			{

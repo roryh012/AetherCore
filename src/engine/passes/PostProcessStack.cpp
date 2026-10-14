@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstring>
+#include <utility>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/packing.hpp>
@@ -123,12 +124,16 @@ namespace aether
 		stack.m_fxaaPipeline = std::move(fxaaPipeline);
 
 		{
-			stack.m_histogramPipeline = gpu::ResourceRegistry::CreateComputePipeline(desc.device,
-			        gpu::ComputePipelineDesc{
-			                .shaderVfsPath = "shaders://luminance_histogram.spv",
-			                .debugName = "LuminanceHistogram",
-			                .descriptorHeapMappings = desc.bindlessManager->GetDescriptorHeapMappings(),
-			        });
+			stack.m_histogramPipeline = desc.histogramPipeline;
+			if (!stack.m_histogramPipeline.IsValid())
+			{
+				stack.m_histogramPipeline = gpu::ResourceRegistry::CreateComputePipeline(desc.device,
+				        gpu::ComputePipelineDesc{
+				                .shaderVfsPath = "shaders://luminance_histogram.spv",
+				                .debugName = "LuminanceHistogram",
+				                .descriptorHeapMappings = desc.bindlessManager->GetDescriptorHeapMappings(),
+				        });
+			}
 			if (!stack.m_histogramPipeline.IsValid())
 			{
 				Throw(AetherError::Engine("PostProcessStack: LuminanceHistogram CreateComputePipeline failed"));
@@ -173,6 +178,11 @@ namespace aether
 		stack.m_extent = desc.extent;
 
 		return stack;
+	}
+
+	gpu::PipelineHandle PostProcessStack::ReleaseHistogramPipeline()
+	{
+		return std::exchange(m_histogramPipeline, {});
 	}
 
 	void PostProcessStack::Destroy()

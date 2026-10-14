@@ -25,7 +25,29 @@ namespace aether::vkutil
 		const VkCompareOp vkDepthCompareOp = gpu::ToVk(desc.depthCompareOp);
 		const bool hasColorAttachment = vkColorFormat != VK_FORMAT_UNDEFINED;
 
-		AE_TRY(vertSpirv, io::FileSystem::ReadFile(desc.shaderVfsPath));
+		// Prefer independently compiled built-in stages on drivers that mishandle
+		// fragment BDA reads in a module containing multiple entry points.
+		std::string vertexPath(desc.shaderVfsPath);
+		std::string fragmentPath(desc.fragmentVfsPath.empty() ? desc.shaderVfsPath : desc.fragmentVfsPath);
+		const auto stagePath = [](std::string path, std::string_view suffix)
+		{
+			if (path.ends_with(".spv"))
+			{
+				path.resize(path.size() - 4);
+			}
+			return path + std::string(suffix);
+		};
+		const auto splitVertex = stagePath(vertexPath, ".vert.spv");
+		const auto splitFragment = stagePath(fragmentPath, ".frag.spv");
+		if (desc.vertexEntry == "vertexMain" && io::FileSystem::Exists(splitVertex))
+		{
+			vertexPath = splitVertex;
+		}
+		if (desc.fragmentEntry == "fragmentMain" && io::FileSystem::Exists(splitFragment))
+		{
+			fragmentPath = splitFragment;
+		}
+		AE_TRY(vertSpirv, io::FileSystem::ReadFile(vertexPath));
 		if (vertSpirv->empty())
 		{
 			AE_UNEXPECTED(AetherError::Asset("GraphicsPipeline: shader not found: " + std::string(desc.shaderVfsPath)));
@@ -33,10 +55,10 @@ namespace aether::vkutil
 
 		std::vector<std::byte> fragSpirvStorage;
 		const std::vector<std::byte>* fragSpirv = &*vertSpirv;
-		const bool hasSeparateFragment = !desc.fragmentVfsPath.empty();
+		const bool hasSeparateFragment = fragmentPath != vertexPath;
 		if (hasSeparateFragment)
 		{
-			AE_TRY(fragLoaded, io::FileSystem::ReadFile(desc.fragmentVfsPath));
+			AE_TRY(fragLoaded, io::FileSystem::ReadFile(fragmentPath));
 			if (fragLoaded->empty())
 			{
 				AE_UNEXPECTED(AetherError::Asset("GraphicsPipeline: fragment shader not found: " + std::string(desc.fragmentVfsPath)));

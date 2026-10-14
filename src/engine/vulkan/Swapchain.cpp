@@ -502,6 +502,10 @@ namespace aether
 			if (submitResult == VK_ERROR_DEVICE_LOST)
 			{
 				AE_ERROR(LogCategory::Vulkan, "VK_ERROR_DEVICE_LOST on vkQueueSubmit2 (frame {}). GPU has crashed - check validation output above.", m_currentFrame);
+				if (m_faultCallback)
+				{
+					m_faultCallback();
+				}
 				std::terminate();
 			}
 			if (submitResult != VK_SUCCESS)
@@ -543,6 +547,10 @@ namespace aether
 		if (presentResult == VK_ERROR_DEVICE_LOST)
 		{
 			AE_ERROR(LogCategory::Vulkan, "VK_ERROR_DEVICE_LOST on vkQueuePresentKHR (frame {}). GPU has crashed - check validation output above.", m_currentFrame);
+			if (m_faultCallback)
+			{
+				m_faultCallback();
+			}
 			std::terminate();
 		}
 		if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
