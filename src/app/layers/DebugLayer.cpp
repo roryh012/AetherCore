@@ -2529,13 +2529,20 @@ namespace aether::editor
 				}
 				const auto* playState = context.TryGet<app::PlayState>();
 				const bool compiling = playState != nullptr && playState->IsCompiling();
-				const char* chip = compiling ? ICON_FA_HAMMER "  BUILD" : "AETHERCORE";
-				const ImVec4 chipColor = compiling ? kAccentHi : kFaint;
+				std::string chipText = compiling ? ICON_FA_HAMMER "  BUILD" : "AETHERCORE";
+				const auto* window = context.services.TryGet<Window>();
+				const bool namedSession = window != nullptr && !window->GetSessionName().empty();
+				if (namedSession)
+				{
+					chipText = window->GetSessionName() + "  |  " + chipText;
+				}
+				const char* chip = chipText.c_str();
+				const ImVec4 chipColor = compiling ? kAccentHi : (namedSession ? kText : kFaint);
 				const float chipW = ImGui::CalcTextSize(chip).x;
 				const float avail = ImGui::GetContentRegionAvail().x;
-				if (avail > chipW + 16.0f)
+				if (avail > 32.0f)
 				{
-					ImGui::SameLine(ImGui::GetCursorPosX() + avail - chipW - 12.0f);
+					ImGui::SameLine(ImGui::GetCursorPosX() + std::max(0.0f, avail - chipW - 12.0f));
 					ImGui::PushStyleColor(ImGuiCol_Text, chipColor);
 					ImGui::TextUnformatted(chip);
 					ImGui::PopStyleColor();

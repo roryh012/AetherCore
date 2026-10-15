@@ -1,5 +1,6 @@
 #include "platform/Window.hpp"
 #include "platform/WindowPlacement.hpp"
+#include "platform/WindowSessionLabel.hpp"
 
 #include <algorithm>
 
@@ -34,7 +35,7 @@ namespace aether
 #endif
 	}
 
-	Window::Window(const char* title, int width, int height, const Mode mode, const bool startHidden)
+	Window::Window(const char* title, int width, int height, const Mode mode, const bool startHidden) : m_baseTitle(title)
 	{
 		AE_PROFILE_ZONE();
 		AE_INFO(LogCategory::Window, "Initializing window '{}' ({}x{})", title, width, height);
@@ -85,12 +86,20 @@ namespace aether
 		{
 			glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 		}
-		// Name the window after the agent that owns it, so the user can tell agent editors apart.
-		std::string windowTitle = title;
-		if (const std::string agent = io::PlatformPaths::AgentSessionName(); !agent.empty())
+		m_sessionName = NormalizeSessionName(io::PlatformPaths::ReadEnvironmentVariable("AETHER_SESSION_NAME"));
+		if (m_sessionName.empty())
 		{
-			windowTitle += " [agent: " + agent + "]";
+			m_sessionName = NormalizeSessionName(io::PlatformPaths::AgentSessionName());
 		}
+		if (m_sessionName.empty())
+		{
+			const std::string port = io::PlatformPaths::ReadEnvironmentVariable("AETHER_CONTROL_PORT");
+			if (!port.empty() && port.size() <= 5 && std::all_of(port.begin(), port.end(), [](char c) { return c >= '0' && c <= '9'; }))
+			{
+				m_sessionName = "MCP :" + port;
+			}
+		}
+		const std::string windowTitle = GetTitle();
 		m_window = glfwCreateWindow(width, height, windowTitle.c_str(), monitor, nullptr);
 		if (m_window == nullptr)
 		{
@@ -335,6 +344,21 @@ namespace aether
 		// glfwSetWindowPos places the CLIENT area, so offset by the frame to keep the whole
 		// window - title bar included - inside the work area.
 		glfwSetWindowPos(m_window, fit.outerX + frameLeft, fit.outerY + frameTop);
+	}
+
+	std::string Window::GetTitle() const
+	{
+		return ComposeSessionWindowTitle(m_baseTitle, m_sessionName);
+	}
+
+	void Window::SetSessionName(std::string_view name)
+	{
+		m_sessionName = NormalizeSessionName(name);
+		if (m_window != nullptr)
+		{
+			const std::string title = GetTitle();
+			glfwSetWindowTitle(m_window, title.c_str());
+		}
 	}
 
 	void Window::Show()

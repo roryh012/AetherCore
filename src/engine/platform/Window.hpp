@@ -1,6 +1,8 @@
 #pragma once
 
 #include <atomic>
+#include <string>
+#include <string_view>
 
 struct GLFWwindow;
 
@@ -40,6 +42,13 @@ namespace aether
 
 		// Map a window created with startHidden. Safe to call when already visible.
 		void Show();
+
+		// Process-local display identity for agent/editor copies. Main thread only;
+		// does not change project identity, window mode, focus or the control endpoint.
+		void SetSessionName(std::string_view name);
+		[[nodiscard]] const std::string& GetSessionName() const { return m_sessionName; }
+		[[nodiscard]] std::string GetTitle() const;
+
 
 		// Move the window so its centre lands on a desktop point, clamped to stay inside the
 		// work area of whichever monitor contains that point.
@@ -141,6 +150,8 @@ namespace aether
 		static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 		GLFWwindow* m_window = nullptr;
+		std::string m_baseTitle;
+		std::string m_sessionName;
 
 		Mode m_mode = Mode::Windowed;
 

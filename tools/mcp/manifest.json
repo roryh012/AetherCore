@@ -2395,6 +2395,21 @@
         "type": "object"
       },
       "tool": "ui_scroll"
+    },
+    {
+      "description": "Read or set this process's session label in the OS window title and editor header. Omit name to read; an empty name clears it. Display text is normalized and limited to 64 UTF-8 bytes. No project files, focus or control ports change.",
+      "mutates": true,
+      "name": "app.session_name",
+      "paramsSchema": {
+        "properties": {
+          "name": {
+            "maxLength": 256,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "tool": "set_session_name"
     }
   ]
 }

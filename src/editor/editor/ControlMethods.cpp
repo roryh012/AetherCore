@@ -321,6 +321,25 @@ namespace aether::editor
 	{
 		std::vector<ControlMethod> methods;
 
+		methods.push_back({"app.session_name",
+		        "set_session_name",
+		        "Read or set this process's session label in the OS window title and editor header. Omit name to read; an empty name clears it. Display text is normalized and limited to 64 UTF-8 bytes. No project files, focus or control ports change.",
+		        true,
+		        Obj({{"name", {{"type", "string"}, {"maxLength", 256}}}}),
+		        [](const json& params, MethodContext& ctx) -> json
+		        {
+			        auto* window = ctx.services.TryGet<Window>();
+			        if (window == nullptr)
+			        {
+				        throw std::runtime_error("No main window is available.");
+			        }
+			        if (params.contains("name"))
+			        {
+				        window->SetSessionName(params.at("name").get<std::string>());
+			        }
+			        return json{{"sessionName", window->GetSessionName()}, {"windowTitle", window->GetTitle()}};
+		        }});
+
 		methods.push_back({"info",
 		        "engine_info",
 		        "Live editor summary: current scene name and kind, entity count, frame index, fps, and any connected gamepads with their live stick/trigger/button state - the first thing to check when a controller seems dead.",
@@ -390,7 +409,10 @@ namespace aether::editor
 			        // actually running - the exact case worth being able to see.
 			        const float loopFrameMs = LoopFrameMs(ctx.services);
 			        auto* engineForIdle = ctx.services.TryGet<AetherCore>();
-			        return json{{"frame", ctx.frameIndex},
+			        auto* mainWindow = ctx.services.TryGet<Window>();
+			        return json{{"sessionName", mainWindow != nullptr ? mainWindow->GetSessionName() : ""},
+			                {"windowTitle", mainWindow != nullptr ? mainWindow->GetTitle() : ""},
+			                {"frame", ctx.frameIndex},
 			                {"fps", ctx.fps},
 			                {"frameMs", loopFrameMs},
 			                {"loopFps", loopFrameMs > 0.0f ? 1000.0f / loopFrameMs : 0.0f},

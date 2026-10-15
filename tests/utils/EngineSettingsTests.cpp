@@ -8,6 +8,7 @@
 #include "io/FileUtil.hpp"
 #include "AetherCore.hpp" // ParseWindowMode
 #include "utils/EngineSettings.hpp"
+#include "platform/WindowSessionLabel.hpp"
 
 using namespace aether;
 
@@ -566,4 +567,16 @@ TEST_CASE("A user-layer document can set the TURN relay, unlike project-only key
     const std::string overrides = EngineSettingsIO::SerializeOverrides(s, base);
     CHECK(overrides.find("turnHost") != std::string::npos);
     CHECK(overrides.find("allowRelay") != std::string::npos);
+}
+
+TEST_CASE("Session labels normalize display text and preserve UTF-8 boundaries")
+{
+	CHECK(NormalizeSessionName("  Artist\n water\t review  ") == "Artist water review");
+	CHECK(NormalizeSessionName("\r\n\t") == "");
+	CHECK(ComposeSessionWindowTitle("Editor", "Playtest") == "Editor [session: Playtest]");
+	CHECK(ComposeSessionWindowTitle("Editor", "") == "Editor");
+	CHECK(NormalizeSessionName(std::string(80, 'x')).size() == 64);
+	const std::string snowman = "\xe2\x98\x83";
+	CHECK(NormalizeSessionName(std::string(63, 'x') + snowman) == std::string(63, 'x'));
+	CHECK(NormalizeSessionName(std::string(61, 'x') + snowman) == std::string(61, 'x') + snowman);
 }

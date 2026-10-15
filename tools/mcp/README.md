@@ -180,3 +180,10 @@ printf '%s\n%s\n' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
   | python tools/mcp/aethercore_mcp.py
 ```
+
+
+### Distinguishing concurrent sessions
+
+Call `set_session_name` (`app.session_name` on the control endpoint) with `{"name":"Artist - water review"}` to label the OS window/task switcher and editor menu header. `engine_info` returns `sessionName` and `windowTitle`; calling `app.session_name` without `name` reads the current values, and `{"name":""}` clears the label. Labels are display text: whitespace/control characters are normalized and the result is capped at 64 UTF-8 bytes without splitting a character. They do not rename projects or alter focus, persistence or ports.
+
+Set `AETHER_SESSION_NAME` before launch to name a copy from startup. If absent, the existing agent name is used; otherwise a control-enabled copy defaults to `MCP :<port>`. Startup labels apply to all main windows; the editor additionally shows them in its menu header. This lets each agent label its own endpoint without restarting the other editors. Restart the MCP client tool discovery after updating the engine if its cached tool list predates `set_session_name`; `aether-ctl app.session_name` works directly.
