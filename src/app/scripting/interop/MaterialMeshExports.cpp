@@ -92,7 +92,7 @@ static int SetProceduralMesh(std::uint32_t id, const Vec3* positions,
 		}
 		const glm::vec3 sphereCenter = (boundsMin + boundsMax) * 0.5f;
 		int succeeded = 1;
-		ctx.engineRuntime->RunExclusive(aether::QuiesceMode::Drain, [&]()
+		ctx.engineRuntime->RunExclusive(aether::QuiesceMode::DrainCpuOnly, [&]()
 		{
 			std::unique_ptr<aether::Mesh> mesh;
 			if (!vertices.empty())
@@ -114,7 +114,11 @@ static int SetProceduralMesh(std::uint32_t id, const Vec3* positions,
 			world.Remove<aether::RigidBodyComponent>(entity);
 			world.Remove<aether::MeshComponent>(entity);
 			world.Remove<aether::MeshSourceComponent>(entity);
-			ctx.proceduralMeshes.erase(id);
+			if (auto old = ctx.proceduralMeshes.find(id); old != ctx.proceduralMeshes.end())
+			{
+				ctx.engineRuntime->RetireAfterRendering(std::shared_ptr<aether::Mesh>(std::move(old->second)));
+				ctx.proceduralMeshes.erase(old);
+			}
 			if (mesh == nullptr)
 			{
 				return;

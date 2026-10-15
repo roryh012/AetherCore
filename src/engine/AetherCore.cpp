@@ -228,6 +228,7 @@ namespace aether
 		m_renderThread.Stop();
 
 		m_gpu->WaitIdle();
+		m_retiredRenderResources.Clear();
 		m_screenshotService.Shutdown();
 
 		m_services.Get<AsyncComputeContext>().Shutdown(*m_gpu);
@@ -271,37 +272,35 @@ namespace aether
 
 	void AetherCore::RunExclusive(QuiesceMode mode, std::function<void()> mutation)
 	{
-		// main thread. A mutation that transitively re-enters would prematurely
 		AE_ASSERT_ALWAYS(!m_renderThread.IsReloadInProgress(), "RunExclusive is non-reentrant");
-
-		//     this cannot hang. Discard mode skips this: the render thread drops
-		if (mode == QuiesceMode::Drain && m_producerFrameIndex > 0)
-		{
+		// Finish extracting every queued frame before changing CPU-side mesh pointers.
+		if (mode != QuiesceMode::Discard && m_producerFrameIndex > 0)
 			m_renderThread.WaitUntilFrameCompleted(m_producerFrameIndex - 1);
-		}
-
-		// (B) PARK the render thread outside ExecuteRenderFrame.
 		m_renderThread.SetReloadInProgress(true);
 		m_renderThread.WaitPaused();
-
-		//     thread's identically-named join method.
-		WaitIdle();
-
-		// (D) Mutation runs single-threaded, GPU idle, render thread parked. Any
-		if (mutation)
+		try
 		{
-			try
+			if (mode == QuiesceMode::DrainCpuOnly)
+				m_retiredRenderResources.Collect([this](std::uint64_t ticket) { return m_gpu->IsRenderingComplete(ticket); });
+			else
 			{
-				mutation();
+				WaitIdle();
+				m_retiredRenderResources.Clear();
 			}
-			catch (...)
-			{
-				m_renderThread.SetReloadInProgress(false);
-				throw;
-			}
+			if (mutation) mutation();
 		}
-
+		catch (...)
+		{
+			m_renderThread.SetReloadInProgress(false);
+			throw;
+		}
 		m_renderThread.SetReloadInProgress(false);
+	}
+
+	void AetherCore::RetireAfterRendering(std::shared_ptr<void> resource)
+	{
+		AE_ASSERT_ALWAYS(m_renderThread.IsReloadInProgress(), "Retirement requires parked submission");
+		m_retiredRenderResources.Retire(m_gpu->LastRenderSubmission(), std::move(resource));
 	}
 
 	int AetherCore::RunFrameLoop(EngineClient& client)
@@ -442,6 +441,8 @@ namespace aether
 			m_framePacer.Wait();
 			const auto afterPacer = std::chrono::steady_clock::now();
 
+			if (!m_retiredRenderResources.Empty())
+				RunExclusive(QuiesceMode::DrainCpuOnly, [] {});
 			client.OnFrameBegin();
 			Logger::SetFrameNumber(m_producerFrameIndex);
 

@@ -47,6 +47,10 @@ namespace aether
 
 		// and performs swapchain-image / depth layout transitions.
 		void BeginFrame(VkDevice device);
+		// Call with submission parked. Reused slots imply their previous submission
+		// completed (BeginFrame waited before resetting the fence).
+		[[nodiscard]] std::uint64_t LastRenderSubmission() const { return m_lastRenderSubmission; }
+		[[nodiscard]] bool IsRenderingComplete(std::uint64_t ticket) const;
 
 		// Engine-side end-of-frame submission. Transitions to present layout,
 		// The transfer wait orders TransferManager uploads (mesh/buffer copies on the
@@ -92,6 +96,7 @@ namespace aether
 			VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
 			VkSemaphore imageAvailable = VK_NULL_HANDLE;
 			VkFence inFlight = VK_NULL_HANDLE;
+			std::uint64_t submission = 0;
 		};
 
 		vkb::Swapchain m_swapchain{};
@@ -107,6 +112,7 @@ namespace aether
 		FrameSync m_frames[kMaxFramesInFlight]{};
 		class PresentTimingTracker* m_presentTiming = nullptr;
 		std::uint64_t m_presentId = 0;
+		std::uint64_t m_lastRenderSubmission = 0;
 		std::int64_t m_frameLatchTimeNs = 0;
 		std::uint32_t m_currentFrame = 0;
 		std::uint32_t m_imageIndex = 0;

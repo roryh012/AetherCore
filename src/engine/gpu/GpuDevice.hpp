@@ -48,6 +48,9 @@ namespace aether
 		void Shutdown();
 
 		void WaitIdle();
+		// Submission must be parked while these completion tickets are read.
+		[[nodiscard]] std::uint64_t LastRenderSubmission() const;
+		[[nodiscard]] bool IsRenderingComplete(std::uint64_t ticket) const;
 
 		[[nodiscard]] bool HasDedicatedComputeQueue() const;
 

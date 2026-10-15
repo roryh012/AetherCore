@@ -153,6 +153,7 @@ namespace aether
 		int RunFrameLoop(EngineClient& client);
 
 		void RunExclusive(QuiesceMode mode, std::function<void()> mutation) override;
+		void RetireAfterRendering(std::shared_ptr<void> resource) override;
 
 		[[nodiscard]] double RealElapsedSeconds() const override
 		{
@@ -378,6 +379,7 @@ namespace aether
 
 		// Producer/game-thread frame loop state (distinct from the render-side
 		RenderThread m_renderThread;
+		RenderRetirementQueue m_retiredRenderResources;
 		FramePacer m_framePacer;
 		// Per-frame timings for the Performance panel. Always present, in every build
 		// config - the Tracy plots beside it compile out in Release.

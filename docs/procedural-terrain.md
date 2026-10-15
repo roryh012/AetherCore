@@ -13,13 +13,20 @@ entity ownership, synchronization, clearing, and collision behavior. Use
 Mapping and material selection belong to the game; the engine copies supplied UVs.
 
 Call from a game-thread script callback. Arrays are copied before return.
-The operation drains submitted render frames, parks rendering, waits for GPU idle,
-then rebuilds the mesh and the physics body. Collision is available to raycasts on return.
-This deliberately prioritizes correctness over throughput; rebuilding many chunks each frame
-will stall rendering. Worker threads may generate arrays but must not call this API.
+The operation drains queued CPU render packets and parks submission before publishing
+new buffers. Replaced mesh owners are retained in a render-completion queue; the old
+buffers cannot be released until the submissions that used them have completed.
+Completion is polled with frame-fence tickets, including safe handling of reused
+frame slots. Each frame collects completed owners while submission is parked;
+general device-idle operations and shutdown also drain this ownership queue.
+Mesh publication no longer calls device-wide idle for each replacement. Transfers,
+CPU render-packet draining and physics replacement are still synchronous, so this
+is not a fully asynchronous streaming API. Collision is available to raycasts on
+return. Worker threads may generate arrays but must not call this API.
 
-The mesh is owned by the scene context, replaced without retaining old GPU meshes,
-and released after entity destruction or scene teardown. Explicit `ProceduralMesh.Clear`
+The current mesh is scene-owned. Replacements retain old GPU meshes temporarily
+until their render tickets complete, then release them; entity destruction and
+scene teardown release the current mesh. Explicit `ProceduralMesh.Clear`
 releases it earlier. Terrain geometry is runtime state: regenerate it on play/load;
 it is not serialized as a baked model. The call replaces any previous mesh and rigid-body
 collision on the target entity. Use dedicated static terrain entities, with unit scale.
@@ -36,9 +43,10 @@ after publishing the new mesh. It is not a transactional rollback API.
   and removal without loading assets.
 - The game repository has an independent C# density-grid/meshing test harness.
 
-Live mesh upload and repeated scene teardown still require successful rendering on a supported
-machine. On the local RX 6900 XT, the editor reached scene loading but rendering lost the device
-before terrain scripts ran. See the parent project's GPU compatibility handoff for evidence.
+The initial RX 6900 XT attempt lost the device before terrain scripts ran. Subsequent
+AMD compatibility work enabled live terrain verification; see the parent project's
+GPU compatibility handoff and terrain mesh publication notes. Current local checks
+include sustained boundary edits, collision comparison, clear/reset, and scene teardown.
 
 ## Collision-only replacement
 
@@ -54,3 +62,13 @@ The As Above So Below game uses this for hidden full-world collision while separ
 textured/cut meshes provide the visible surface. Native Jolt array-mesh checks,
 managed pre-interop rejection tests and live edited-mesh/raycast comparisons cover
 this path. Visible mesh replacement retains its render-drain limitation.
+
+## Deferred mesh ownership verification
+
+Two native ownership tests check pending resource retention, partial completion,
+multiple owners sharing one submission, and shutdown cleanup. Live RX 6900 XT
+editing exercises repeated replacements through reused frame-fence slots. Old CPU
+mesh objects remain valid until the queued CPU packets have been drained and their
+GPU tickets complete. GPU submission must be parked when serials/fences are read.
+The rest of the engine retains device-idle synchronization for general mutations;
+`DrainCpuOnly` is restricted to this explicit ownership-retention path.

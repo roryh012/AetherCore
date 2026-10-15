@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "utils/FrameTimeline.hpp"
+#include "IEngineRuntime.hpp"
 
 using namespace aether;
 
@@ -113,4 +114,29 @@ TEST_CASE("Snapshot into a buffer smaller than the history returns the newest th
     REQUIRE(count == 5);
     CHECK(out.front().frameIndex == 45);
     CHECK(out.back().frameIndex == 49);
+}
+
+// GPU completion is supplied by the backend; test ownership independently of a GPU.
+TEST_CASE("Render retirement retains resources until their submission completes")
+{
+	aether::RenderRetirementQueue queue;
+	auto a=std::make_shared<int>(1), b=std::make_shared<int>(2);
+	std::weak_ptr<int> oldA=a, oldB=b;
+	queue.Retire(10,std::move(a));queue.Retire(11,std::move(b));
+	queue.Collect([](std::uint64_t) { return false; });
+	CHECK_FALSE(oldA.expired());CHECK_FALSE(oldB.expired());
+	queue.Collect([](std::uint64_t ticket) { return ticket<=10; });
+	CHECK(oldA.expired());CHECK_FALSE(oldB.expired());CHECK_FALSE(queue.Empty());
+	queue.Collect([](std::uint64_t) { return true; });
+	CHECK(oldB.expired());CHECK(queue.Empty());
+}
+TEST_CASE("Render retirement releases all owners of a completed batch and clears on shutdown")
+{
+	aether::RenderRetirementQueue queue;
+	auto shared=std::make_shared<int>(1);std::weak_ptr<int> weak=shared;
+	queue.Retire(4,shared);queue.Retire(4,std::move(shared));
+	queue.Collect([](std::uint64_t ticket) { return ticket<4; });
+	CHECK_FALSE(weak.expired());
+	queue.Clear();CHECK(weak.expired());CHECK(queue.Empty());
+	queue.Clear(); // shutdown after an already-drained queue
 }

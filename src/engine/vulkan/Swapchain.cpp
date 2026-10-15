@@ -315,6 +315,19 @@ namespace aether
 		vkb::destroy_swapchain(m_swapchain);
 	}
 
+	bool Swapchain::IsRenderingComplete(std::uint64_t ticket) const
+	{
+		for (const auto& frame : m_frames)
+		{
+			if (frame.submission == 0 || frame.submission > ticket) continue;
+			const VkResult result = vkGetFenceStatus(m_device, frame.inFlight);
+			if (result == VK_NOT_READY) return false;
+			if (result != VK_SUCCESS)
+				Throw(AetherError::Vulkan(result, "Failed to query render completion."));
+		}
+		return true;
+	}
+
 	void Swapchain::BeginFrame(VkDevice device)
 	{
 		m_frameValid = false;
@@ -498,6 +511,7 @@ namespace aether
 			AE_PROFILE_ZONE_N("Swapchain.QueueSubmit");
 			const std::lock_guard<std::mutex> queueLock(aether::vulkan::QueueSubmitMutex());
 			const VkResult submitResult = vkQueueSubmit2(graphicsQueue, 1, &submit, frame.inFlight);
+			if (submitResult == VK_SUCCESS) m_frames[m_currentFrame].submission = ++m_lastRenderSubmission;
 			AE_PROFILE_PLOT("Swapchain/QueueSubmitNs", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - submitStart).count()));
 			if (submitResult == VK_ERROR_DEVICE_LOST)
 			{

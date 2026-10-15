@@ -58,6 +58,15 @@ namespace aether
 		AE_EXPECT_OR_THROW_VOID(m_gfx->GetVulkanContext().WaitIdle());
 	}
 
+	std::uint64_t GpuDevice::LastRenderSubmission() const
+	{
+		return m_gfx->GetSwapchain().LastRenderSubmission();
+	}
+	bool GpuDevice::IsRenderingComplete(std::uint64_t ticket) const
+	{
+		return m_gfx->GetSwapchain().IsRenderingComplete(ticket);
+	}
+
 	bool GpuDevice::HasDedicatedComputeQueue() const
 	{
 		return m_gfx->GetVulkanContext().GetComputeQueue() != VK_NULL_HANDLE;
