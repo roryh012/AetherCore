@@ -42,6 +42,7 @@ namespace aether
 
 	private:
 		void ThreadLoop();
+		void SetIdle(bool idle);
 
 		// Apply platform-specific thread configuration (priority, name, scheduling).
 		static void ConfigureThisThread();

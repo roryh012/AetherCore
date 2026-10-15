@@ -131,7 +131,10 @@ if ($EditorDisabled -and $Targets -contains "Editor") {
 # -CI is explicit on purpose; see the .PARAMETER note. Do not re-add $env:CI sniffing.
 if ($CI) { $SkipEditor = $true; $SkipRuntime = $true }
 
-$LogDir = Join-Path $env:LOCALAPPDATA "AetherCore/logs"
+# Use this process's console stream, not the shared per-user rotating log.
+# Other editor sessions can hold that file open or interleave unrelated messages.
+$LogDir = Join-Path $RepoRoot ("logs/gauntlet-" + [guid]::NewGuid().ToString("N"))
+New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 
 # --- Console helpers -----------------------------------------------------
 function Write-Head($text) { Write-Host "`n=== $text ===" -ForegroundColor Cyan }
@@ -353,7 +356,7 @@ function Invoke-Smoke([string]$Name, [string]$ExePath, [string]$LogName, [string
         return $false
     }
     $log = Join-Path $LogDir $LogName
-    if (Test-Path $log) { Remove-Item $log -Force }
+    $stdoutLog = $log + ".stdout"
 
     # Launch from the build root: shaders:// and engine.pak resolve relative to CWD.
     # Ask for validation explicitly rather than inheriting the config's default. The layer
@@ -361,7 +364,7 @@ function Invoke-Smoke([string]$Name, [string]$ExePath, [string]$LogName, [string
     # only defaults on in Debug - so without this the same harness pointed at a
     # RelWithDebInfo tree runs with no validation at all and still reports a clean pass.
     $ExeArgs = ("$ExeArgs --validation").Trim()
-    $proc = Start-Process -FilePath $exe -ArgumentList $ExeArgs -WorkingDirectory $BuildRoot -PassThru
+    $proc = Start-Process -FilePath $exe -ArgumentList $ExeArgs -WorkingDirectory $BuildRoot -WindowStyle Hidden -RedirectStandardError $log -RedirectStandardOutput $stdoutLog -PassThru
 
     # Condition-based readiness: poll the log for the startup-scene marker rather
     # than sleeping a fixed amount. Fail fast if the process dies first.
@@ -397,7 +400,7 @@ function Invoke-Smoke([string]$Name, [string]$ExePath, [string]$LogName, [string
         $crash = [pscustomobject]@{ exitCode = $exitCode; stack = $stack }
         $logLines = if (Test-Path $log) { Remove-Ansi (Get-Content $log -ErrorAction SilentlyContinue) } else { @() }
         $f = Measure-Findings $logLines
-        Add-Phase @{ name = $Name; status = "fail"; reachedReady = $false; crash = $crash; validationTier = $f.Tier; findings = @{ errors = $f.Errors.Count; warnings = $f.ValWarn.Count; advisories = $f.ValInfo.Count } }
+        Add-Phase @{ name = $Name; log = $log; status = "fail"; reachedReady = $false; crash = $crash; validationTier = $f.Tier; findings = @{ errors = $f.Errors.Count; warnings = $f.ValWarn.Count; advisories = $f.ValInfo.Count } }
         return $false
     }
 
@@ -438,7 +441,7 @@ function Invoke-Smoke([string]$Name, [string]$ExePath, [string]$LogName, [string
         if ($f.ValInfo.Count) { Write-Bad "$($f.ValInfo.Count) best-practice/perf advisory(ies):"; $f.ValInfo | Select-Object -First 6 | ForEach-Object { Write-Note $_ } }
     }
     Add-Phase @{
-        name = $Name; status = if ($ok) { "pass" } else { "fail" }; reachedReady = $true
+        name = $Name; log = $log; status = if ($ok) { "pass" } else { "fail" }; reachedReady = $true
         validationTier = $f.Tier
         findings = @{ errors = $f.Errors.Count; warnings = $f.ValWarn.Count; advisories = $f.ValInfo.Count; benignWarnings = $f.OtherWarn.Count }
         messages = @($f.Errors + $f.ValWarn + $f.ValInfo | Select-Object -First 30)

@@ -4,9 +4,12 @@
 #include <cstdint>
 #include <span>
 #include <vector>
+#include <future>
+#include <chrono>
 
 #include "utils/FrameTimeline.hpp"
 #include "IEngineRuntime.hpp"
+#include "rendering/RenderThread.hpp"
 
 using namespace aether;
 
@@ -139,4 +142,32 @@ TEST_CASE("Render retirement releases all owners of a completed batch and clears
 	CHECK_FALSE(weak.expired());
 	queue.Clear();CHECK(weak.expired());CHECK(queue.Empty());
 	queue.Clear(); // shutdown after an already-drained queue
+}
+
+
+TEST_CASE("Render shutdown wakes frame-completion waiters racing with shutdown")
+{
+	using namespace std::chrono_literals;
+	for (int iteration = 0; iteration < 200; ++iteration)
+	{
+		RenderThread renderer;
+		std::promise<void> started;
+		auto entered = started.get_future();
+		auto waiter = std::async(std::launch::async, [&]
+		        {
+			        started.set_value();
+			        renderer.WaitUntilFrameCompleted(0);
+		        });
+		entered.wait();
+		renderer.Stop();
+		const bool woke = waiter.wait_for(1s) == std::future_status::ready;
+		// Repeat the notification on failure so the regression reports instead of
+		// leaving the async destructor permanently blocked.
+		if (!woke)
+		{
+			renderer.Stop();
+		}
+		CHECK(woke);
+		waiter.get();
+	}
 }

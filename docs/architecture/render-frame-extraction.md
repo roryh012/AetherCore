@@ -77,3 +77,30 @@ racing readers. Commands are recorded during the frame and flushed at one sync
 point on the producer. This is also the clean home for the "better script entity
 spawning" API. Additive; not required for the invariant above, but it closes the
 structural-change race class the same way extraction closes the read race class.
+
+
+## Pause/completion wakeup coordination
+
+The render pause and frame-completion condition variables protect their predicates
+with the same mutex used by the waiter. Atomic flags still support inexpensive
+observations, but do not replace this protocol: a predicate store and notification
+outside the mutex can land between a waiter's predicate check and sleep, leaving
+both producer and renderer asleep. This occurred during repeated terrain
+publication/travel (`RunExclusive` -> `WaitPaused`).
+
+Reload requests and idle transitions use `m_reloadMutex`; the renderer checks the
+reload flag and claims a packet under that mutex. Frame-completion publication
+uses `m_completionMutex`. Shutdown acquires both mutexes and wakes all waiters.
+These locks cover only state changes, never rendering, GPU waits or mutations.
+The completion/shutdown race unit check needs no GPU. Live repeated publication
+is still required to exercise renderer pause/resume with real work.
+
+
+Verification (2026-10-16): RelWithDebInfo Editor/GameRuntime/EngineTests build,
+GPU abstraction guard and all 1,352 unit cases passed. Both validation smokes
+reached their scenes; the strict gauntlet remained red for a startup
+`VK_SUBOPTIMAL_KHR` presentation warning and the enabled-layer banner classified
+as an advisory. A paired smoke using the previous 1dd0c9ff executable reported
+the same findings. This is not a zero-validation-findings pass. Smoke evidence
+now uses a private per-run redirected console log, avoiding locked/interleaved
+logs from other live editors; smoke windows launch hidden.

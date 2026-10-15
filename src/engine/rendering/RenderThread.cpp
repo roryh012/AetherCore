@@ -27,10 +27,10 @@ namespace aether
 	void RenderThread::Stop()
 	{
 		{
-			const std::lock_guard lock(m_reloadMutex);
+			const std::scoped_lock lock(m_reloadMutex, m_completionMutex);
 			m_shutdown = true;
 		}
-		m_reloadCv.notify_one();
+		m_reloadCv.notify_all();
 		m_completionCv.notify_all();
 		m_channel.close();
 
@@ -63,13 +63,13 @@ namespace aether
 	void RenderThread::WaitIdle()
 	{
 		{
-			const std::lock_guard lock(m_reloadMutex);
+			const std::scoped_lock lock(m_reloadMutex, m_completionMutex);
 			if (!m_shutdown)
 			{
 				m_shutdown = true;
 			}
 		}
-		m_reloadCv.notify_one();
+		m_reloadCv.notify_all();
 		m_completionCv.notify_all();
 		m_channel.close();
 
@@ -81,7 +81,21 @@ namespace aether
 
 	void RenderThread::SetReloadInProgress(bool inProgress)
 	{
-		m_reloadInProgress.store(inProgress, std::memory_order_release);
+		{
+			const std::lock_guard lock(m_reloadMutex);
+			m_reloadInProgress.store(inProgress, std::memory_order_release);
+		}
+		m_reloadCv.notify_all();
+	}
+
+	void RenderThread::SetIdle(bool idle)
+	{
+		// Atomics alone do not prevent a notification between a waiter's predicate
+		// check and sleep. Pair every predicate write with the waiter's mutex.
+		{
+			const std::lock_guard lock(m_reloadMutex);
+			m_isIdle.store(idle, std::memory_order_release);
+		}
 		m_reloadCv.notify_all();
 	}
 
@@ -124,8 +138,7 @@ namespace aether
 				if (!m_isIdle.load(std::memory_order_acquire))
 				{
 					m_engine->WaitIdle();
-					m_isIdle.store(true, std::memory_order_release);
-					m_reloadCv.notify_all();
+					SetIdle(true);
 				}
 
 				{
@@ -138,18 +151,26 @@ namespace aether
 
 			try
 			{
-				m_isIdle.store(true, std::memory_order_release);
-				m_reloadCv.notify_all();
+				SetIdle(true);
 				packet = m_channel.read();
-				if (IsReloadInProgress())
+				bool discard = false;
+				{
+					// Claim the frame under the pause mutex so an idle observation cannot
+					// race with starting a new frame after a pause was requested.
+					const std::lock_guard lock(m_reloadMutex);
+					discard = IsReloadInProgress();
+					if (!discard)
+					{
+						m_isIdle.store(false, std::memory_order_release);
+					}
+				}
+				if (discard)
 				{
 					m_engine->DiscardPendingFrameQueues(packet);
 					m_engine->RecycleUiOverlayFrameData(std::move(packet.uiOverlay));
-					m_isIdle.store(true, std::memory_order_release);
-					m_reloadCv.notify_all();
+					SetIdle(true);
 					continue;
 				}
-				m_isIdle.store(false, std::memory_order_release);
 			}
 			catch (const std::runtime_error&)
 			{
@@ -166,10 +187,10 @@ namespace aether
 				m_engine->RecycleUiOverlayFrameData(std::move(packet.uiOverlay));
 				m_engine->DiscardAllPendingFrameQueues();
 				{
-					const std::lock_guard lock(m_reloadMutex);
+					const std::scoped_lock lock(m_reloadMutex, m_completionMutex);
 					m_shutdown = true;
 				}
-				m_reloadCv.notify_one();
+				m_reloadCv.notify_all();
 				m_completionCv.notify_all();
 				m_channel.close();
 				break;
@@ -177,10 +198,12 @@ namespace aether
 
 			m_engine->RecycleUiOverlayFrameData(std::move(packet.uiOverlay));
 
-			m_lastCompletedFrameIndex.store(packet.frameIndex, std::memory_order_release);
+			{
+				const std::lock_guard lock(m_completionMutex);
+				m_lastCompletedFrameIndex.store(packet.frameIndex, std::memory_order_release);
+			}
 			m_completionCv.notify_all();
-			m_isIdle.store(true, std::memory_order_release);
-			m_reloadCv.notify_all();
+			SetIdle(true);
 		}
 	}
 
