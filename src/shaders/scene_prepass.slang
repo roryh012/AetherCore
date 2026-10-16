@@ -140,7 +140,7 @@ PrepassVSOutput vertexMain(uint vertexId : SV_VertexID, uint startInstance : SV_
 	o.materialIndex = instance.materialIndex;
 	o.vertexColor = v.color;
 	o.worldPos=worldPos;
-	o.sectionAddress=SectionAddress(instance.vertexBufferAddr,v.uv2);
+	o.sectionAddress=(instance.flags & 1u)!=0u?1uL:SectionAddress(instance.vertexBufferAddr,v.uv2);
 	return o;
 }
 

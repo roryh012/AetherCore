@@ -43,6 +43,7 @@ namespace aether
 		glm::mat4 modelMatrix{1.0f};
 		std::uint32_t materialIndex = 0xFFFFFFFFu;
 		std::uint32_t effectParamIndex = 0xFFFFFFFFu;
+		bool cutawayExempt = false;
 		std::int32_t skinIndex = -1;
 		std::uint32_t skinJointCount = 0;
 		std::uint32_t animClipIndex = 0;

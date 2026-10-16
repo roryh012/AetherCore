@@ -1411,6 +1411,9 @@ internal static unsafe partial class Native
     internal static partial void aether_mesh_renderer_set_visible(uint id, int visible);
 
     [LibraryImport(Lib)]
+    internal static partial void aether_mesh_renderer_set_cutaway_exempt(uint id,int exempt);
+
+    [LibraryImport(Lib)]
     internal static partial void aether_mesh_renderer_set_cast_shadows(uint id, int castShadows);
 
     [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]

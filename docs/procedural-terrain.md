@@ -106,3 +106,18 @@ for shader clamping to the plane, preserving a closed distant silhouette without
 rebuilding horizon tiles for depth. Its bounds conservatively extend down to y=0.
 This representation remains unsuitable for detailed caves; the game retains full
 3D meshes and density-derived section planes near the camera.
+
+## Whole objects across a cut
+
+`MeshRenderer.SetCutawayExempt(entity, true)` keeps that mesh whole across the
+presentation plane. The runtime component defaults to false; it does not change
+collision or discovery. Apply to each mesh child of an imported character or prop.
+Games must still hide actors whose feet/anchor belong to a hidden floor.
+
+The per-instance flag travels through colour, depth prepass, directional shadows
+and local shadows. It is independent of shared materials and skinning. Instance
+records now occupy 112 bytes (flags at 104), with matching CPU offset assertions
+and explicit shader offsets. Recompile project custom/precompiled shaders when
+updating from the earlier 104-byte contract; stale stages can dereference invalid
+GPU addresses. The section interpolator's reserved tag 1 denotes exemption and is
+never sampled as density; real section addresses remain aligned buffer addresses.

@@ -20,6 +20,8 @@ struct DrawInstanceData
     [[vk::offset(76)]] uint     effectParamIndex; // per-entity EffectParams slot; 0xFFFFFFFF = no effect
     [[vk::offset(80)]] float4   worldBoundingSphere;
     [[vk::offset(96)]] uint64_t vertexBufferAddr; // BDA of the vertex data for this draw
+    [[vk::offset(104)]] uint flags;
+    [[vk::offset(108)]] uint padding;
 };
 
 struct DrawPushConstants

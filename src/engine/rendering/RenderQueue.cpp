@@ -773,6 +773,7 @@ namespace aether
 				        .effectParamIndex = dc.effectParamIndex,
 				        .worldBoundingSphere = dc.worldBoundingSphere,
 				        .vertexBufferAddr = (dc.mesh != nullptr) ? dc.mesh->GetVertexDeviceAddress() : 0,
+			        .flags = dc.cutawayExempt ? 1u : 0u,
 				};
 
 				m_cullInputMapped[globalDrawIdx] = CullContracts::DrawInput{

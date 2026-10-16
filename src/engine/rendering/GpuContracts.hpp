@@ -29,9 +29,11 @@ namespace aether
 			std::uint32_t effectParamIndex = 0xFFFFFFFFu;
 			glm::vec4 worldBoundingSphere{};
 			gpu::DeviceAddress vertexBufferAddr = 0;
+			std::uint32_t flags = 0; // bit 0: preserve whole mesh across presentation cuts
+			std::uint32_t padding = 0;
 		};
 
-		static_assert(sizeof(InstanceData) == 104, "InstanceData layout changed - update shaders/include/RenderContracts.slangh.");
+		static_assert(sizeof(InstanceData) == 112, "InstanceData layout changed - update shaders/include/RenderContracts.slangh.");
 		static_assert(offsetof(InstanceData, model) == 0);
 		static_assert(offsetof(InstanceData, materialIndex) == 64);
 		static_assert(offsetof(InstanceData, skinPaletteOffset) == 68);
@@ -39,6 +41,7 @@ namespace aether
 		static_assert(offsetof(InstanceData, effectParamIndex) == 76);
 		static_assert(offsetof(InstanceData, worldBoundingSphere) == 80);
 		static_assert(offsetof(InstanceData, vertexBufferAddr) == 96);
+		static_assert(offsetof(InstanceData, flags) == 104);
 
 		struct PushConstants
 		{

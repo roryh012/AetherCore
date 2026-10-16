@@ -35,6 +35,8 @@ float SectionDensity(uint64_t address, float3 worldPos)
 }
 void CutawayDiscard(FrameConstantsData* fc, float3 worldPos, uint materialIndex, uint64_t sectionAddress)
 {
+    // 1 is an exemption tag, never a density address (real buffers are aligned).
+    if(sectionAddress==1uL)return;
     if(sectionAddress!=0uL)
     {
         if(fc->cutawayParams.y<0.5 || SectionDensity(sectionAddress,worldPos)<=0.0) discard;

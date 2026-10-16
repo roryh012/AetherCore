@@ -133,6 +133,7 @@ namespace aether
 	{
 		bool visible = true;
 		bool castShadows = true;
+		bool cutawayExempt = false;
 	};
 
 	enum class SpriteBlendMode : std::uint8_t

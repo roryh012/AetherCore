@@ -8,6 +8,8 @@ namespace AetherCore;
 /// </summary>
 public static class MeshRenderer
 {
+    /// <summary>Keep this mesh whole across a presentation cut. The game still controls hidden-floor visibility.</summary>
+    public static void SetCutawayExempt(Entity entity,bool exempt) => Native.aether_mesh_renderer_set_cutaway_exempt(entity.Id,exempt?1:0);
     public static bool GetVisible(Entity entity) => Native.aether_mesh_renderer_get_visible(entity.Id) != 0;
     public static void SetVisible(Entity entity, bool visible) => Native.aether_mesh_renderer_set_visible(entity.Id, visible ? 1 : 0);
 

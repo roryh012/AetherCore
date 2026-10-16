@@ -62,6 +62,8 @@ namespace aether
 				continue;
 			}
 
+			const auto* renderer = world.GetRegistry().try_get<MeshRendererComponent>(enttEntity);
+			const bool cutawayExempt = renderer != nullptr && renderer->cutawayExempt;
 			std::uint32_t materialIndex = 0xFFFFFFFFu;
 			if (const auto* const material = world.GetRegistry().try_get<MaterialComponent>(enttEntity))
 			{
@@ -142,6 +144,7 @@ namespace aether
 			        .modelMatrix = transformComp.localToWorld,
 			        .materialIndex = materialIndex,
 			        .effectParamIndex = effectParamIndex,
+			        .cutawayExempt = cutawayExempt,
 			        .skinIndex = skinIndex,
 			        .skinJointCount = skinJointCount,
 			        .animClipIndex = animClipIndex,
@@ -170,6 +173,7 @@ namespace aether
 				        .modelMatrix = transformComp.localToWorld,
 				        .materialIndex = materialIndex,
 				        .effectParamIndex = effectParamIndex,
+			        .cutawayExempt = cutawayExempt,
 				        .worldBoundingSphere = worldSphere,
 				        .meshGeneration = meshGeneration,
 				        .blended = true,

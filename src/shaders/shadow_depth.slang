@@ -46,7 +46,7 @@ DepthVSOutput vertexMain(uint vertexId : SV_VertexID, uint startInstance : SV_St
     o.svPosition = clipPos;
     o.uv = uv;
     o.materialIndex = materialIndex;
-    o.sectionAddress=SectionAddress(pc.instanceData.Load(startInstance).vertexBufferAddr,((Vertex*)pc.instanceData.Load(startInstance).vertexBufferAddr)[vertexId].uv2);
+    o.sectionAddress=(pc.instanceData.Load(startInstance).flags & 1u)!=0u?1uL:SectionAddress(pc.instanceData.Load(startInstance).vertexBufferAddr,((Vertex*)pc.instanceData.Load(startInstance).vertexBufferAddr)[vertexId].uv2);
     o.worldPos=worldPos;
     return o;
 }

@@ -65,3 +65,16 @@ AE_SCRIPT_API void aether_mesh_renderer_set_cast_shadows(std::uint32_t id, std::
 	world.Emplace<aether::MeshRendererComponent>(e, aether::MeshRendererComponent{.castShadows = castShadows != 0});
 	});
 }
+
+// Runtime visual policy only; authoritative discovery/visibility remains game-owned.
+AE_SCRIPT_API void aether_mesh_renderer_set_cutaway_exempt(std::uint32_t id, std::int32_t exempt)
+{
+    SafeExport([&] -> void {
+        if (!EntityAlive(id)) return;
+        auto& world=ActiveWorld();
+        const aether::Entity entity{id};
+        auto* renderer=world.TryGet<aether::MeshRendererComponent>(entity);
+        if(renderer==nullptr)renderer=&world.Emplace<aether::MeshRendererComponent>(entity);
+        renderer->cutawayExempt=exempt!=0;
+    });
+}
