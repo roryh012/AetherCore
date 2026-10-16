@@ -46,6 +46,8 @@ DepthVSOutput vertexMain(uint vertexId : SV_VertexID, uint startInstance : SV_St
     o.svPosition = clipPos;
     o.uv = uv;
     o.materialIndex = materialIndex;
+    o.sectionAddress=SectionAddress(pc.instanceData.Load(startInstance).vertexBufferAddr,((Vertex*)pc.instanceData.Load(startInstance).vertexBufferAddr)[vertexId].uv2);
+    o.worldPos=worldPos;
     return o;
 }
 
@@ -69,5 +71,6 @@ void fragmentMain(DepthVSOutput input)
             discard;
         }
     }
+    CutawayDiscard(pc.frame.Ptr(),input.worldPos,input.materialIndex,input.sectionAddress);
     AlphaMaskDiscard(input.materialIndex, input.uv);
 }

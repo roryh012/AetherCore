@@ -23,6 +23,12 @@ internal static unsafe partial class Native
         Vector3* normals, Vector3* colors, int vertexCount, uint* indices, int indexCount, int collision);
 
     [LibraryImport(Lib)]
+    internal static partial int aether_set_procedural_horizon(uint entity,Vector3* positions,Vector3* normals,Vector3* colors,int vertexCount,uint* indices,int indexCount,Vector2* uv);
+
+    [LibraryImport(Lib)]
+    internal static partial int aether_set_procedural_section(uint entity,Vector3 origin,float spacing,int cells,int height,float* density,int count,float* basalt);
+
+    [LibraryImport(Lib)]
     internal static partial int aether_set_procedural_mesh_uv(uint entity, Vector3* positions,
         Vector3* normals, Vector3* colors, int vertexCount, uint* indices, int indexCount, int collision, Vector2* texcoords);
 
@@ -929,6 +935,9 @@ internal static unsafe partial class Native
 
     [LibraryImport(Lib)]
     internal static partial void aether_render_set_sky_void(Vector3 color);
+
+    [LibraryImport(Lib)]
+    internal static partial void aether_render_set_cutaway(float height,int enabled);
 
     [LibraryImport(Lib)]
     internal static partial void aether_render_set_fog(float density,float heightFalloff,float sunScatter,float maxOpacity);

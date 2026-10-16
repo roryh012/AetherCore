@@ -404,6 +404,7 @@ namespace aether
 			shadowFc.skyZenithColor = packet.skyZenithColor;
 			shadowFc.skyVoidColor = packet.skyVoidColor;
 			shadowFc.fogParams = packet.fogParams;
+			shadowFc.cutawayParams = packet.cutawayParams;
 			shadowFc.skyParams = packet.skyParams;
 			shadowFc.shadingParams = packet.shadingParams;
 			shadowFc.RefreshDerived();

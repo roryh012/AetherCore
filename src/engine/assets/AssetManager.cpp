@@ -169,9 +169,9 @@ namespace aether
 		return Mesh::Create(*m_uploadContext, vertices, indices);
 	}
 
-	Mesh AssetManager::CreateMesh(std::span<const Mesh::Vertex> vertices, std::span<const std::uint32_t> indices, const float* aabbMin, const float* aabbMax, const float* sphereCenter, float sphereRadius)
+	Mesh AssetManager::CreateMesh(std::span<const Mesh::Vertex> vertices, std::span<const std::uint32_t> indices, const float* aabbMin, const float* aabbMax, const float* sphereCenter, float sphereRadius, std::span<const std::byte> shaderData)
 	{
-		return Mesh::Create(*m_uploadContext, vertices, indices, aabbMin, aabbMax, sphereCenter, sphereRadius);
+		return Mesh::Create(*m_uploadContext, vertices, indices, aabbMin, aabbMax, sphereCenter, sphereRadius, shaderData);
 	}
 
 	Expected<Texture> AssetManager::CreateTexture(std::string_view path)

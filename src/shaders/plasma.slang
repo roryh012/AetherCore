@@ -38,6 +38,7 @@ float3 Palette(float t)
 float4 fragmentMain(VSOutput input) : SV_Target0
 {
     FrameConstantsData* fc = pc.frame.Ptr();
+    CutawayDiscard(fc,input.worldPos,input.materialIndex,input.sectionAddress);
     float elapsed = fc->elapsedTime;
 
     EffectParams fx;

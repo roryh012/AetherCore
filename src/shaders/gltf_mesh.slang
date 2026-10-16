@@ -450,6 +450,7 @@ float3 CloudShade(Texture2D tex, float2 uv, float alpha0, float3 worldPos, float
 float4 fragmentMain(VSOutput input, bool isFrontFace : SV_IsFrontFace) : SV_Target0
 {
     FrameConstantsData* fc        = pc.frame.Ptr();
+    CutawayDiscard(fc,input.worldPos,input.materialIndex,input.sectionAddress);
     GpuMaterial*        materials = (GpuMaterial*)(fc->materialBufferAddr);
 
     GpuMaterial mat;

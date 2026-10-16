@@ -190,3 +190,14 @@ AE_SCRIPT_API Vec3 aether_daynight_get_sun_direction()
 	return dn != nullptr ? FromGlm(dn->GetSunDirection()) : Vec3{0.0f, 1.0f, 0.0f};
 	});
 }
+
+AE_SCRIPT_API void aether_render_set_cutaway(float height, std::int32_t enabled)
+{
+	SafeExport([&] -> void
+	{
+		if (std::isfinite(height))
+		{
+			ActiveContext().renderer->SetCutaway(height, enabled != 0);
+		}
+	});
+}

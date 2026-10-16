@@ -1301,6 +1301,7 @@ namespace aether
 		packet.skyZenithColor = renderer.GetSkyZenithColorVector();
 		packet.skyVoidColor = renderer.GetSkyVoidColorVector();
 		packet.fogParams = renderer.GetFogParams();
+		packet.cutawayParams = renderer.GetCutawayParams();
 		packet.skyParams = renderer.GetSkyParams();
 		packet.shadingParams = renderer.GetShadingParams();
 		packet.contactShadows = renderer.AreContactShadowsEnabled();

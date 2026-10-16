@@ -72,3 +72,37 @@ mesh objects remain valid until the queued CPU packets have been drained and the
 GPU tickets complete. GPU submission must be parked when serials/fences are read.
 The rest of the engine retains device-idle synchronization for general mutations;
 `DrainCpuOnly` is restricted to this explicit ownership-retention path.
+
+## GPU cutaway prototype
+
+`Renderer.SetCutaway(height, enabled)` snapshots a world-space presentation plane
+into each render frame, directional cascade and local-light shadow view. Standard
+PBR, prepass and shadow fragments above it are discarded; sky materials are exempt.
+This never alters physical terrain. Disable it on scene departure. Custom forward
+shaders must consume `CutawayDiscard` too or they will disagree with depth/shadows.
+This prototype uses fragment clipping; vertex clip-distance optimisation is deferred.
+
+`ProceduralMesh.SetSection(entity, origin, spacing, cells, height, density, basalt)`
+uploads a four-vertex section plane and an immutable density lattice. Call only on
+chunk load or edit, on the game thread. Origin must have y=0; density is x-fast,
+z-next, y-last, with `(cells+1)^2*(height+1)` finite samples. Four basalt blend values
+follow the quad's a,d,e,b order. The entity must carry the game's terrain material.
+A reserved secondary-UV marker identifies section vertices. Their vertex buffer
+contains four 100-byte vertices, two float4 header records, then float samples.
+The shader's section address is buffer address + 400 bytes; payload alignment is
+16 bytes. Height changes move only the plane in the shader. The fragment stage
+interpolates vertical density and the two horizontal triangles matching the old
+CPU cap, discarding empty cave space. Bounds include the complete vertical range.
+
+The density payload shares the mesh's GPU allocation, replacement, deferred
+retirement and entity/scene cleanup. There are no independent per-frame texture
+uploads, descriptors or density resource owners. `Mesh::Create`/`AssetManager::CreateMesh`
+accept an optional immutable byte tail for this purpose; vertex/index counts exclude
+it. Uploads still synchronously drain CPU packets and complete transfers on actual
+chunk changes. Do not call SetSection during ordinary camera motion.
+
+`SetTextured(..., collision:false, horizon:true)` marks coarse heightfield terrain
+for shader clamping to the plane, preserving a closed distant silhouette without
+rebuilding horizon tiles for depth. Its bounds conservatively extend down to y=0.
+This representation remains unsuitable for detailed caves; the game retains full
+3D meshes and density-derived section planes near the camera.

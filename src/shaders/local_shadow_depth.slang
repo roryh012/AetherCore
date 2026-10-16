@@ -39,12 +39,14 @@ DepthVSOutputWithWorldPos vertexMain(uint vertexId : SV_VertexID, uint startInst
     o.worldPos   = worldPos;
     o.uv = uv;
     o.materialIndex = materialIndex;
+    o.sectionAddress=SectionAddress(pc.instanceData.Load(startInstance).vertexBufferAddr,((Vertex*)pc.instanceData.Load(startInstance).vertexBufferAddr)[vertexId].uv2);
     return o;
 }
 
 [shader("fragment")]
 float fragmentMain(DepthVSOutputWithWorldPos input) : SV_Target
 {
+    CutawayDiscard(pc.frame.Ptr(),input.worldPos,input.materialIndex,input.sectionAddress);
     AlphaMaskDiscard(input.materialIndex, input.uv);
 
     // Foliage casts here too, matching the directional cascades (see shadow_depth.slang);

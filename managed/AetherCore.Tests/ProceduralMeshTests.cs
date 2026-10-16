@@ -47,4 +47,16 @@ public sealed class ProceduralMeshTests
         Assert.Throws<ArgumentException>(() => ProceduralMesh.SetCollision(default, [Vector3.Zero], [0]));
         Assert.Throws<ArgumentException>(() => ProceduralMesh.SetCollision(default, [new(float.NaN,0,0)], [0,0,0]));
     }
+
+    [Fact]
+    public void SectionRejectsMalformedPayloadBeforeInterop()
+    {
+        Assert.Throws<ArgumentException>(() => ProceduralMesh.SetSection(default,Vector3.Zero,1,16,16,[],[0,0,0,0]));
+        Assert.Throws<ArgumentException>(() => ProceduralMesh.SetSection(default,Vector3.Zero,float.NaN,1,1,new float[8],[0,0,0,0]));
+        Assert.Throws<ArgumentException>(() => ProceduralMesh.SetSection(default,Vector3.Zero,float.MaxValue,1,2,new float[12],[0,0,0,0]));
+        Assert.Throws<ArgumentException>(() => ProceduralMesh.SetSection(default,Vector3.UnitY,1,1,1,new float[8],[0,0,0,0]));
+        Assert.Throws<ArgumentException>(() => ProceduralMesh.SetSection(default,Vector3.Zero,1,1,1,[float.NaN,0,0,0,0,0,0,0],[0,0,0,0]));
+        Assert.Throws<ArgumentException>(() => ProceduralMesh.SetSection(default,Vector3.Zero,1,1,1,new float[8],[0,0,0,float.PositiveInfinity]));
+        Assert.Throws<ArgumentException>(() => ProceduralMesh.SetTextured(default,[],[],[],[],collision:true,horizon:true));
+    }
 }

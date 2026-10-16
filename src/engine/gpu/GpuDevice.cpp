@@ -268,6 +268,7 @@ namespace aether
 		fc.skyZenithColor = packet.skyZenithColor;
 		fc.skyVoidColor = packet.skyVoidColor;
 		fc.fogParams = packet.fogParams;
+		fc.cutawayParams = packet.cutawayParams;
 		fc.skyParams = packet.skyParams;
 		fc.shadingParams = packet.shadingParams;
 		fc.objectAmbient = packet.objectAmbient;

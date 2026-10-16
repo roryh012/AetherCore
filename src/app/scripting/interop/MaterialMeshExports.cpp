@@ -4,6 +4,7 @@
 #include <cmath>
 #include <string_view>
 #include <vector>
+#include <cstring>
 
 #include "assets/AssetManager.hpp"
 #include "IEngineRuntime.hpp"
@@ -24,7 +25,7 @@ using namespace aether::app::scripting::interop;
 
 static int SetProceduralMesh(std::uint32_t id, const Vec3* positions,
         const Vec3* normals, const Vec3* colors, int vertexCount,
-        const std::uint32_t* indices, int indexCount, int collision, const Vec2* texcoords)
+        const std::uint32_t* indices, int indexCount, int collision, const Vec2* texcoords, std::span<const std::byte> shaderData = {}, float sectionTop = 0.0f, bool horizon = false)
 {
 	return SafeExport([&]() -> int
 	{
@@ -60,6 +61,8 @@ static int SetProceduralMesh(std::uint32_t id, const Vec3* positions,
 			v.normal = n;
 			v.tangent = glm::vec4(1, 0, 0, 1);
 			v.color = c;
+			if (horizon) { v.uv2.y = -9183.0f; }
+			if (!shaderData.empty()) { v.uv2 = {-9182.0f, 0.0f}; }
 			if (texcoords != nullptr)
 			{
 				if (!std::isfinite(texcoords[i].x) || !std::isfinite(texcoords[i].y))
@@ -90,6 +93,12 @@ static int SetProceduralMesh(std::uint32_t id, const Vec3* positions,
 				boundsMax = glm::max(boundsMax, v.position);
 			}
 		}
+		if (horizon) { boundsMin.y = 0.0f; }
+		if (sectionTop > 0.0f)
+		{
+			boundsMin.y = 0.0f;
+			boundsMax.y = sectionTop;
+		}
 		const glm::vec3 sphereCenter = (boundsMin + boundsMax) * 0.5f;
 		int succeeded = 1;
 		ctx.engineRuntime->RunExclusive(aether::QuiesceMode::DrainCpuOnly, [&]()
@@ -98,7 +107,7 @@ static int SetProceduralMesh(std::uint32_t id, const Vec3* positions,
 			if (!vertices.empty())
 			{
 				mesh = std::make_unique<aether::Mesh>(ctx.assets->CreateMesh(vertices, triangleIndices,
-				        &boundsMin.x, &boundsMax.x, &sphereCenter.x, glm::length(boundsMax - sphereCenter)));
+				        &boundsMin.x, &boundsMax.x, &sphereCenter.x, glm::length(boundsMax - sphereCenter), shaderData));
 				if (!mesh->IsValid())
 				{
 					succeeded = 0;
@@ -594,4 +603,48 @@ AE_SCRIPT_API void aether_set_material_texture(std::uint32_t entityId, const cha
 	aether::MaterialSystem::SetAlbedoTexture(ActiveWorld(), aether::Entity{entityId}, ctx.assets->GetMaterialRegistry(), ctx.assets->GetPipelineCache(), tex);
 	texReg.Release(tex);
 	});
+}
+
+// Section payload is owned by the mesh buffer and retired with it. No independent
+// GPU lifetime, descriptors, ECS access on the render thread, or per-frame uploads.
+AE_SCRIPT_API int aether_set_procedural_section(std::uint32_t id, Vec3 origin, float spacing,
+        int cells, int height, const float* density, int count, const float* basalt)
+{
+	return SafeExport([&]() -> int
+	{
+		if (cells < 1 || cells > 64 || height < 1 || height > 1024 ||
+		    !std::isfinite(spacing) || spacing <= 0 || !std::isfinite(spacing * height) || density == nullptr || basalt == nullptr ||
+		    !std::isfinite(origin.x) || !std::isfinite(origin.y) || !std::isfinite(origin.z) || origin.y != 0 ||
+		    count != (cells + 1) * (cells + 1) * (height + 1))
+		{
+			return 0;
+		}
+		for (int i = 0; i < count; ++i)
+		{
+			if (!std::isfinite(density[i])) { return 0; }
+		}
+		for (int i = 0; i < 4; ++i)
+		{
+			if (!std::isfinite(basalt[i])) { return 0; }
+		}
+		const float span = cells * spacing;
+		const Vec3 positions[] = {{origin.x, 0, origin.z}, {origin.x, 0, origin.z + span},
+		                         {origin.x + span, 0, origin.z + span}, {origin.x + span, 0, origin.z}};
+		const Vec3 normals[] = {{0,1,0},{0,1,0},{0,1,0},{0,1,0}};
+		const Vec3 colors[] = {{0,0,0},{0,0,0},{0,0,0},{0,0,0}};
+		const Vec2 uv[] = {{basalt[0],2},{basalt[1],2},{basalt[2],2},{basalt[3],2}};
+		const std::uint32_t indices[] = {0,1,2,0,2,3};
+		const float header[] = {origin.x,origin.y,origin.z,spacing,float(cells+1),float(height+1),float(cells+1),0};
+		std::vector<std::byte> payload(sizeof(header) + sizeof(float) * count);
+		std::memcpy(payload.data(),header,sizeof(header));
+		std::memcpy(payload.data()+sizeof(header),density,sizeof(float)*count);
+		return SetProceduralMesh(id,positions,normals,colors,4,indices,6,0,uv,payload,height*spacing);
+	});
+}
+
+AE_SCRIPT_API int aether_set_procedural_horizon(std::uint32_t id, const Vec3* positions,
+        const Vec3* normals, const Vec3* colors, int vertexCount,
+        const std::uint32_t* indices, int indexCount, const Vec2* texcoords)
+{
+	return SetProceduralMesh(id,positions,normals,colors,vertexCount,indices,indexCount,0,texcoords,{},0.0f,true);
 }

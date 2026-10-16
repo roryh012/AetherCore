@@ -1,0 +1,49 @@
+#ifndef AETHER_CUTAWAY_SLANGH
+#define AETHER_CUTAWAY_SLANGH
+#include "GpuMaterial.slangh"
+
+// A section mesh owns four Vertex records followed by two float4 header records
+// and x-fast, z-next, y-last float density. No dependent resource outlives the mesh.
+uint64_t SectionAddress(uint64_t vertexAddress, float2 uv2)
+{
+    return uv2.x == -9182.0 ? vertexAddress + 400uL : 0uL;
+}
+float SectionColumn(float* samples, uint x, uint z, uint y, uint width, uint depth, float t)
+{
+    uint i=x+width*(z+depth*y);
+    return lerp(samples[i],samples[i+width*depth],t);
+}
+float SectionDensity(uint64_t address, float3 worldPos)
+{
+    float4* header=(float4*)address;
+    float3 q=(worldPos-header[0].xyz)/header[0].w;
+    uint3 dims=uint3(header[1].xyz);
+    q=clamp(q,0.0,float3(dims-1u));
+    uint3 cell=min(uint3(floor(q)),dims-2u);
+    float3 f=q-float3(cell);
+    float* data=(float*)(address+32uL);
+    float a=SectionColumn(data,cell.x,cell.z,cell.y,dims.x,dims.z,f.y);
+    float c=SectionColumn(data,cell.x+1,cell.z+1,cell.y,dims.x,dims.z,f.y);
+    // Same diagonal and piecewise-linear section boundary as SandboxGeometry.Cap.
+    if(f.z>=f.x)
+    {
+        float d=SectionColumn(data,cell.x,cell.z+1,cell.y,dims.x,dims.z,f.y);
+        return a*(1-f.z)+d*(f.z-f.x)+c*f.x;
+    }
+    float b=SectionColumn(data,cell.x+1,cell.z,cell.y,dims.x,dims.z,f.y);
+    return a*(1-f.x)+b*(f.x-f.z)+c*f.z;
+}
+void CutawayDiscard(FrameConstantsData* fc, float3 worldPos, uint materialIndex, uint64_t sectionAddress)
+{
+    if(sectionAddress!=0uL)
+    {
+        if(fc->cutawayParams.y<0.5 || SectionDensity(sectionAddress,worldPos)<=0.0) discard;
+        return;
+    }
+    if(fc->cutawayParams.y>0.5 && worldPos.y>fc->cutawayParams.x+0.0001)
+    {
+        bool sky=materialIndex!=kNoTexture && (((GpuMaterial*)fc->materialBufferAddr)[materialIndex].flags & kFlagSky)!=0u;
+        if(!sky) discard;
+    }
+}
+#endif

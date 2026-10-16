@@ -19,6 +19,7 @@ struct Vertex
 struct VSOutput
 {
     float4 svPosition                          : SV_Position;
+    [[vk::location(9)]] nointerpolation uint64_t sectionAddress : TEXCOORD9;
     [[vk::location(0)]] float3 worldPos        : TEXCOORD0;
     [[vk::location(1)]] float3 worldNormal     : TEXCOORD1;
     [[vk::location(2)]] float3 worldTangent    : TEXCOORD2;

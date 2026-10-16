@@ -15,7 +15,7 @@ namespace aether
 	// Darkness volumes (DarknessVolumeComponent), two vec4 each, see darknessVolumes below.
 	inline constexpr std::uint32_t kMaxDarknessVolumes = 16u;
 
-	// Layout (2576 bytes):
+	// Layout (2592 bytes):
 	struct FrameConstants
 	{
 		glm::mat4 viewProj{1.0f};
@@ -107,6 +107,9 @@ namespace aether
 		glm::uvec4 darknessVolumeInfo{0u};
 		glm::vec4 darknessVolumes[kMaxDarknessVolumes * 2u]{};
 
+		// x = world cut height, y = enabled. Presentation only; never changes collision.
+		glm::vec4 cutawayParams{0.0f};
+
 		void RefreshDerived()
 		{
 			invViewProj = glm::inverse(viewProj);
@@ -131,7 +134,7 @@ namespace aether
 		}
 	};
 
-	static_assert(sizeof(FrameConstants) == 2576, "FrameConstants layout changed - update shaders/include/FrameConstants.slangh.");
+	static_assert(sizeof(FrameConstants) == 2592, "FrameConstants layout changed - update shaders/include/FrameConstants.slangh.");
 	static_assert(offsetof(FrameConstants, viewProj) == 0);
 	static_assert(offsetof(FrameConstants, view) == 64);
 	static_assert(offsetof(FrameConstants, proj) == 128);
@@ -173,4 +176,5 @@ namespace aether
 	static_assert(offsetof(FrameConstants, blobShadows) == 1024);
 	static_assert(offsetof(FrameConstants, darknessVolumeInfo) == 2048);
 	static_assert(offsetof(FrameConstants, darknessVolumes) == 2064);
+	static_assert(offsetof(FrameConstants, cutawayParams) == 2576);
 } // namespace aether

@@ -203,6 +203,9 @@ namespace aether
 		void SetGtaoStrength(float strength);
 		[[nodiscard]] float GetGtaoStrength() const;
 
+		void SetCutaway(float height, bool enabled) { m_cutawayParams = {height, enabled ? 1.0f : 0.0f, 0.0f, 0.0f}; }
+		[[nodiscard]] glm::vec4 GetCutawayParams() const { return m_cutawayParams; }
+
 		void SetFogParams(glm::vec4 params)
 		{
 			m_fogParams = params;
@@ -318,6 +321,7 @@ namespace aether
 		glm::vec4 m_objectLight0Color{0.0f, 0.0f, 0.0f, 0.0f};
 		glm::vec4 m_objectLight1Direction{0.0f, 1.0f, 0.0f, 0.0f};
 		glm::vec4 m_objectLight1Color{0.0f, 0.0f, 0.0f, 0.0f};
+		glm::vec4 m_cutawayParams{0.0f};
 		glm::vec4 m_fogParams{0.0f, 0.08f, 0.6f, 0.9f};
 		glm::vec4 m_skyParams{0.0f, 2.5f, 0.0f, 0.0f};
 		glm::vec4 m_shadingParams{1.0f, 0.0f, 0.0f, 1.0f};

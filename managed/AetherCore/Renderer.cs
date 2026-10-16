@@ -5,6 +5,10 @@ namespace AetherCore;
 /// <summary>Scene lighting, sky, and the day/night cycle.</summary>
 public static class Renderer
 {
+    /// <summary>World-space presentation cut. Standard meshes above height are hidden;
+    /// physical collision is unchanged. Call on the game thread; disable on scene departure.</summary>
+    public static void SetCutaway(float height,bool enabled) => Native.aether_render_set_cutaway(height,enabled?1:0);
+
     public static void SetAmbient(Vector3 color) => Native.aether_render_set_ambient(color);
 
     public static void SetSun(Vector3 direction, float intensity, Vector3 color)

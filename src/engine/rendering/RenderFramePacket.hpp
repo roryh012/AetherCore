@@ -180,6 +180,7 @@ namespace aether
 		glm::vec4 skyHorizonColor{1.0f};
 		glm::vec4 skyZenithColor{0.5f, 0.7f, 1.0f, 1.0f};
 		glm::vec4 skyVoidColor{0.0f};
+		glm::vec4 cutawayParams{0.0f};
 		glm::vec4 fogParams{0.0f, 0.08f, 0.6f, 0.9f};
 		glm::vec4 skyParams{0.0f, 2.5f, 0.0f, 0.0f};
 		glm::vec4 shadingParams{1.0f, 0.0f, 0.0f, 1.0f};

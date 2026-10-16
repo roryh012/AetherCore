@@ -67,6 +67,8 @@ struct PrepassVSOutput
 	float2 uv            : TEXCOORD1;
 	nointerpolation uint materialIndex : TEXCOORD2;
 	float3 vertexColor   : TEXCOORD3;
+	float3 worldPos : TEXCOORD4;
+	nointerpolation uint64_t sectionAddress : TEXCOORD5;
 };
 
 struct PrepassOutput
@@ -133,10 +135,12 @@ PrepassVSOutput vertexMain(uint vertexId : SV_VertexID, uint startInstance : SV_
 
 	PrepassVSOutput o;
 	o.svPosition = clipPos;
-	o.worldNormal = nWorld;
+	o.worldNormal = v.uv2.y==-9183.0 && fc->cutawayParams.y>0.5 && v.position.y>fc->cutawayParams.x ? float3(0,1,0) : nWorld;
 	o.uv = v.uv;
 	o.materialIndex = instance.materialIndex;
 	o.vertexColor = v.color;
+	o.worldPos=worldPos;
+	o.sectionAddress=SectionAddress(instance.vertexBufferAddr,v.uv2);
 	return o;
 }
 
@@ -149,6 +153,7 @@ PrepassOutput fragmentMain(PrepassVSOutput input, bool isFrontFace : SV_IsFrontF
 	{
 		discard;
 	}
+	CutawayDiscard(pc.frame.Ptr(),input.worldPos,input.materialIndex,input.sectionAddress);
 	AlphaMaskDiscard(input.materialIndex, input.uv);
 
 	FrameConstantsData* fc = pc.frame.Ptr();

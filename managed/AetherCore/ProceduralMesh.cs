@@ -34,13 +34,29 @@ public static unsafe class ProceduralMesh
                 throw new InvalidOperationException("Procedural collision update failed; inspect the engine log.");
     }
 
+    /// <summary>Uploads an immutable density section, x-fast then z then y. The four-vertex
+    /// plane follows Renderer.SetCutaway in shaders. Existing authored terrain material is retained.
+    /// Call only on loading/editing a chunk. Density is copied before returning.</summary>
+    public static void SetSection(Entity entity,Vector3 origin,float spacing,int cells,int height,ReadOnlySpan<float> density,ReadOnlySpan<float> basalt)
+    {
+        if(cells<1 || cells>64 || height<1 || height>1024 || !Finite(origin) || origin.Y!=0 || !float.IsFinite(spacing) || spacing<=0 || !float.IsFinite(spacing*height)
+            || density.Length!=checked((cells+1)*(cells+1)*(height+1)) || basalt.Length!=4)
+            throw new ArgumentException("Invalid section density dimensions.");
+        foreach(float value in density) if(!float.IsFinite(value)) throw new ArgumentException("Section density must be finite.");
+        foreach(float value in basalt) if(!float.IsFinite(value)) throw new ArgumentException("Section blend must be finite.");
+        fixed(float* d=density,b=basalt)
+            if(Native.aether_set_procedural_section(entity.Id,origin,spacing,cells,height,d,density.Length,b)==0)
+                throw new InvalidOperationException("Procedural section upload failed; inspect the engine log.");
+    }
+
     public static void Clear(Entity entity) => Set(entity, default, default, default);
 
     /// <summary>Upload textured geometry with explicit UVs. Existing ownership and collision rules apply.</summary>
     public static void SetTextured(Entity entity, ReadOnlySpan<Vector3> positions,
         ReadOnlySpan<Vector3> normals, ReadOnlySpan<uint> indices, ReadOnlySpan<Vector2> texcoords,
-        ReadOnlySpan<Vector3> colors = default, bool collision = true)
+        ReadOnlySpan<Vector3> colors = default, bool collision = true, bool horizon = false)
     {
+        if(horizon && collision) throw new ArgumentException("Horizon deformation is presentation only.");
         Validate(positions, normals, indices, colors);
         if (texcoords.Length != positions.Length)
             throw new ArgumentException("Texture coordinates must match the vertex count.");
@@ -51,7 +67,7 @@ public static unsafe class ProceduralMesh
         fixed (Vector2* uv = texcoords)
         fixed (uint* i = indices)
         {
-            if (Native.aether_set_procedural_mesh_uv(entity.Id, p, n, c, positions.Length, i, indices.Length, collision ? 1 : 0, uv) == 0)
+            if ((horizon ? Native.aether_set_procedural_horizon(entity.Id,p,n,c,positions.Length,i,indices.Length,uv) : Native.aether_set_procedural_mesh_uv(entity.Id, p, n, c, positions.Length, i, indices.Length, collision ? 1 : 0, uv)) == 0)
                 throw new InvalidOperationException("Textured procedural mesh update failed; inspect the engine log.");
         }
     }

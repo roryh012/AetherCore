@@ -454,6 +454,7 @@ namespace aether
 		auto* lightFc = static_cast<FrameConstants*>(m_lightConstantsBuffer[bufSlot].mapped);
 		for (std::uint32_t i = 0; i < shadowCount; ++i)
 		{
+			lightFc[i].cutawayParams = packet.cutawayParams;
 			lightFc[i].viewProj = m_perLightShadows[i].viewProj;
 			lightFc[i].cameraWorldPos = m_perLightShadows[i].lightPosRange;
 			// The caster's alpha test looks its material up through this pointer. These constants

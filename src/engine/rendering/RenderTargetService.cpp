@@ -315,6 +315,7 @@ namespace aether
 			                fc.skyZenithColor = m_renderer->GetSkyZenithColorVector();
 			                fc.skyVoidColor = m_renderer->GetSkyVoidColorVector();
 			                fc.fogParams = m_renderer->GetFogParams();
+			                fc.cutawayParams = m_renderer->GetCutawayParams();
 			                fc.skyParams = m_renderer->GetSkyParams();
 			                fc.shadingParams = m_renderer->GetShadingParams();
 			                fc.objectAmbient = m_renderer->GetObjectAmbientVector();

@@ -30,10 +30,11 @@ namespace aether
 		return mesh;
 	}
 
-	Mesh Mesh::Create(gpu::UploadContext& uploadContext, std::span<const Vertex> vertices)
+	Mesh Mesh::Create(gpu::UploadContext& uploadContext, std::span<const Vertex> vertices, std::span<const std::byte> shaderData)
 	{
 		AE_PROFILE_ZONE();
-		const gpu::DeviceSize size = sizeof(Vertex) * vertices.size();
+		const gpu::DeviceSize vertexSize = sizeof(Vertex) * vertices.size();
+		const gpu::DeviceSize size = vertexSize + shaderData.size();
 
 		gpu::MappedBufferDesc stagingDesc{};
 		stagingDesc.size = size;
@@ -52,7 +53,11 @@ namespace aether
 			return {};
 		}
 
-		std::memcpy(stagingView.mappedPtr, vertices.data(), static_cast<std::size_t>(size));
+		std::memcpy(stagingView.mappedPtr, vertices.data(), static_cast<std::size_t>(vertexSize));
+		if (!shaderData.empty())
+		{
+			std::memcpy(static_cast<std::byte*>(stagingView.mappedPtr) + vertexSize, shaderData.data(), shaderData.size());
+		}
 		gpu::ResourceRegistry::FlushMappedBuffer(stagingHandle, 0, size);
 
 		gpu::BufferDesc bufferDesc{};
@@ -81,9 +86,9 @@ namespace aether
 		return mesh;
 	}
 
-	Mesh Mesh::Create(gpu::UploadContext& uploadContext, std::span<const Vertex> vertices, std::span<const std::uint32_t> indices, const float* aabbMin, const float* aabbMax, const float* sphereCenter, float sphereRadius)
+	Mesh Mesh::Create(gpu::UploadContext& uploadContext, std::span<const Vertex> vertices, std::span<const std::uint32_t> indices, const float* aabbMin, const float* aabbMax, const float* sphereCenter, float sphereRadius, std::span<const std::byte> shaderData)
 	{
-		Mesh mesh = Create(uploadContext, vertices);
+		Mesh mesh = Create(uploadContext, vertices, shaderData);
 		if (!mesh.IsValid())
 		{
 			// Vertex-buffer creation failed: the returned mesh does not own its buffers,
