@@ -1,6 +1,7 @@
 #include "scripting/interop/InteropCommon.hpp"
 
 #include <vector>
+#include <cmath>
 
 #include "rendering/Renderer.hpp"
 #include "scene/LightComponents.hpp"
@@ -97,6 +98,29 @@ AE_SCRIPT_API void aether_render_set_sky(Vec3 horizon, Vec3 zenith)
 
 AE_SCRIPT_API void aether_render_set_sky_void(Vec3 color)
 { SafeExport([&] -> void { ActiveContext().renderer->SetSkyVoidColor(ToGlm(color)); }); }
+
+// Reuses the renderer's analytic per-surface fog. Script state follows the same
+// ownership as lighting/sky setters: an authored Sky component can override it.
+AE_SCRIPT_API void aether_render_set_fog(float density, float heightFalloff, float sunScatter, float maxOpacity)
+{
+	SafeExport([&] -> void
+	{
+		if (!std::isfinite(density) || !std::isfinite(heightFalloff) || !std::isfinite(sunScatter) || !std::isfinite(maxOpacity))
+		{
+			return;
+		}
+		ActiveContext().renderer->SetFogParams({std::max(density, 0.0f), std::max(heightFalloff, 0.0f), std::max(sunScatter, 0.0f), std::clamp(maxOpacity, 0.0f, 1.0f)});
+	});
+}
+
+AE_SCRIPT_API Vec4 aether_render_get_fog()
+{
+	return SafeExport([&] -> Vec4
+	{
+		const auto params = ActiveContext().renderer->GetFogParams();
+		return {params.x, params.y, params.z, params.w};
+	});
+}
 
 AE_SCRIPT_API void aether_daynight_set_enabled(std::int32_t enabled)
 {

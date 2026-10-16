@@ -40,6 +40,16 @@ public static class Renderer
     public static void SetSky(Vector3 horizon, Vector3 zenith) => Native.aether_render_set_sky(horizon, zenith);
 
     public static void SetSkyVoid(Vector3 color) => Native.aether_render_set_sky_void(color);
+
+    /// <summary>Analytic distance/height fog: density, height falloff, sun scatter, maximum opacity.
+    /// Authored Sky components may replace this state on their next update.</summary>
+    public static Vector4 FogParameters => Native.aether_render_get_fog();
+
+    /// <summary>Sets existing analytic world fog; no volumetric pass is enabled.
+    /// Density/falloff/scatter are nonnegative; maximum opacity is clamped to [0,1].</summary>
+    public static void SetFog(float density,float heightFalloff,float sunScatter,float maxOpacity)
+        => Native.aether_render_set_fog(density,heightFalloff,sunScatter,maxOpacity);
+
 }
 
 /// <summary>The day/night cycle driven by DayNightSystem.</summary>

@@ -931,6 +931,13 @@ internal static unsafe partial class Native
     internal static partial void aether_render_set_sky_void(Vector3 color);
 
     [LibraryImport(Lib)]
+    internal static partial void aether_render_set_fog(float density,float heightFalloff,float sunScatter,float maxOpacity);
+
+    [LibraryImport(Lib)]
+    internal static partial Vector4 aether_render_get_fog();
+
+
+    [LibraryImport(Lib)]
     internal static partial void aether_daynight_set_enabled(int enabled);
 
     [LibraryImport(Lib)]
