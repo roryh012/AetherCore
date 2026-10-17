@@ -1,5 +1,7 @@
 using System;
 using System.Numerics;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace AetherCore;
 
@@ -47,6 +49,41 @@ public static unsafe class ProceduralMesh
         fixed(float* d=density,b=basalt)
             if(Native.aether_set_procedural_section(entity.Id,origin,spacing,cells,height,d,density.Length,b)==0)
                 throw new InvalidOperationException("Procedural section upload failed; inspect the engine log.");
+    }
+
+    /// <summary>A copied, collision-free textured upload. UV1 carries authored foliage sway weights.</summary>
+    public readonly record struct TexturedUpdate(Entity Entity,Vector3[] Positions,Vector3[] Normals,uint[] Indices,
+        Vector2[] Texcoords,Vector3[] Colors,Vector2[] SecondaryTexcoords);
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct BatchItem {
+        public uint Entity;public int VertexCount,IndexCount,Reserved;
+        public Vector3* Positions;public Vector3* Normals;public Vector3* Colors;
+        public uint* Indices;public Vector2* Texcoords;public Vector2* SecondaryTexcoords;
+    }
+    /// <summary>Copy up to 64 visual meshes with one CPU render-queue drain. Calls remain synchronous;
+    /// use hidden staging entities because a native failure can leave an uploaded prefix.
+    /// Replaced meshes retain the normal in-flight GPU retirement guarantee.</summary>
+    public static void SetTexturedBatch(ReadOnlySpan<TexturedUpdate> updates)
+    {
+        if(updates.IsEmpty || updates.Length>64)throw new ArgumentOutOfRangeException(nameof(updates));
+        foreach(var u in updates) {
+            Validate(u.Positions,u.Normals,u.Indices,u.Colors);
+            if(u.Texcoords.Length!=u.Positions.Length || u.SecondaryTexcoords.Length!=u.Positions.Length)throw new ArgumentException("Batch UVs must match vertices.");
+            foreach(var uv in u.Texcoords)if(!float.IsFinite(uv.X)||!float.IsFinite(uv.Y))throw new ArgumentException("Batch UVs must be finite.");
+            foreach(var uv in u.SecondaryTexcoords)if(!float.IsFinite(uv.X)||!float.IsFinite(uv.Y))throw new ArgumentException("Batch secondary UVs must be finite.");
+        }
+        var handles=new List<GCHandle>(updates.Length*6);
+        void* Pin(Array array) { if(array.Length==0)return null;var handle=GCHandle.Alloc(array,GCHandleType.Pinned);handles.Add(handle);return handle.AddrOfPinnedObject().ToPointer(); }
+        Span<BatchItem> items=stackalloc BatchItem[updates.Length];
+        try {
+            for(int i=0;i<updates.Length;i++) {
+                var u=updates[i];items[i]=new() {Entity=u.Entity.Id,VertexCount=u.Positions.Length,IndexCount=u.Indices.Length,
+                    Positions=(Vector3*)Pin(u.Positions),Normals=(Vector3*)Pin(u.Normals),Colors=(Vector3*)Pin(u.Colors),Indices=(uint*)Pin(u.Indices),
+                    Texcoords=(Vector2*)Pin(u.Texcoords),SecondaryTexcoords=(Vector2*)Pin(u.SecondaryTexcoords)};
+            }
+            fixed(BatchItem* pointer=items)if(Native.aether_set_procedural_mesh_batch(pointer,items.Length)==0)
+                throw new InvalidOperationException("Procedural mesh batch failed; its staged meshes must not be exposed.");
+        } finally {foreach(var handle in handles)handle.Free();}
     }
 
     public static void Clear(Entity entity) => Set(entity, default, default, default);

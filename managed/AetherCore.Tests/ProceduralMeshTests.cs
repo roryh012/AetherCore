@@ -59,4 +59,17 @@ public sealed class ProceduralMeshTests
         Assert.Throws<ArgumentException>(() => ProceduralMesh.SetSection(default,Vector3.Zero,1,1,1,new float[8],[0,0,0,float.PositiveInfinity]));
         Assert.Throws<ArgumentException>(() => ProceduralMesh.SetTextured(default,[],[],[],[],collision:true,horizon:true));
     }
+    [Fact]
+    public void BatchAbiAndInputValidationStayOutsideNativeCode()
+    {
+        Assert.Equal(64,System.Runtime.InteropServices.Marshal.SizeOf<ProceduralMesh.BatchItem>());
+        Assert.Equal(16,System.Runtime.InteropServices.Marshal.OffsetOf<ProceduralMesh.BatchItem>(nameof(ProceduralMesh.BatchItem.Positions)).ToInt32());
+        Assert.Equal(56,System.Runtime.InteropServices.Marshal.OffsetOf<ProceduralMesh.BatchItem>(nameof(ProceduralMesh.BatchItem.SecondaryTexcoords)).ToInt32());
+        Assert.Throws<ArgumentOutOfRangeException>(()=>ProceduralMesh.SetTexturedBatch([]));
+        Assert.Throws<ArgumentOutOfRangeException>(()=>ProceduralMesh.SetTexturedBatch(new ProceduralMesh.TexturedUpdate[65]));
+        var upload=new ProceduralMesh.TexturedUpdate(default,[Vector3.Zero],[Vector3.UnitY],[0,0,0],[Vector2.Zero],[Vector3.One],[Vector2.Zero]);
+        Assert.Throws<ArgumentException>(()=>ProceduralMesh.SetTexturedBatch([upload with {Indices=[0,0,1]}]));
+        Assert.Throws<ArgumentException>(()=>ProceduralMesh.SetTexturedBatch([upload with {SecondaryTexcoords=[]}]));
+        Assert.Throws<ArgumentException>(()=>ProceduralMesh.SetTexturedBatch([upload with {SecondaryTexcoords=[new(float.NaN,0)]}]));
+    }
 }

@@ -15,6 +15,9 @@ internal static unsafe partial class Native
     private const string Lib = "AetherHost";
 
     [LibraryImport(Lib)]
+    internal static partial int aether_set_procedural_mesh_batch(ProceduralMesh.BatchItem* items,int count);
+
+    [LibraryImport(Lib)]
     internal static partial int aether_set_procedural_collision(uint entity, Vector3* positions,
         int vertexCount, uint* indices, int indexCount);
 

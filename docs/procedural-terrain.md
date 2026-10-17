@@ -121,3 +121,23 @@ and explicit shader offsets. Recompile project custom/precompiled shaders when
 updating from the earlier 104-byte contract; stale stages can dereference invalid
 GPU addresses. The section interpolator's reserved tag 1 denotes exemption and is
 never sampled as density; real section addresses remain aligned buffer addresses.
+
+## Grouped visual uploads
+
+`ProceduralMesh.SetTexturedBatch` accepts 1-64 collision-free `TexturedUpdate`
+records. It validates and pins the managed arrays, calls one native export, drains
+the CPU render queue once for the group, and returns after copying the meshes.
+Secondary texture coordinates preserve authored foliage sway through colour,
+prepass and shadow shaders. Existing mesh retirement tickets remain in force;
+this API does not discard queued frames or free in-flight GPU buffers.
+
+Updates are synchronous, and a native failure can leave an uploaded prefix. Publish
+into hidden staging entities and expose them only after the call succeeds. Discard
+the entire staged target after failure. Managed pins are released on every exit;
+the native batch scope resets on failure or exception. This is not an asynchronous
+upload API or an unlimited frame budget. Callers should bound both the number and
+size of meshes in a group. The game currently uses at most eight spatial batches
+per update and pauses scenery streaming work during animated zoom.
+
+The descriptor is 64 bytes on supported 64-bit targets; native and managed layout
+checks cover it. The draw-instance/shader contract remains unchanged (112 bytes).

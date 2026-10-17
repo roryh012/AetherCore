@@ -23,9 +23,11 @@
 using namespace aether::app::scripting;
 using namespace aether::app::scripting::interop;
 
+static thread_local bool s_proceduralBatchExclusive = false;
+
 static int SetProceduralMesh(std::uint32_t id, const Vec3* positions,
         const Vec3* normals, const Vec3* colors, int vertexCount,
-        const std::uint32_t* indices, int indexCount, int collision, const Vec2* texcoords, std::span<const std::byte> shaderData = {}, float sectionTop = 0.0f, bool horizon = false)
+        const std::uint32_t* indices, int indexCount, int collision, const Vec2* texcoords, std::span<const std::byte> shaderData = {}, float sectionTop = 0.0f, bool horizon = false, const Vec2* secondaryTexcoords = nullptr)
 {
 	return SafeExport([&]() -> int
 	{
@@ -56,11 +58,16 @@ static int SetProceduralMesh(std::uint32_t id, const Vec3* positions,
 					return 0;
 				}
 			}
+			if (secondaryTexcoords != nullptr && (!std::isfinite(secondaryTexcoords[i].x) || !std::isfinite(secondaryTexcoords[i].y)))
+			{
+				return 0;
+			}
 			aether::Mesh::Vertex v{};
 			v.position = p;
 			v.normal = n;
 			v.tangent = glm::vec4(1, 0, 0, 1);
 			v.color = c;
+			if (secondaryTexcoords != nullptr) { v.uv2 = ToGlm(secondaryTexcoords[i]); }
 			if (horizon) { v.uv2.y = -9183.0f; }
 			if (!shaderData.empty()) { v.uv2 = {-9182.0f, 0.0f}; }
 			if (texcoords != nullptr)
@@ -101,7 +108,7 @@ static int SetProceduralMesh(std::uint32_t id, const Vec3* positions,
 		}
 		const glm::vec3 sphereCenter = (boundsMin + boundsMax) * 0.5f;
 		int succeeded = 1;
-		ctx.engineRuntime->RunExclusive(aether::QuiesceMode::DrainCpuOnly, [&]()
+		auto upload = [&]()
 		{
 			std::unique_ptr<aether::Mesh> mesh;
 			if (!vertices.empty())
@@ -160,6 +167,63 @@ static int SetProceduralMesh(std::uint32_t id, const Vec3* positions,
 				ctx.physics->FlushPendingOnly(world);
 				const auto* body = world.TryGet<aether::RigidBodyComponent>(entity);
 				succeeded = body != nullptr && body->body.IsValid() ? 1 : 0;
+			}
+		};
+		if (s_proceduralBatchExclusive)
+		{
+			upload();
+		}
+		else
+		{
+			ctx.engineRuntime->RunExclusive(aether::QuiesceMode::DrainCpuOnly, upload);
+		}
+		return succeeded;
+	});
+}
+
+// One game-thread call, one render-queue drain. No callback or retained managed pointers.
+// Mesh lifetime still follows the existing RetireAfterRendering ownership path.
+struct ProceduralBatchItem
+{
+	std::uint32_t id;
+	std::int32_t vertexCount;
+	std::int32_t indexCount;
+	std::int32_t reserved;
+	const Vec3* positions;
+	const Vec3* normals;
+	const Vec3* colors;
+	const std::uint32_t* indices;
+	const Vec2* texcoords;
+	const Vec2* secondaryTexcoords;
+};
+static_assert(sizeof(ProceduralBatchItem) == 64);
+
+AE_SCRIPT_API int aether_set_procedural_mesh_batch(const ProceduralBatchItem* items, int count)
+{
+	return SafeExport([&]() -> int
+	{
+		auto& ctx = ActiveContext();
+		if (items == nullptr || count < 1 || count > 64 || ctx.engineRuntime == nullptr || s_proceduralBatchExclusive)
+		{
+			return 0;
+		}
+		int succeeded = 1;
+		ctx.engineRuntime->RunExclusive(aether::QuiesceMode::DrainCpuOnly, [&]()
+		{
+			struct BatchScope
+			{
+				BatchScope() { s_proceduralBatchExclusive = true; }
+				~BatchScope() { s_proceduralBatchExclusive = false; }
+			} scope;
+			for (int i = 0; i < count; ++i)
+			{
+				const auto& item = items[i];
+				if (item.reserved != 0 || !SetProceduralMesh(item.id, item.positions, item.normals, item.colors,
+				        item.vertexCount, item.indices, item.indexCount, 0, item.texcoords, {}, 0.0f, false, item.secondaryTexcoords))
+				{
+					succeeded = 0;
+					break;
+				}
 			}
 		});
 		return succeeded;
