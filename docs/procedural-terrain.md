@@ -233,8 +233,8 @@ synchronization costs. No capture/readback is needed to collect these timings.
 
 Immutable buffer ownership remains simple. Capacity pooling is deferred until a
 regional traversal shows allocation dominates: the initial native quad fixture
-measured 0.11–0.17 ms allocation/copy versus up to 52 ms observed upload readiness,
-with 0.003–0.080 ms total commits on a shared workstation. These small-fixture figures
+measured 0.11â€“0.17 ms allocation/copy versus up to 52 ms observed upload readiness,
+with 0.003â€“0.080 ms total commits on a shared workstation. These small-fixture figures
 are contract evidence, not terrain throughput or an end-to-end game benchmark.
 
 ### Validation
@@ -248,7 +248,7 @@ memory after retirement. Unit tests cover worker-cooked shapes and replacements,
 material retention without slot writes, stale/repeated cancellation and admission
 limits; managed tests cover ABI and rejection before interop.
 
-The game's authored Graihan–Kyne cold/warm traversal, reversal, loading edit, scene exit,
+The game's authored Graihanâ€“Kyne cold/warm traversal, reversal, loading edit, scene exit,
 p95/p99/max and full memory acceptance remains a separate integration workload. Do not
 replace that workload with this fixture or advertise the original smooth-zoom goal as
 verified solely because these engine checks pass.
