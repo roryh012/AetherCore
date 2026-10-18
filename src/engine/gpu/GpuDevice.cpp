@@ -105,6 +105,16 @@ namespace aether
 		return m_gfx->GetSwapchain().GetPresentMode();
 	}
 
+	float GpuDevice::LastSwapchainFenceWaitMs() const
+	{
+		return m_gfx->GetSwapchain().LastFenceWaitMs();
+	}
+
+	float GpuDevice::LastSwapchainAcquireWaitMs() const
+	{
+		return m_gfx->GetSwapchain().LastAcquireWaitMs();
+	}
+
 	std::uint32_t GpuDevice::GetCurrentSwapchainImageIndex() const
 	{
 		return m_gfx->GetSwapchain().GetCurrentImageIndex();
@@ -132,6 +142,7 @@ namespace aether
 
 	void GpuDevice::BeginSwapchainFrame()
 	{
+		m_last_submit_present_ms = 0.0f;
 		m_gfx->GetSwapchain().BeginFrame(m_gfx->GetVulkanContext().GetDevice().device);
 	}
 

@@ -16,6 +16,9 @@ namespace aether
 		slot.renderComplete.store(false, std::memory_order_relaxed);
 		slot.renderExecMs.store(0.0f, std::memory_order_relaxed);
 		slot.presentWaitMs.store(0.0f, std::memory_order_relaxed);
+		slot.swapchainFenceMs.store(0.0f, std::memory_order_relaxed);
+		slot.swapchainAcquireMs.store(0.0f, std::memory_order_relaxed);
+		slot.nativePresentMs.store(0.0f, std::memory_order_relaxed);
 
 		slot.game = timing;
 
@@ -23,7 +26,8 @@ namespace aether
 		m_recorded.store(seq + 1, std::memory_order_release);
 	}
 
-	void FrameTimeline::RecordRenderFrame(const std::uint64_t frameIndex, const float renderExecMs, const float presentWaitMs)
+	void FrameTimeline::RecordRenderFrame(const std::uint64_t frameIndex, const float renderExecMs, const float presentWaitMs,
+	        const float swapchainFenceMs, const float swapchainAcquireMs, const float nativePresentMs)
 	{
 		const std::uint64_t recorded = m_recorded.load(std::memory_order_acquire);
 		const std::uint64_t lookback = std::min<std::uint64_t>(recorded, kRenderLookback);
@@ -37,6 +41,9 @@ namespace aether
 			}
 			slot.renderExecMs.store(renderExecMs, std::memory_order_relaxed);
 			slot.presentWaitMs.store(presentWaitMs, std::memory_order_relaxed);
+			slot.swapchainFenceMs.store(swapchainFenceMs, std::memory_order_relaxed);
+			slot.swapchainAcquireMs.store(swapchainAcquireMs, std::memory_order_relaxed);
+			slot.nativePresentMs.store(nativePresentMs, std::memory_order_relaxed);
 			slot.renderComplete.store(true, std::memory_order_release);
 			return;
 		}
@@ -62,9 +69,13 @@ namespace aether
 			const Slot& slot = m_slots[(firstSeq + i) % kCapacity];
 			FrameTiming& dst = out[static_cast<std::size_t>(i)];
 			dst = slot.game;
-			dst.renderExecMs = slot.renderExecMs.load(std::memory_order_relaxed);
-			dst.presentWaitMs = slot.presentWaitMs.load(std::memory_order_relaxed);
+			// Acquire completion before reading its published phases; omit partial render writes.
 			dst.renderComplete = slot.renderComplete.load(std::memory_order_acquire);
+			dst.renderExecMs = dst.renderComplete ? slot.renderExecMs.load(std::memory_order_relaxed) : 0.0f;
+			dst.presentWaitMs = dst.renderComplete ? slot.presentWaitMs.load(std::memory_order_relaxed) : 0.0f;
+			dst.swapchainFenceMs = dst.renderComplete ? slot.swapchainFenceMs.load(std::memory_order_relaxed) : 0.0f;
+			dst.swapchainAcquireMs = dst.renderComplete ? slot.swapchainAcquireMs.load(std::memory_order_relaxed) : 0.0f;
+			dst.nativePresentMs = dst.renderComplete ? slot.nativePresentMs.load(std::memory_order_relaxed) : 0.0f;
 		}
 		return static_cast<std::size_t>(wanted);
 	}

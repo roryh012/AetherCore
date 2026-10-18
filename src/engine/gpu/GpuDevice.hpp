@@ -60,6 +60,8 @@ namespace aether
 		[[nodiscard]] gpu::PresentMode GetSwapchainPresentMode() const;
 		// Render-thread elapsed CPU time for this frame's native submit/present call.
 		[[nodiscard]] float LastSubmitPresentMs() const { return m_last_submit_present_ms; }
+		[[nodiscard]] float LastSwapchainFenceWaitMs() const;
+		[[nodiscard]] float LastSwapchainAcquireWaitMs() const;
 		[[nodiscard]] std::uint32_t GetCurrentSwapchainImageIndex() const;
 		[[nodiscard]] bool SwapchainNeedsRecreation() const;
 		void ClearSwapchainRecreationFlag();

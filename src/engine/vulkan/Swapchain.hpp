@@ -67,6 +67,8 @@ namespace aether
 		[[nodiscard]] VkCommandBuffer GetCurrentCommandBuffer() const;
 		[[nodiscard]] gpu::Extent2D GetExtent() const;
 		[[nodiscard]] gpu::PresentMode GetPresentMode() const;
+		[[nodiscard]] float LastFenceWaitMs() const { return m_lastFenceWaitMs; }
+		[[nodiscard]] float LastAcquireWaitMs() const { return m_lastAcquireWaitMs; }
 		[[nodiscard]] gpu::Format GetImageFormat() const;
 		[[nodiscard]] gpu::Format GetDepthFormat() const;
 		[[nodiscard]] VkImage GetCurrentImage() const;
@@ -119,6 +121,8 @@ namespace aether
 		std::uint32_t m_imageIndex = 0;
 		std::uint32_t m_graphicsQueueFamily = 0;
 		bool m_frameValid = false;
+		float m_lastFenceWaitMs = 0.0f;
+		float m_lastAcquireWaitMs = 0.0f;
 		// Written on the render thread (acquire/present OUT_OF_DATE/SUBOPTIMAL) and
 		std::atomic<bool> m_needsRecreation{false};
 		VkImageLayout m_depthLayout = VK_IMAGE_LAYOUT_UNDEFINED;

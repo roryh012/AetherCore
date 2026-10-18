@@ -222,3 +222,20 @@ existing MCP server retains an older tool manifest; do not restart other session
 Native bool round-trip, invalid-string rejection without state change and restore
 passed, followed by the Vulkan streaming/collider/section/cancellation replay.
 Evidence: `tests/evidence/static-scene-pacing/main-culling-control.json`.
+
+
+## UI and swapchain timing boundaries
+
+`FramePhases` includes `uibegin`, `uibuild`, and `uifinal`, which partition the
+existing `ui` elapsed interval. Render-side `fence`, `acquire`, and `presentcall`
+separate the fence wait, swapchain image acquisition, and native submit/present
+call. They are subsets of the existing `FrameReport` present aggregate; small
+setup work remains in that aggregate. Means and maxima are reported separately.
+Do not add maxima, or sum overlapping producer and render elapsed times as CPU
+utilization. These counters change no presentation or queue policy.
+
+Snapshot acquires render completion before reading its published phases and
+emits zero for incomplete render records. Slot reuse clears all render waits.
+Static runtime/editor validation passed unfocused with zero focus transitions;
+this validates attribution, not the integrated forest-to-cave pacing gate.
+Evidence: `tests/evidence/static-scene-pacing/pacing-boundaries.json`.

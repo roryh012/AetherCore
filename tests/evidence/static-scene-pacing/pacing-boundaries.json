@@ -1,0 +1,66 @@
+{
+  "purpose": "Validate finer timing attribution, not integrated forest/cave acceptance or a matched performance comparison",
+  "case": "artifacts\\static-scene-pacing\\boundaries-942bf102-1df8-4527-b454-e817431a2b48",
+  "build": "RelWithDebInfo; native source base f283fb20; current timing changes",
+  "canonicalNativeTests": {
+    "passed": 1368,
+    "failed": 0,
+    "skipped": 5,
+    "gpuGuard": "pass"
+  },
+  "conditions": "Private windowed 1280x720, viewports disabled, agent NoActivate, IMMEDIATE, target 60; Vulkan validation enabled",
+  "modes": [
+    {
+      "mode": "runtime",
+      "binarySha256": "9d01784ecb55f3b1abf15166b1cdd12b0286aca148b2a563c9a3e4579bac3fef",
+      "lastReport": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.68,
+        "p99": 16.96,
+        "max": 17.16,
+        "game": 0.125,
+        "inflight": 0.0,
+        "present": 1.092,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "maximumIncludingStartupMs": 317.07,
+      "focusChanges": 0.0,
+      "allReportsUnfocused": true
+    },
+    {
+      "mode": "editor",
+      "binarySha256": "d57f684752a8a1738038b47691acc9014359d48134ff64d318aa5f7588aa03e5",
+      "lastReport": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.7,
+        "p99": 16.88,
+        "max": 17.03,
+        "game": 1.389,
+        "inflight": 0.0,
+        "present": 1.306,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "maximumIncludingStartupMs": 350.21,
+      "focusChanges": 0.0,
+      "allReportsUnfocused": true
+    }
+  ],
+  "checks": [
+    "Every phase report contains all six new subphases",
+    "UI subphase means sum to UI aggregate within 0.01 ms",
+    "Swapchain subphase means do not exceed present aggregate within 0.01 ms",
+    "Two targeted native cases / 21 assertions and two Python parser tests passed"
+  ],
+  "limitations": [
+    "Startup maxima retained; only settled last windows quoted",
+    "No foreground measurement or matched baseline",
+    "No integrated continuous-motion gate pass; shared GPU workload remains uncontrolled",
+    "Producer and render elapsed times overlap and must not be summed; subphase maxima are not additive"
+  ]
+}

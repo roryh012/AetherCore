@@ -414,8 +414,10 @@ namespace aether
 		DeltaCadenceSnapper deltaSnapper;
 		auto lastFrameReport = std::chrono::steady_clock::now();
 		std::vector<FrameTiming> reportFrames(FrameTimeline::kCapacity);
-		constexpr std::array producerPhases{&FrameTiming::frameBeginMs, &FrameTiming::eventPumpMs, &FrameTiming::updateMs,
-		        &FrameTiming::editorUiMs, &FrameTiming::extractionMs, &FrameTiming::sceneUiMs, &FrameTiming::submitMs};
+		constexpr std::array phaseFields{&FrameTiming::frameBeginMs, &FrameTiming::eventPumpMs, &FrameTiming::updateMs,
+		        &FrameTiming::editorUiMs, &FrameTiming::extractionMs, &FrameTiming::sceneUiMs, &FrameTiming::submitMs,
+		        &FrameTiming::uiBeginMs, &FrameTiming::uiBuildMs, &FrameTiming::uiFinishMs,
+		        &FrameTiming::swapchainFenceMs, &FrameTiming::swapchainAcquireMs, &FrameTiming::nativePresentMs};
 		std::vector<float> reportWall;
 		reportWall.reserve(FrameTimeline::kCapacity);
 
@@ -593,7 +595,9 @@ namespace aether
 			{
 				m_uiOverlay->BeginFrame(m_services, static_cast<float>(rawDt));
 			}
+			const auto afterUiBegin = std::chrono::steady_clock::now();
 			client.OnBuildUI(gameDt, m_producerFrameIndex);
+			const auto afterUiBuild = std::chrono::steady_clock::now();
 
 			std::unique_ptr<IUiOverlayFrameData> overlayFrame;
 			if (m_uiOverlay)
@@ -694,6 +698,9 @@ namespace aether
 				timing.eventPumpMs = ms(latchStart, afterPump);
 				timing.updateMs = ms(beforeTick, afterUpdate);
 				timing.editorUiMs = ms(afterUpdate, beforeExtraction);
+				timing.uiBeginMs = ms(afterUpdate, afterUiBegin);
+				timing.uiBuildMs = ms(afterUiBegin, afterUiBuild);
+				timing.uiFinishMs = ms(afterUiBuild, beforeExtraction);
 				timing.extractionMs = ms(beforeExtraction, afterExtraction);
 				timing.sceneUiMs = ms(afterExtraction, beforeSubmit);
 				timing.submitMs = ms(beforeSubmit, afterSubmit);
@@ -735,7 +742,7 @@ namespace aether
 					float capWait = 0.0f;
 					float pacerIdle = 0.0f;
 					float tail = 0.0f;
-					std::array<float, producerPhases.size()> phaseTotals{}, phaseMaxima{};
+					std::array<float, phaseFields.size()> phaseTotals{}, phaseMaxima{};
 					std::size_t clamped = 0;
 					std::size_t unthrottled = 0;
 					// The occlusion heuristic below compares against the display period, which is
@@ -756,9 +763,9 @@ namespace aether
 						capWait += frame.pacerWaitMs;
 						pacerIdle += frame.pacerIdleMs;
 						tail += frame.tailMs;
-						for (std::size_t phase = 0; phase < producerPhases.size(); ++phase)
+						for (std::size_t phase = 0; phase < phaseFields.size(); ++phase)
 						{
-							const float value = frame.*producerPhases[phase];
+							const float value = frame.*phaseFields[phase];
 							phaseTotals[phase] += value;
 							phaseMaxima[phase] = std::max(phaseMaxima[phase], value);
 						}
@@ -815,10 +822,12 @@ namespace aether
 							return mode == gpu::PresentMode::Fifo ? "FIFO" : mode == gpu::PresentMode::Mailbox ? "MAILBOX" : "IMMEDIATE";
 						};
 						AE_INFO(LogCategory::Engine,
-						        "FramePhases n={} mode={} requested={} mean/max | render={:.3f}/{:.3f} begin={:.3f}/{:.3f} pump={:.3f}/{:.3f} update={:.3f}/{:.3f} ui={:.3f}/{:.3f} extract={:.3f}/{:.3f} sceneui={:.3f}/{:.3f} submit={:.3f}/{:.3f}{}",
+						        "FramePhases n={} mode={} requested={} mean/max | render={:.3f}/{:.3f} begin={:.3f}/{:.3f} pump={:.3f}/{:.3f} update={:.3f}/{:.3f} ui={:.3f}/{:.3f} extract={:.3f}/{:.3f} sceneui={:.3f}/{:.3f} submit={:.3f}/{:.3f} uibegin={:.3f}/{:.3f} uibuild={:.3f}/{:.3f} uifinal={:.3f}/{:.3f} fence={:.3f}/{:.3f} acquire={:.3f}/{:.3f} presentcall={:.3f}/{:.3f}{}",
 						        count, modeName(actualPresentMode), modeName(DesiredPresentMode(m_settings)), renderWork / n, renderMaximum,
 						        phaseTotals[0] / n, phaseMaxima[0], phaseTotals[1] / n, phaseMaxima[1], phaseTotals[2] / n, phaseMaxima[2],
 						        phaseTotals[3] / n, phaseMaxima[3], phaseTotals[4] / n, phaseMaxima[4], phaseTotals[5] / n, phaseMaxima[5], phaseTotals[6] / n, phaseMaxima[6],
+						        phaseTotals[7] / n, phaseMaxima[7], phaseTotals[8] / n, phaseMaxima[8], phaseTotals[9] / n, phaseMaxima[9],
+						        phaseTotals[10] / n, phaseMaxima[10], phaseTotals[11] / n, phaseMaxima[11], phaseTotals[12] / n, phaseMaxima[12],
 						        fifoPresent && !m_lastFocused ? " | BACKGROUND FIFO: foreground pacing unverified" : "");
 					        reportedFocusChanges = m_focusChanges;
 					}
@@ -1554,7 +1563,8 @@ namespace aether
 			// phase breakdown whose rows overlap cannot be read as a breakdown - it would
 			// show the same blocked refresh interval twice and never sum to a frame.
 			const float renderWorkMs = std::max(0.0f, ms(execStart, execEnd) - presentWaitMs);
-			m_frameTimeline.RecordRenderFrame(packet.frameIndex, renderWorkMs, presentWaitMs);
+			m_frameTimeline.RecordRenderFrame(packet.frameIndex, renderWorkMs, presentWaitMs,
+			        m_gpu->LastSwapchainFenceWaitMs(), m_gpu->LastSwapchainAcquireWaitMs(), m_gpu->LastSubmitPresentMs());
 		}
 	}
 

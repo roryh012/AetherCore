@@ -331,6 +331,7 @@ namespace aether
 	void Swapchain::BeginFrame(VkDevice device)
 	{
 		m_frameValid = false;
+		m_lastFenceWaitMs = m_lastAcquireWaitMs = 0.0f;
 
 		const FrameSync& frame = m_frames[m_currentFrame];
 
@@ -341,7 +342,9 @@ namespace aether
 			{
 				Throw(AetherError::Vulkan(0, "Failed to wait for fence."));
 			}
-			AE_PROFILE_PLOT("Swapchain/FenceWaitNs", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - fenceStart).count()));
+			const auto fenceWait = std::chrono::steady_clock::now() - fenceStart;
+			m_lastFenceWaitMs = std::chrono::duration<float, std::milli>(fenceWait).count();
+			AE_PROFILE_PLOT("Swapchain/FenceWaitNs", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(fenceWait).count()));
 		}
 
 		VkResult acquireResult = VK_SUCCESS;
@@ -349,7 +352,9 @@ namespace aether
 			const auto acquireStart = std::chrono::steady_clock::now();
 			AE_PROFILE_ZONE();
 			acquireResult = vkAcquireNextImageKHR(device, m_swapchain.swapchain, UINT64_MAX, frame.imageAvailable, VK_NULL_HANDLE, &m_imageIndex);
-			AE_PROFILE_PLOT("Swapchain/AcquireImageNs", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - acquireStart).count()));
+			const auto acquireWait = std::chrono::steady_clock::now() - acquireStart;
+			m_lastAcquireWaitMs = std::chrono::duration<float, std::milli>(acquireWait).count();
+			AE_PROFILE_PLOT("Swapchain/AcquireImageNs", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(acquireWait).count()));
 		}
 
 		if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR)

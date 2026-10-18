@@ -35,11 +35,17 @@ namespace aether
 		float eventPumpMs = 0.0f;
 		float updateMs = 0.0f;
 		float editorUiMs = 0.0f;
+		float uiBeginMs = 0.0f;
+		float uiBuildMs = 0.0f;
+		float uiFinishMs = 0.0f;
 		float extractionMs = 0.0f;
 		float sceneUiMs = 0.0f;
 		float submitMs = 0.0f;
 		float renderExecMs = 0.0f;
 		float presentWaitMs = 0.0f;
+		float swapchainFenceMs = 0.0f;
+		float swapchainAcquireMs = 0.0f;
+		float nativePresentMs = 0.0f;
 		// How long the OS event queue sat un-drained between the poll and the input snapshot
 		// Tick() takes from it. This is latency the player feels but no frame-time percentile
 		// can show, because the frame is vsync-locked either way.
@@ -65,9 +71,10 @@ namespace aether
 		// Game thread. Publishes the frame; the record becomes visible to readers.
 		void RecordGameFrame(const FrameTiming& timing);
 
-		// Render thread. Fills the two fields the game thread could not know yet, on a
+		// Render thread. Completes the phases the game thread could not know yet, on a
 		// record it already published. A frame that has since been evicted is ignored.
-		void RecordRenderFrame(std::uint64_t frameIndex, float renderExecMs, float presentWaitMs);
+		void RecordRenderFrame(std::uint64_t frameIndex, float renderExecMs, float presentWaitMs,
+		        float swapchainFenceMs = 0.0f, float swapchainAcquireMs = 0.0f, float nativePresentMs = 0.0f);
 
 		// Copies the newest frames into `out`, oldest first. Returns how many were written.
 		[[nodiscard]] std::size_t Snapshot(std::span<FrameTiming> out) const;
@@ -107,6 +114,9 @@ namespace aether
 			// only fields two threads touch.
 			std::atomic<float> renderExecMs{0.0f};
 			std::atomic<float> presentWaitMs{0.0f};
+			std::atomic<float> swapchainFenceMs{0.0f};
+			std::atomic<float> swapchainAcquireMs{0.0f};
+			std::atomic<float> nativePresentMs{0.0f};
 			std::atomic<bool> renderComplete{false};
 		};
 
