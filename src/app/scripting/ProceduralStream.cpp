@@ -157,59 +157,72 @@ namespace aether::app::scripting
 		std::stable_sort(queued.begin(), queued.end(), [](const auto& a, const auto& b) { return a->priority > b->priority; });
 		for (auto& job: queued)
 		{
-			if (active >= 2)
+			const bool cookCollider = job->data.collision && !job->data.vertices.empty();
+			if (cookCollider && active >= 2)
 			{
-				break;
-			}
-			++active;
-			++m_budget->workers;
-			job->state = State::Preparing;
-			try
-			{
-				job->worker = std::async(std::launch::async,
-				        [job = job.get()]
-				        {
-					        const auto start = Clock::now();
-					        try
-					        {
-						        if (job->data.collision && !job->data.vertices.empty() && !job->cancelled)
-						        {
-							        std::vector<glm::vec3> positions;
-							        positions.reserve(job->data.vertices.size());
-							        for (const auto& vertex: job->data.vertices)
-							        {
-								        positions.push_back(vertex.position);
-							        }
-							        job->collider = PhysicsSystem::PrepareTriangleCollider(positions, job->data.indices);
-							        job->failed = !job->collider;
-						        }
-					        }
-					        catch (...)
-					        {
-						        job->failed = true;
-					        }
-					        job->preparationMs = Milliseconds(start);
-					        job->collisionReady.store(!job->data.collision || job->data.vertices.empty() || static_cast<bool>(job->collider), std::memory_order_release);
-					        --job->budget->workers;
-				        });
-			}
-			catch (...)
-			{
-				--m_budget->workers;
-				job->state = State::Failed;
 				continue;
 			}
+			job->state = State::Preparing;
+			if (cookCollider)
+			{
+				++active;
+				++m_budget->workers;
+				try
+				{
+					job->worker = std::async(std::launch::async,
+					        [job = job.get()]
+					        {
+						        const auto start = Clock::now();
+						        try
+						        {
+							        if (job->data.collision && !job->data.vertices.empty() && !job->cancelled)
+							        {
+								        std::vector<glm::vec3> positions;
+								        positions.reserve(job->data.vertices.size());
+								        for (const auto& vertex: job->data.vertices)
+								        {
+									        positions.push_back(vertex.position);
+								        }
+								        job->collider = PhysicsSystem::PrepareTriangleCollider(positions, job->data.indices);
+								        job->failed = !job->collider;
+							        }
+						        }
+						        catch (...)
+						        {
+							        job->failed = true;
+						        }
+						        job->preparationMs = Milliseconds(start);
+						        job->collisionReady.store(!job->data.collision || job->data.vertices.empty() || static_cast<bool>(job->collider), std::memory_order_release);
+						        --job->budget->workers;
+					        });
+				}
+				catch (...)
+				{
+					--m_budget->workers;
+					job->state = State::Failed;
+					continue;
+				}
+			}
+			else
+			{
+				// Visual uploads and empty clears have no CPU preparation to schedule.
+				job->collisionReady = true;
+			}
+
 			auto* uploads = &ctx.assets->GetUploadContext();
 			const bool accepted = ctx.engineRuntime->QueueGpuWork(
 			        [job, uploads]
 			        {
 				        if (job->state == State::Preparing)
 				        {
-					        if (job->worker.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
+					        if (job->worker.valid())
 					        {
-						        return false;
+						        if (job->worker.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
+						        {
+							        return false;
+						        }
+						        job->worker.get();
 					        }
-					        job->worker.get();
 					        const auto start = Clock::now();
 					        if (!job->cancelled && !job->failed && job->data.visual && !job->data.vertices.empty())
 					        {
@@ -252,7 +265,10 @@ namespace aether::app::scripting
 			        job->priority);
 			if (!accepted)
 			{
-				job->worker.wait();
+				if (job->worker.valid())
+				{
+					job->worker.wait();
+				}
 				job->state = State::Failed;
 			}
 		}

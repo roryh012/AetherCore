@@ -1,0 +1,334 @@
+{
+  "date": "2026-10-18",
+  "baselineProductionCommit": "ad09555727bd46eaca5f5a50e18830961679e022",
+  "change": "Visual-only uploads and empty clears bypass collider worker scheduling; no public API/ABI change.",
+  "limits": {
+    "colliderWorkers": 2,
+    "gpuPreparationSoftBudgetMs": 2,
+    "maxJobs": 64,
+    "maxReservedBytes": 268435456
+  },
+  "before": {
+    "case": "5b2b4766-658e-44f6-9158-b04168e2fbb0",
+    "expectedFailure": "Visual-only burst must bypass collider start limit"
+  },
+  "after": {
+    "case": "2a44a393-6525-4974-a626-f3feaf52b478",
+    "result": {
+      "passed": true,
+      "frames": 18,
+      "visualBurstStarts": 32,
+      "burstFrames": 6,
+      "timings": [
+        {
+          "VisualReady": true,
+          "CollisionReady": true,
+          "State": 4,
+          "InputCopyMs": 0.0038,
+          "ColliderPreparationMs": 0.0468,
+          "AllocationCopyMs": 0.2987,
+          "UploadCompletionMs": 5.6988,
+          "ColliderCommitMs": 0.0825,
+          "CommitMs": 0.0831,
+          "ReservedBytes": 1272
+        },
+        {
+          "VisualReady": true,
+          "CollisionReady": true,
+          "State": 4,
+          "InputCopyMs": 0.0147,
+          "ColliderPreparationMs": 0,
+          "AllocationCopyMs": 0.3051,
+          "UploadCompletionMs": 5.9646,
+          "ColliderCommitMs": 0.0088,
+          "CommitMs": 0.0112,
+          "ReservedBytes": 1464
+        },
+        {
+          "VisualReady": true,
+          "CollisionReady": true,
+          "State": 4,
+          "InputCopyMs": 0.0025,
+          "ColliderPreparationMs": 0.0222,
+          "AllocationCopyMs": 0,
+          "UploadCompletionMs": 0.0003,
+          "ColliderCommitMs": 0.047,
+          "CommitMs": 0.047,
+          "ReservedBytes": 1272
+        },
+        {
+          "VisualReady": true,
+          "CollisionReady": true,
+          "State": 4,
+          "InputCopyMs": 0.0021,
+          "ColliderPreparationMs": 0,
+          "AllocationCopyMs": 0.0002,
+          "UploadCompletionMs": 0.0016,
+          "ColliderCommitMs": 0.0122,
+          "CommitMs": 0.0149,
+          "ReservedBytes": 0
+        }
+      ],
+      "stats": {
+        "Jobs": 0,
+        "ReservedBytes": 0,
+        "Rejected": 0
+      }
+    },
+    "exit": {
+      "passed": true,
+      "frames": 29,
+      "stats": {
+        "Jobs": 0,
+        "ReservedBytes": 0,
+        "Rejected": 0
+      }
+    },
+    "nativeErrors": 0,
+    "validation": "Explicit synchronization/best-practice validation; no VUID errors. System overlay loader warnings remain."
+  },
+  "nativeUnits": {
+    "passed": 1360,
+    "skipped": 5,
+    "assertions": 216602
+  },
+  "managedProceduralTests": {
+    "passed": 8,
+    "failed": 0
+  },
+  "fullManagedSuite": {
+    "passed": 139,
+    "failed": 29,
+    "reason": "All29 failures report DllNotFoundException for AetherHost in unchanged networking tests; no managed source changed."
+  },
+  "gpuBoundaryGuard": "clean",
+  "sdkSha256": "235fd370351365149ec63931f0d5c1a2cd55655b118430534d1a0cebf1585d95",
+  "sdkBuildOutputMatchesStaged": true,
+  "staticComparison": {
+    "case": "b9c8de0e-3869-486f-a71c-e183f8e760b1",
+    "passed": true,
+    "gates": [
+      {
+        "mode": "runtime",
+        "scene": "Static",
+        "metrics": {
+          "p95": {
+            "baseline": 29.875,
+            "candidate": 29.96,
+            "limit": 33.362500000000004,
+            "passed": true
+          },
+          "p99": {
+            "baseline": 30.54,
+            "candidate": 30.61,
+            "limit": 36.120999999999995,
+            "passed": true
+          },
+          "max": {
+            "baseline": 31.205,
+            "candidate": 30.805,
+            "limit": 42.006249999999994,
+            "passed": true
+          },
+          "game": {
+            "baseline": 0.1515,
+            "candidate": 0.1585,
+            "limit": 0.224225,
+            "passed": true
+          }
+        }
+      },
+      {
+        "mode": "editor",
+        "scene": "Static",
+        "metrics": {
+          "p95": {
+            "baseline": 16.67,
+            "candidate": 16.67,
+            "limit": 18.837000000000003,
+            "passed": true
+          },
+          "p99": {
+            "baseline": 16.69,
+            "candidate": 16.67,
+            "limit": 20.1935,
+            "passed": true
+          },
+          "max": {
+            "baseline": 16.835,
+            "candidate": 18.98,
+            "limit": 24.043750000000003,
+            "passed": true
+          },
+          "game": {
+            "baseline": 1.351,
+            "candidate": 1.4525000000000001,
+            "limit": 1.6036499999999998,
+            "passed": true
+          }
+        }
+      }
+    ],
+    "runs": [
+      {
+        "label": "baseline",
+        "mode": "runtime",
+        "scene": "Static",
+        "last": {
+          "n": 600.0,
+          "avg": 16.67,
+          "median": 15.65,
+          "p95": 29.81,
+          "p99": 30.52,
+          "max": 31.16,
+          "game": 0.148,
+          "inflight": 0.0,
+          "present": 1.129,
+          "focused": 0.0,
+          "focusflips": 0.0
+        },
+        "binarySha256": "2894ca6b1bf5deec7f790577da264513ed1bd61cc4399fb6b34814628d1a346e"
+      },
+      {
+        "label": "candidate",
+        "mode": "runtime",
+        "scene": "Static",
+        "last": {
+          "n": 600.0,
+          "avg": 16.67,
+          "median": 15.62,
+          "p95": 29.95,
+          "p99": 30.58,
+          "max": 30.9,
+          "game": 0.15,
+          "inflight": 0.0,
+          "present": 1.159,
+          "focused": 0.0,
+          "focusflips": 0.0
+        },
+        "binarySha256": "ea739f5986ca1833f6c5031a742a975774d908b2c21338b1254d5a3391b187e7"
+      },
+      {
+        "label": "candidate",
+        "mode": "runtime",
+        "scene": "Static",
+        "last": {
+          "n": 600.0,
+          "avg": 16.67,
+          "median": 15.61,
+          "p95": 29.97,
+          "p99": 30.64,
+          "max": 30.71,
+          "game": 0.167,
+          "inflight": 0.0,
+          "present": 1.204,
+          "focused": 0.0,
+          "focusflips": 0.0
+        },
+        "binarySha256": "ea739f5986ca1833f6c5031a742a975774d908b2c21338b1254d5a3391b187e7"
+      },
+      {
+        "label": "baseline",
+        "mode": "runtime",
+        "scene": "Static",
+        "last": {
+          "n": 600.0,
+          "avg": 16.67,
+          "median": 15.63,
+          "p95": 29.94,
+          "p99": 30.56,
+          "max": 31.25,
+          "game": 0.155,
+          "inflight": 0.001,
+          "present": 1.173,
+          "focused": 0.0,
+          "focusflips": 0.0
+        },
+        "binarySha256": "2894ca6b1bf5deec7f790577da264513ed1bd61cc4399fb6b34814628d1a346e"
+      },
+      {
+        "label": "baseline",
+        "mode": "editor",
+        "scene": "Static",
+        "last": {
+          "n": 600.0,
+          "avg": 16.67,
+          "median": 16.67,
+          "p95": 16.67,
+          "p99": 16.71,
+          "max": 16.88,
+          "game": 1.35,
+          "inflight": 0.0,
+          "present": 1.164,
+          "focused": 0.0,
+          "focusflips": 0.0
+        },
+        "binarySha256": "be823171dadde8dc9668bde08891ebc91914a1344a87e4512215fd5057ea1887"
+      },
+      {
+        "label": "candidate",
+        "mode": "editor",
+        "scene": "Static",
+        "last": {
+          "n": 600.0,
+          "avg": 16.67,
+          "median": 16.67,
+          "p95": 16.67,
+          "p99": 16.67,
+          "max": 16.85,
+          "game": 1.469,
+          "inflight": 0.0,
+          "present": 1.33,
+          "focused": 0.0,
+          "focusflips": 0.0
+        },
+        "binarySha256": "a81814d466ab1f3511d993ebaf0e62ec4588c6b164a60610d832de0f70716a43"
+      },
+      {
+        "label": "candidate",
+        "mode": "editor",
+        "scene": "Static",
+        "last": {
+          "n": 600.0,
+          "avg": 16.67,
+          "median": 16.67,
+          "p95": 16.67,
+          "p99": 16.67,
+          "max": 21.11,
+          "game": 1.436,
+          "inflight": 0.0,
+          "present": 1.237,
+          "focused": 0.0,
+          "focusflips": 0.0
+        },
+        "binarySha256": "a81814d466ab1f3511d993ebaf0e62ec4588c6b164a60610d832de0f70716a43"
+      },
+      {
+        "label": "baseline",
+        "mode": "editor",
+        "scene": "Static",
+        "last": {
+          "n": 600.0,
+          "avg": 16.67,
+          "median": 16.67,
+          "p95": 16.67,
+          "p99": 16.67,
+          "max": 16.79,
+          "game": 1.352,
+          "inflight": 0.0,
+          "present": 1.265,
+          "focused": 0.0,
+          "focusflips": 0.0
+        },
+        "binarySha256": "be823171dadde8dc9668bde08891ebc91914a1344a87e4512215fd5057ea1887"
+      }
+    ],
+    "captureSha256": "0ab4eefea1e5f5a2855a6379cafa4faea8aa528001b4c140cd198db43556e033",
+    "limits": [
+      "Unfocused agent windows, explicitly capped at 60 FPS with VSync and idle throttling disabled; this measures loop pacing, not foreground presentation latency.",
+      "Each reported percentile is the last rolling 600-frame window; ABBA replicates are compared by median.",
+      "Other live editors and compilation/system load must be recorded externally."
+    ]
+  },
+  "gameAcceptance": "Lead must rerun actual forest/cave throughput and25ms motion gate; no authored-world improvement claimed by this fixture."
+}

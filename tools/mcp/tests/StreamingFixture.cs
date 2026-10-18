@@ -10,7 +10,8 @@ public sealed class StreamingFixture : EntityScript
     public static ProceduralMesh.UploadTicket ExitTicket;
     Entity target, section;
     ProceduralMesh.UploadTicket ticket, stale;
-    int phase, frames;
+    int phase, frames, burstFrames;
+    List<(Entity Entity, ProceduralMesh.UploadTicket Ticket)> burst = new();
     List<object> timings = new();
     string report = Environment.GetEnvironmentVariable("AETHER_STREAM_REPORT")!;
     static Vector3[] Points(float y) => [new(-2,y,-2),new(-2,y,2),new(2,y,2),new(2,y,-2)];
@@ -35,6 +36,12 @@ public sealed class StreamingFixture : EntityScript
             target=ProceduralMesh.CreateInstance(source);section=ProceduralMesh.CreateInstance(source);source.Destroy();
             var camera=Camera.CreateOrbit(new(9,12,15),new(0,2,0),55);Camera.SetMain(camera);
             stale=ProceduralMesh.QueueTextured(Geometry(target,1),collision:true);
+            for(int i=0;i<32;i++)
+            {
+                var entity=ProceduralMesh.CreateInstance(target);
+                var upload=ProceduralMesh.QueueTextured(Geometry(entity,5));
+                Check(upload.IsValid,"Visual burst admission");burst.Add((entity,upload));
+            }
             var input=Geometry(target,3);ticket=ProceduralMesh.QueueTextured(input,collision:true,priority:10);
             input.Positions[0]=new(float.NaN,0,0);
             Check(stale.IsValid && ticket.IsValid && !stale.TryCommit(),"Generation supersession");
@@ -48,11 +55,29 @@ public sealed class StreamingFixture : EntityScript
         try
         {
             if(++frames>1800)throw new Exception("Streaming timed out at "+phase);
+            if(burst.Count>0)
+            {
+                if(frames==2)
+                {
+                    foreach(var item in burst)Check(item.Ticket.Poll().State!=ProceduralMesh.UploadState.Queued,"Visual-only burst must bypass collider start limit");
+                    var cancelled=burst[^1];cancelled.Ticket.Dispose();
+                    Check(!cancelled.Ticket.TryCommit(),"Started visual cancellation");cancelled.Entity.Destroy();burst.RemoveAt(burst.Count-1);
+                }
+                for(int i=burst.Count-1;i>=0;i--)
+                {
+                    var item=burst[i];var state=item.Ticket.Poll().State;
+                    Check(state!=ProceduralMesh.UploadState.Failed,"Visual burst preparation");
+                    if(state!=ProceduralMesh.UploadState.Ready || !item.Ticket.TryCommit())continue;
+                    item.Ticket.Dispose();item.Entity.Destroy();burst.RemoveAt(i);
+                }
+                if(burst.Count>0)return;
+                burstFrames=frames;
+            }
             if(phase==5)
             {
                 if(ProceduralMesh.StreamingStats.Jobs!=0)return;
                 Check(ProceduralMesh.StreamingStats.ReservedBytes==0,"Queued bytes released");
-                File.WriteAllText(report,JsonSerializer.Serialize(new {passed=true,frames,timings,stats=ProceduralMesh.StreamingStats},new JsonSerializerOptions{IncludeFields=true}));
+                File.WriteAllText(report,JsonSerializer.Serialize(new {passed=true,frames,visualBurstStarts=32,burstFrames,timings,stats=ProceduralMesh.StreamingStats},new JsonSerializerOptions{IncludeFields=true}));
                 var exitTarget=World.Create();exitTarget.AddMesh(World.CreateMesh("cube"));
                 ExitTicket=ProceduralMesh.QueueTextured(LargeGeometry(exitTarget),collision:true);
                 Check(ExitTicket.IsValid,"Pending scene-exit ticket");
@@ -99,7 +124,7 @@ public sealed class StreamingFixture : EntityScript
         }
         catch(Exception error) { Fail(error); }
     }
-    public override void OnDetach() { ticket.Dispose();stale.Dispose(); }
+    public override void OnDetach() { ticket.Dispose();stale.Dispose();foreach(var item in burst)item.Ticket.Dispose(); }
 }
 
 public sealed class StreamingExitProbe : EntityScript

@@ -300,3 +300,22 @@ See `tests/evidence/static-scene-pacing/summary.json` for the measured revisions
 all final sample windows, validation outcomes, repeat results and limitations.
 This does not establish foreground presentation latency, uncapped throughput or the
 game's forest/cave acceptance. The lead must still test the integrated adapter.
+
+
+### Visual-only admission correction
+
+Visual-only uploads and empty clears skip CPU collider preparation entirely. Only
+nonempty collision requests consume the two collider-worker slots; a busy collider
+queue does not stop lower-priority visuals reaching the render queue. The existing
+soft 2 ms render-thread preparation budget, 64-job/256 MiB admission, priorities,
+completion/commit checks and cancellation retirement remain in force. This removes
+a two-ticket-per-game-tick bottleneck and no-op thread launches for ordinary scenery;
+it is not a larger allocation budget or a promise of game arrival time.
+
+The native fixture queues 32 visuals alongside collision work, checks that they
+leave Queued by the next game tick, cancels a started visual, commits the rest and
+verifies zero outstanding reservations. The old ad095557 binary fails this check.
+The corrected replay also covers collider failure/parity, sections, empty clears
+and pending-work scene exit under explicit sync validation. See
+`tests/evidence/procedural-streaming/visual-only-admission.json` for measured results
+and the follow-up static-frame comparison. No public API/SDK ABI changed.
