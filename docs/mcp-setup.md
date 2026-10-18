@@ -77,9 +77,13 @@ Sandbox's Host/Join/codeBox buttons on the first try across two separate
 Editor builds.
 
 **Not reachable without real OS focus** - cursor lock itself and its Escape
-release, because `UpdateCursorLock` (`Input.cpp:509-527`) explicitly ANDs
-`windowFocused` into `SetCursorLocked(m_cursorLockRequested && windowFocused
-&& !m_cursorLockEscaped)`. A synthetic session can request the lock, but it
+release. `UpdateCursorLock` gates the request on window focus and Escape;
+`ApplyCursorMode` also rechecks native focus immediately before applying it.
+On Windows, the main HWND must be visible, restored and equal to
+`GetForegroundWindow()`: GLFW 3.4's thread-local `GetActiveWindow()` check
+alone does not establish that the user selected this application.
+Window focus reporting and real device sampling use the same check.
+A synthetic session can request the lock, but it
 will never actually engage, so `Input.MouseDelta`'s locked-relative-motion
 mode and anything gated on `IsCursorLocked()` cannot be exercised this way.
 `computer`'s `delivery: "foreground"` mode exists to force real focus for

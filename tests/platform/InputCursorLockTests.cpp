@@ -1,14 +1,59 @@
-// Cursor-lock request/focus gating, windowless: SetCursorLocked/ApplyCursorMode need a
-// real GLFW window (no-op without one, exactly like SetOsCursorVisible already does), but
-// UpdateCursorLock's decision logic - does a request actually become the applied lock - is
-// pure state and fully exercisable headless. The Escape-consumption nuance needs a real key
-// press/release across frames (Update() needs a window) and is covered by live proof
-// instead; see the mouse-capture task's report.
+// Windowless request/focus policy, plus a hidden native-window regression for the
+// final capture guard. Real focused mouse look / Escape still need an interactive check.
 #include <doctest/doctest.h>
 
 #include "platform/Input.hpp"
+#include "platform/WindowInputFocus.hpp"
 
 using namespace aether;
+
+#ifdef _WIN32
+TEST_CASE("Background native windows reject cursor lock even when caller reports focus")
+{
+	REQUIRE(glfwInit() == GLFW_TRUE);
+	glfwDefaultWindowHints();
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_FOCUSED, GLFW_FALSE);
+	glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_FALSE);
+	GLFWwindow* window = glfwCreateWindow(64, 64, "Background cursor regression", nullptr, nullptr);
+	REQUIRE(window != nullptr);
+	const HWND foreground = GetForegroundWindow();
+	POINT before{};
+	RECT clipBefore{};
+	REQUIRE(GetCursorPos(&before));
+	REQUIRE(GetClipCursor(&clipBefore));
+	{
+		Input input;
+		input.Init(window);
+		CHECK_FALSE(IsWindowInputFocused(window));
+		input.RequestCursorLock(true);
+		for (int i = 0; i < 3; ++i)
+		{
+			input.UpdateCursorLock(true); // A stale/synthetic focus result must never capture the OS pointer.
+			CHECK_FALSE(input.IsCursorLocked());
+			input.SetCursorLocked(true);
+			CHECK_FALSE(input.IsCursorLocked());
+			input.SetOsCursorVisible(false);
+			input.SetOsCursorVisible(true);
+			CHECK(glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL);
+		}
+		CHECK(input.IsCursorLockRequested());
+		input.UpdateCursorLock(false);
+		CHECK_FALSE(input.IsCursorLocked());
+	}
+	POINT after{};
+	RECT clipAfter{};
+	REQUIRE(GetCursorPos(&after));
+	REQUIRE(GetClipCursor(&clipAfter));
+	CHECK(before.x == after.x);
+	CHECK(before.y == after.y);
+	CHECK(EqualRect(&clipBefore, &clipAfter));
+	CHECK(GetForegroundWindow() == foreground);
+	glfwDestroyWindow(window);
+	glfwTerminate();
+}
+#endif
 
 TEST_CASE("A game that never requests cursor lock is never locked")
 {

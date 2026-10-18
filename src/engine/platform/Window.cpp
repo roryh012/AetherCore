@@ -1,4 +1,5 @@
 #include "platform/Window.hpp"
+#include "platform/WindowInputFocus.hpp"
 #include "platform/WindowActivation.hpp"
 #include "platform/WindowPlacement.hpp"
 #include "platform/WindowSessionLabel.hpp"
@@ -197,7 +198,7 @@ namespace aether
 
 	bool Window::IsFocused() const
 	{
-		return m_window != nullptr && glfwGetWindowAttrib(m_window, GLFW_FOCUSED) != 0;
+		return IsWindowInputFocused(m_window);
 	}
 
 	WindowActivationState Window::GetActivationState() const

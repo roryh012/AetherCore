@@ -1,4 +1,5 @@
 #include "platform/Input.hpp"
+#include "platform/WindowInputFocus.hpp"
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -475,7 +476,7 @@ namespace aether
 		// GLFW asserts on a null window, and Input is legitimately constructed without
 		// one in tests and headless runtimes - treat a missing window as unfocused and
 		// rely on synthetic injection (see the key loop below).
-		const bool focused = m_window != nullptr && glfwGetWindowAttrib(m_window, GLFW_FOCUSED) != 0;
+		const bool focused = IsWindowInputFocused(m_window);
 
 		for (int i = 0; i < kMaxKeys; ++i)
 		{
@@ -848,6 +849,12 @@ namespace aether
 		if (m_window == nullptr)
 		{
 			return;
+		}
+		// Recheck at the native side effect: caller focus can be stale or synthetic.
+		if (m_cursorLocked && !IsWindowInputFocused(m_window))
+		{
+			m_cursorLocked = false;
+			m_mouseNeedsResync = true;
 		}
 		if (m_cursorLocked)
 		{
