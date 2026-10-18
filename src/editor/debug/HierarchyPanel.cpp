@@ -1790,9 +1790,8 @@ namespace aether::editor
 		}
 
 		const double now = ImGui::GetTime();
+		std::size_t count = 0;
 		{
-			m_knownIdsScratch.clear();
-			m_knownIdsScratch.reserve(m_knownIds.size());
 			for (const auto handle: reg.storage<entt::entity>())
 			{
 				if (!reg.valid(handle))
@@ -1804,13 +1803,15 @@ namespace aether::editor
 				{
 					continue;
 				}
-				m_knownIdsScratch.insert(e.id);
-				if (m_knownSeeded && !m_knownIds.contains(e.id))
+				++count;
+				const bool spawned = m_knownIds.insert(e.id).second;
+				if (m_knownSeeded && spawned)
 				{
 					m_spawnFlash[e.id] = now;
 				}
 			}
-			m_knownIds.swap(m_knownIdsScratch);
+			std::erase_if(m_knownIds, [&](const std::uint32_t id) { return !reg.valid(World::ToEntt(Entity{id})); });
+			AE_ASSERT(m_knownIds.size() == count, "Hierarchy entity tracking must match the live registry");
 			m_knownSeeded = true;
 
 			for (auto it = m_spawnFlash.begin(); it != m_spawnFlash.end();)
@@ -1841,14 +1842,6 @@ namespace aether::editor
 				ImGui::OpenPopup("Open Scene");
 			}
 
-			std::size_t count = 0;
-			for (const auto handle: reg.storage<entt::entity>())
-			{
-				if (reg.valid(handle) && World::FromEntt(handle).IsValid())
-				{
-					++count;
-				}
-			}
 			{
 				const auto* scenes = context.TryGet<aether::SceneSubsystem>();
 				const char* sceneName = (scenes != nullptr && !scenes->GetCurrentScene().empty()) ? scenes->GetCurrentScene().c_str() : "Untitled";
@@ -2165,11 +2158,11 @@ namespace aether::editor
 				return (m_filterMesh && world.Has<MeshComponent>(e)) || (m_filterSkinned && world.Has<SkinnedMeshComponent>(e)) || (m_filterPhysics && world.Has<RigidBodyComponent>(e)) || (m_filterEffect && world.Has<EffectParamsComponent>(e));
 			};
 
-			ImGui::BeginChild("SceneList", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoNavFocus);
+			const bool sceneListVisible = ImGui::BeginChild("SceneList", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoNavFocus);
 			const ImVec2 sceneListMin = ImGui::GetWindowPos();
 			const ImVec2 sceneListMax(sceneListMin.x + ImGui::GetWindowSize().x, sceneListMin.y + ImGui::GetWindowSize().y);
 			UpdateKeyboardFocusScopeFromMouse(sceneListMin, sceneListMax);
-			if (filtering)
+			if (sceneListVisible && filtering)
 			{
 				const std::string needle = ToLower(m_search);
 				m_filteredRowsScratch.clear();
@@ -2247,14 +2240,14 @@ namespace aether::editor
 					ImGui::TextDisabled("%s", msg);
 				}
 			}
-			else if (count == 0)
+			else if (sceneListVisible && count == 0)
 			{
 				ImGui::Dummy(ImVec2(0.0f, ImGui::GetContentRegionAvail().y * 0.4f));
 				const char* msg = "Scene is empty";
 				ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(msg).x) * 0.5f);
 				ImGui::TextDisabled("%s", msg);
 			}
-			else
+			else if (sceneListVisible)
 			{
 				m_flatTree.clear();
 				m_selectedForFlatten.clear();
@@ -2346,7 +2339,7 @@ namespace aether::editor
 			}
 			ImGui::EndChild();
 
-			if (!filtering && SceneListOwnsKeyboard())
+			if (sceneListVisible && !filtering && SceneListOwnsKeyboard())
 			{
 				HandleKeyboardNavigation(selection);
 				HandleTypeToJump(world, selection);

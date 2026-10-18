@@ -1289,10 +1289,6 @@ namespace aether
 					cmd.SetCullMode(*cullModeOverride);
 				}
 				lastPipeline = activePipeline;
-			}
-
-			if (activePipeline != nullptr)
-			{
 				cmd.PushDataRaw(0, gpu::AsPushConstantBytes(sharedPc));
 			}
 

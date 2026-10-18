@@ -176,7 +176,6 @@ namespace aether::editor
 		bool m_pendingPaste = false;
 
 		std::unordered_set<std::uint32_t> m_knownIds;
-		std::unordered_set<std::uint32_t> m_knownIdsScratch;
 		std::unordered_map<std::uint32_t, double> m_spawnFlash;
 		bool m_knownSeeded = false;
 		std::uint64_t m_seenSelectionSerial = 0;

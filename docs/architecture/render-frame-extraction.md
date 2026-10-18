@@ -257,3 +257,22 @@ no comparison or pass is claimed, and no speculative window policy was changed.
 Do not conflate this baseline attribution with the new camera integration, warm
 return acceptance, or foreground pacing. Evidence and retained failures:
 `tests/evidence/static-scene-pacing/original-camera-boundaries.json`.
+
+
+## UI and draw-command overhead candidate
+
+Hierarchy spawn tracking reuses live set nodes, removes retired IDs and reuses
+the scan count. Clipped/collapsed SceneList children skip tree reconstruction;
+global copy/cut/paste, duplicate/delete, pending edits and popup handling remain
+outside the visibility gate. Shared draw addresses are constant within one flush,
+so pushes accompany pipeline changes rather than every batch. Each flush starts
+with no remembered pipeline; subsequent frame/lighting addresses are republished.
+No GPU synchronization or rendering quality policy changed.
+
+The source-based EnTT probe preserved spawn/retire/recycled-ID behavior and
+removed steady-state node allocations (12,000 entities, 300 frames: 3,600,001 to
+zero). CPU draw-command intent matched across 16 combinations, with fewer pushes.
+These probes are not driver or whole-game pacing proof. Build, 1,369 canonical
+native cases and the GPU guard passed; the new in-memory ImGui child visibility
+test passed. Native GUI/image parity and integrated motion gates remain pending.
+Evidence: `tests/evidence/static-scene-pacing/ui-draw-overhead.json`.

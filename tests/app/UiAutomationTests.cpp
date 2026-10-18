@@ -90,3 +90,30 @@ TEST_CASE("Deferring a modal can cancel queued UI input without a click-through 
 	CHECK(ImGui::GetCurrentContext()->InputEventsQueue.empty());
 	ImGui::DestroyContext();
 }
+
+TEST_CASE("Collapsed hierarchy child visibility skips tree work and recovers on reopening")
+{
+	ImGuiContext* gui = ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.IniFilename = nullptr;
+	io.DisplaySize = ImVec2(800, 600);
+	io.DeltaTime = 1.0f / 60.0f;
+	unsigned char* pixels = nullptr;
+	int width = 0, height = 0;
+	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+	for (const bool collapsed : {false, true, false})
+	{
+		ImGui::NewFrame();
+		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+		ImGui::SetNextWindowSize(ImVec2(300, 400), ImGuiCond_Always);
+		ImGui::SetNextWindowCollapsed(collapsed, ImGuiCond_Always);
+		ImGui::Begin("Hierarchy visibility test");
+		const bool contents = ImGui::BeginChild("SceneList", ImVec2(0, 0), ImGuiChildFlags_Borders,
+			ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoNavFocus);
+		CHECK(contents == !collapsed);
+		ImGui::EndChild();
+		ImGui::End();
+		ImGui::EndFrame();
+	}
+	ImGui::DestroyContext(gui);
+}

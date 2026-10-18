@@ -1,0 +1,62 @@
+{
+  "purpose": "Small UI allocation and native draw-command overhead candidate; no whole-game performance win claimed",
+  "baselineEngineCommit": "f6c3a0744a3f50ae2d31abf2dc9722dca327d3c7",
+  "changes": [
+    "Persistent hierarchy ID set; remove retired IDs and reuse live count",
+    "Skip clipped/collapsed hierarchy child traversal; retain global edits and shortcuts",
+    "Push shared draw constants only on pipeline change within one flush; addresses reset each flush"
+  ],
+  "trackingProbe": {
+    "method": "Compiled actual source-extracted tracking blocks and World ID conversions with real EnTT; fixed clock; no ImGui or OS windows",
+    "entities": 12000,
+    "frames": 300,
+    "baselineAllocations": 3600001,
+    "candidateAllocations": 0,
+    "baselineTotalMs": 276.107,
+    "candidateTotalMs": 108.176,
+    "behaviorChecks": [
+      "Initial scene has no spawn flash",
+      "Live sets agree",
+      "Destroyed and recycled EnTT generations agree",
+      "Cleared scene and flash expiration agree"
+    ],
+    "log": "artifacts/static-scene-pacing/ui-tracker-probe/result.log",
+    "initialHarnessFailure": "Raw EnTT registry did not reserve raw zero as World constructor does; corrected fixture, retained initial-failed.log"
+  },
+  "drawProbe": {
+    "method": "Actual source-extracted FlushDrawImpl methods into a CPU command sink; not driver execution",
+    "combinations": 16,
+    "cases": [
+      "Direct/indirect",
+      "Per-batch/override pipelines",
+      "Lighting enabled/absent",
+      "Cull override enabled/absent",
+      "Invalid command list and empty batches"
+    ],
+    "baselinePushesPerSevenBatches": 7,
+    "candidateNormalPushes": 3,
+    "candidateOverridePushes": 1,
+    "perDrawConstantsAndDrawInputsEqual": true,
+    "log": "artifacts/static-scene-pacing/draw-push-probe/result.log"
+  },
+  "verification": {
+    "build": "Editor, GameRuntime, EngineTests, StageAppBundle pass",
+    "canonicalNativeCasesPassed": 1369,
+    "failed": 0,
+    "skipped": 5,
+    "gpuAbstractionGuard": "pass",
+    "newInMemoryImguiTest": {
+      "cases": 1,
+      "assertions": 3,
+      "purpose": "Collapsed child visibility and reopening; no OS window"
+    },
+    "report": "logs/ui-draw-overhead-final-gauntlet.json"
+  },
+  "limitations": [
+    "RelWithDebInfo omits Debug-only AE_ASSERT; source probe executes the tracking invariant",
+    "GUI/Vulkan pixel parity and integrated forest/cave/zoom timing are pending",
+    "Reduced command/allocator work does not prove GPU fence/acquire waits fixed",
+    "No fence, queue synchronization, culling default, geometry quality or async opt-in changes",
+    "Native GUI smokes deliberately skipped due prior focus transition; other sessions preserved"
+  ]
+}
