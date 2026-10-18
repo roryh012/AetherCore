@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <glm/glm.hpp>
 #include <span>
+#include <vector>
 #include "gpu/GpuTypes.hpp"
 #include "gpu/GpuHandles.hpp"
 #include "gpu/UploadContext.hpp"
@@ -65,6 +66,11 @@ namespace aether
 		        const float* aabbMax = nullptr,
 		        const float* sphereCenter = nullptr,
 		        float sphereRadius = 0.0f, std::span<const std::byte> shaderData = {});
+
+		// Render-thread only. Retain staging and mesh until uploadContext.IsComplete(ticket).
+		static Mesh CreateAsync(gpu::UploadContext& uploadContext, std::span<const Vertex> vertices,
+		        std::span<const std::uint32_t> indices, std::span<const std::byte> shaderData,
+		        std::vector<gpu::BufferHandle>& staging, std::uint64_t& ticket, float sectionTop = 0);
 
 		static Mesh CreateView(gpu::BufferHandle vertexBuffer,
 		        gpu::BufferHandle indexBuffer,

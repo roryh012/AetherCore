@@ -154,6 +154,62 @@ namespace aether
 		return mesh;
 	}
 
+	Mesh Mesh::CreateAsync(gpu::UploadContext& uploadContext, std::span<const Vertex> vertices,
+	        std::span<const std::uint32_t> indices, std::span<const std::byte> shaderData,
+	        std::vector<gpu::BufferHandle>& staging, std::uint64_t& ticket, float sectionTop)
+	{
+		Mesh mesh;
+		if (vertices.empty() || indices.empty()) { return mesh; }
+		staging.reserve(2);
+		// shortcut: immutable allocations; consider capacity pooling only if measured allocation time dominates traversal.
+		const auto vertexBytes = vertices.size_bytes() + shaderData.size();
+		const auto indexBytes = indices.size_bytes();
+		auto allocate = [&](gpu::DeviceSize size, gpu::BufferUsage usage)
+		{
+			const auto src = gpu::ResourceRegistry::CreateMappedBuffer({.size = size, .usage = gpu::BufferUsage::TransferSrc, .debugName = "Procedural.Staging"});
+			staging.push_back(src);
+			return gpu::ResourceRegistry::CreateBuffer({.size = size, .usage = usage | gpu::BufferUsage::TransferDst | gpu::BufferUsage::ShaderDeviceAddress, .debugName = "Procedural.Mesh"});
+		};
+		mesh.m_ownsBuffers = true;
+		mesh.m_buffer = allocate(vertexBytes, gpu::BufferUsage::Vertex);
+		mesh.m_indexBuffer = allocate(indexBytes, gpu::BufferUsage::Index);
+		if (!mesh.m_buffer.IsValid() || !mesh.m_indexBuffer.IsValid() || !staging[0].IsValid() || !staging[1].IsValid())
+		{
+			return mesh;
+		}
+		const auto v = gpu::ResourceRegistry::ResolveMappedBuffer(staging[0]);
+		const auto i = gpu::ResourceRegistry::ResolveMappedBuffer(staging[1]);
+		if (!v.mappedPtr || !i.mappedPtr)
+		{
+			return mesh;
+		}
+		std::memcpy(v.mappedPtr, vertices.data(), vertices.size_bytes());
+		if (!shaderData.empty())
+		{
+			std::memcpy(static_cast<std::byte*>(v.mappedPtr) + vertices.size_bytes(), shaderData.data(), shaderData.size());
+		}
+		std::memcpy(i.mappedPtr, indices.data(), indexBytes);
+		gpu::ResourceRegistry::FlushMappedBuffer(staging[0], 0, vertexBytes);
+		gpu::ResourceRegistry::FlushMappedBuffer(staging[1], 0, indexBytes);
+		const gpu::UploadContext::BufferCopy copies[] = {{staging[0], mesh.m_buffer, vertexBytes}, {staging[1], mesh.m_indexBuffer, indexBytes}};
+		mesh.m_vertexCount = static_cast<std::uint32_t>(vertices.size());
+		mesh.m_indexCount = static_cast<std::uint32_t>(indices.size());
+		mesh.m_vertexDeviceAddress = gpu::ResourceRegistry::ResolveBuffer(mesh.m_buffer).deviceAddress;
+		mesh.m_indexDeviceAddress = gpu::ResourceRegistry::ResolveBuffer(mesh.m_indexBuffer).deviceAddress;
+		mesh.m_aabbMin = mesh.m_aabbMax = vertices.front().position;
+		for (const auto& vertex : vertices)
+		{
+			mesh.m_aabbMin = glm::min(mesh.m_aabbMin, vertex.position);
+			mesh.m_aabbMax = glm::max(mesh.m_aabbMax, vertex.position);
+		}
+		if (vertices.front().uv2.y == -9183.0f) { mesh.m_aabbMin.y = 0; }
+		if (sectionTop > 0) { mesh.m_aabbMin.y = 0; mesh.m_aabbMax.y = sectionTop; }
+		const auto center = (mesh.m_aabbMin + mesh.m_aabbMax) * 0.5f;
+		mesh.m_boundingSphere = glm::vec4(center, glm::length(mesh.m_aabbMax - center));
+		ticket = uploadContext.CopyBuffersAsync(copies, true);
+		return mesh;
+	}
+
 	Mesh::~Mesh()
 	{
 		Destroy();

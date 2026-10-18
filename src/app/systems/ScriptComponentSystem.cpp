@@ -328,6 +328,8 @@ namespace aether::app
 			return;
 		}
 
+		sceneCtx->proceduralStream.Tick(*sceneCtx);
+
 		sceneCtx->deltaTime = dt;
 		sceneCtx->elapsedTime += dt;
 		++sceneCtx->frameCount;
@@ -411,24 +413,14 @@ namespace aether::app
 
 		// Runtime geometry is entity-owned, including entities removed by editor or
 		// hierarchy destruction rather than ProceduralMesh.Clear.
-		bool hasOrphanMeshes = false;
-		for (const auto& [id, mesh] : sceneCtx->proceduralMeshes)
+		for (auto it = sceneCtx->proceduralMeshes.begin(); it != sceneCtx->proceduralMeshes.end();)
 		{
-			if (!world.GetRegistry().valid(World::ToEntt(Entity{id})))
+			if (!world.GetRegistry().valid(World::ToEntt(Entity{it->first})) && sceneCtx->engineRuntime)
 			{
-				hasOrphanMeshes = true;
-				break;
+				sceneCtx->engineRuntime->RetireQueuedRendering(std::shared_ptr<Mesh>(std::move(it->second)));
+				it = sceneCtx->proceduralMeshes.erase(it);
 			}
-		}
-		if (hasOrphanMeshes && sceneCtx->engineRuntime != nullptr)
-		{
-			sceneCtx->engineRuntime->RunExclusive(QuiesceMode::Drain, [&]()
-			{
-				std::erase_if(sceneCtx->proceduralMeshes, [&](const auto& entry)
-				{
-					return !world.GetRegistry().valid(World::ToEntt(Entity{entry.first}));
-				});
-			});
+			else { ++it; }
 		}
 
 		// Scene.Load from script: applied here, after every callback for the
@@ -439,6 +431,7 @@ namespace aether::app
 			// Persistent (DontDestroyOnLoad / SceneTransient) entities survive
 			// the switch WITH their live script instances; everything else's
 			// instances are torn down before their entities are.
+			sceneCtx->proceduralStream.Clear(*sceneCtx);
 			PruneInstancesForSceneSwitch(world, *csScripting, *sceneCtx);
 			if (scene::LoadSceneFile(sceneName, world, scene::MakeApplySceneDeps(m_services), scene::SceneLoadMode::GameplaySwitch))
 			{
@@ -495,6 +488,7 @@ namespace aether::app
 			if (auto* sceneCtx = m_services.TryGet<scripting::SceneContext>())
 			{
 				DestroyAllCSharpInstances(*csScripting, *sceneCtx);
+				sceneCtx->proceduralStream.Clear(*sceneCtx);
 			}
 		}
 		m_instances.clear();

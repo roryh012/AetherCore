@@ -18,11 +18,12 @@ namespace aether::vulkan
 	// Each Submit records a command buffer on the calling thread, submits it to the
 	// transfer queue signalling the next timeline value, and returns that value as a
 	// Ticket. Callers never block: the frame's graphics submission waits on the latest
-	// ticket (see GpuDevice::SubmitAndPresent), which both orders the copies before any
+	// published ticket (see GpuDevice::SubmitAndPresent), which orders the copies before any
 	// rendering that consumes them and makes the transferred memory visible. Buffers
 	// shared across families are created VK_SHARING_MODE_CONCURRENT (see
 	// ResourceRegistry::SetSharedBufferQueueFamilies), so no queue-family ownership
-	// transfer barriers are required.
+	// transfer barriers are required. Background preparation publishes its completed
+	// ticket only when committed, so off-screen copies do not introduce a frame wait.
 	//
 	// Thread-safe: recording is serialised on an internal mutex, and the submit itself
 	// additionally takes the global QueueSubmitMutex so the graphics-family fallback
@@ -54,12 +55,16 @@ namespace aether::vulkan
 		// Record and submit one upload batch. `record` runs synchronously on the calling
 		// thread; `onComplete` (optional) runs once the GPU has finished the batch - used
 		// to reclaim staging memory - on whichever thread next touches the manager.
-		[[nodiscard]] Ticket Submit(const std::function<void(gpu::CommandList&)>& record, std::function<void()> onComplete = {});
+		[[nodiscard]] Ticket Submit(const std::function<void(gpu::CommandList&)>& record, std::function<void()> onComplete = {}, bool includeInGraphics = true);
 
 		[[nodiscard]] bool IsComplete(Ticket ticket) const;
 		void WaitFor(Ticket ticket);
 
-		// Latest submitted ticket - what a graphics submission should wait on.
+		// Background preparation stays out of the graphics dependency until committed.
+		void PublishToGraphics(Ticket ticket);
+		[[nodiscard]] Ticket GraphicsDependency() const { return m_graphicsDependency.load(std::memory_order_acquire); }
+
+		// Latest submitted ticket, including unpublished background work.
 		[[nodiscard]] Ticket LastSubmitted() const
 		{
 			return m_lastSubmitted.load(std::memory_order_acquire);
@@ -100,6 +105,7 @@ namespace aether::vulkan
 		VkCommandPool m_pool = VK_NULL_HANDLE;
 		Ticket m_nextValue = 1;
 		std::atomic<Ticket> m_lastSubmitted{0};
+		std::atomic<Ticket> m_graphicsDependency{0};
 		std::vector<InFlight> m_inFlight;
 		std::mutex m_mutex;
 	};

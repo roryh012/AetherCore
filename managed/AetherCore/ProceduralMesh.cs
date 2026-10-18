@@ -9,7 +9,7 @@ namespace AetherCore;
 /// Arrays are copied before return. Updates drain rendering and rebuild static collision
 /// synchronously; suitable for prototypes, not continuous high-throughput streaming.
 /// Clear before destroying the entity, or let scene teardown release its mesh.</summary>
-public static unsafe class ProceduralMesh
+public static unsafe partial class ProceduralMesh
 {
     public static void Set(Entity entity, ReadOnlySpan<Vector3> positions,
         ReadOnlySpan<Vector3> normals, ReadOnlySpan<uint> indices,

@@ -5,6 +5,7 @@
 #include <semaphore>
 #include <thread>
 #include <vector>
+#include <span>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <entt/entt.hpp>
@@ -84,6 +85,10 @@ namespace aether
 		void WaitForStepIdle();
 
 		void FlushPendingOnly(World& world);
+		// Preparation touches no world or body state; physics must remain initialized.
+		static std::shared_ptr<const PreparedTriangleCollider> PrepareTriangleCollider(std::span<const glm::vec3> vertices, std::span<const std::uint32_t> indices);
+		// Returns false while the physics step is busy; never waits or recooks the shape.
+		bool TryCommitTriangleCollider(World& world, Entity entity, std::shared_ptr<const PreparedTriangleCollider> shape, bool* failed = nullptr);
 
 		struct RaycastResult
 		{

@@ -141,3 +141,124 @@ per update and pauses scenery streaming work during animated zoom.
 
 The descriptor is 64 bytes on supported 64-bit targets; native and managed layout
 checks cover it. The draw-instance/shader contract remains unchanged (112 bytes).
+
+
+## Streaming API, version 1
+
+Use a matching native editor/runtime and managed SDK. `ProceduralMesh.StreamingApiVersion`
+queries the native build: 1 supports this contract, 0 means the old synchronous path.
+The older `Set*` APIs remain synchronous and compatible.
+
+- `CreateInstance(materialSource)` creates an empty unit-scale entity sharing a live
+  source's material slot and pipelines. It does not load a GLB, allocate a new material
+  slot or upload material data. The source can then be destroyed. Material setters
+  retain their existing copy-on-write behavior. Use ordinary terrain/PBR material
+  sources; this is not a clone of an entity's effect parameters, hierarchy or scripts.
+- `QueueTextured(update, collision:false, horizon:false, priority:0)` validates and
+  copies input before returning a scene-owned `UploadTicket`. UV0, UV1/wind, normals,
+  colors and horizon markers retain the synchronous representation.
+- `QueueSection(...)` copies the same immutable density/header/section representation
+  as `SetSection`; moving the cutaway plane still requires no new upload.
+- `QueueCollision(entity, positions, indices, priority:0)` cooks an immutable static
+  triangle shape on a bounded worker; it performs no GPU upload.
+
+All calls, including polling and disposing, require the game thread. Workers may
+prepare source arrays, but must not invoke these APIs. Reuse/mutate managed input
+arrays immediately after a successful queue call. Two CPU preparations may run at
+once. Native GPU allocation/staging and transfer submission run on the render thread,
+serialized with the existing resource registry. The transfer timeline, rather than
+a CPU wait, establishes completion. Off-screen transfers are excluded from the
+frame's transfer dependency until commit publishes their already-completed timeline
+value. Uploads on a graphics-queue fallback still share that queue's physical work;
+a dedicated transfer queue can overlap it. No render drain or device-idle operation occurs
+in the new queue, poll or commit path. A render-frame scheduler uses a soft 2 ms
+budget: an individual allocation/copy cannot be preempted, so this is not a frame-time
+guarantee. Canceling or exiting may leave already-submitted copies alive until their
+transfer completes; shutdown waits for the device and preparation workers safely.
+
+Poll returns `Queued`, `Preparing`, `Uploading`, `Ready`, `Committed`, `Cancelled`
+or `Failed`. Collision readiness is observable independently while the visual upload
+is pending. `TryCommit()` returns false until the whole ticket is ready, or while the
+physics step is busy. It never waits for that step or cooks a shape. New physics bodies
+are allocated before removing old ones; body creation/preparation failure preserves
+previous collision and geometry. `Failed` tickets cannot commit. A collision-only
+commit changes no visual/material components; a visual-only commit changes no collider.
+An empty successful commit clears only the requested domains.
+
+A newer accepted request for an entity supersedes its old ticket. Synchronous `Set*`
+mutations also invalidate pending work. Disposing a ticket cancels unpublished work;
+it never undoes committed geometry or collision. Destroying the entity, switching
+scenes, stopping Play/reloading scripts and scene teardown cancel pending tickets.
+Unknown/released tickets poll as `Cancelled`. Every ticket must be disposed, including
+failed and committed ones. Dispose is idempotent. Previously submitted GPU resources
+remain retained across both queued CPU packets and their GPU completion fences.
+
+```csharp
+var staged = ProceduralMesh.CreateInstance(materialSource);
+var ticket = ProceduralMesh.QueueTextured(update with { Entity = staged }, priority: 10);
+// If !ticket.IsValid, defer/retry. Do not expose a partially staged region.
+// In subsequent Update callbacks:
+if (ticket.Poll().State == ProceduralMesh.UploadState.Ready && ticket.TryCommit())
+{
+    // Expose only when every required visual/collider ticket for this window committed.
+    ticket.Dispose();
+}
+```
+
+The game still owns complete-window handover, visibility, physical-access gating,
+edit generations and priorities. Keep actors out of pending collision; treat a failed
+or cancelled edit as uncommitted and do not silently report it as traversable. The
+engine never holds or moves the camera. Failure/cancellation retains the previous
+usable view. This API is engine support, not automatic integration into existing game
+callers and not proof that regional loading or continuous-motion frame targets pass.
+
+### Backpressure and timings
+
+`StreamingStats` reports outstanding jobs, reserved bytes and rejected admissions.
+The limits are 64 outstanding jobs and 256 MiB reserved for source + destination +
+staging (three times packed geometry/section bytes). Cancelled jobs remain charged
+until their owners retire, so repeated cancellation cannot bypass the limit. Active
+entity meshes, the registry's deferred destruction ring and Jolt's internal cooked
+shape/temporary allocation overhead are separate; use `render.memory` alongside
+these queue counters to measure actual retained GPU memory. An invalid ticket means
+admission failed: backpressure, unavailable services or an invalid/non-material target.
+Use `CreateInstance` to establish a valid visual target. Larger priority values outrank
+smaller values; cancellation drops obsolete CPU work and prevents stale publication.
+
+Per-ticket timings separate validated input copy, collider preparation, render-thread
+allocation/staging/copy, observed upload completion, collider commit and total commit.
+Upload completion includes polling cadence; it is not a GPU timestamp. CPU packet-drain
+time on this path is zero by construction. Old synchronous APIs retain their old
+synchronization costs. No capture/readback is needed to collect these timings.
+
+Immutable buffer ownership remains simple. Capacity pooling is deferred until a
+regional traversal shows allocation dominates: the initial native quad fixture
+measured 0.11–0.17 ms allocation/copy versus up to 52 ms observed upload readiness,
+with 0.003–0.080 ms total commits on a shared workstation. These small-fixture figures
+are contract evidence, not terrain throughput or an end-to-end game benchmark.
+
+### Validation
+
+`python tools/mcp/tests/verify_procedural_streaming.py --build build/default --port 9063`
+creates an isolated project/profile and launches only its own editor. It checks native
+capability and ABI, material-source destruction, copied-array ownership, supersession,
+mesh+collider commit/raycast parity, density-section upload, collision-only replacement,
+failed cooking retaining the old world, empty clearing, cancellation and zero ticket
+memory after retirement. Unit tests cover worker-cooked shapes and replacements,
+material retention without slot writes, stale/repeated cancellation and admission
+limits; managed tests cover ABI and rejection before interop.
+
+The game's authored Graihan–Kyne cold/warm traversal, reversal, loading edit, scene exit,
+p95/p99/max and full memory acceptance remains a separate integration workload. Do not
+replace that workload with this fixture or advertise the original smooth-zoom goal as
+verified solely because these engine checks pass.
+
+
+Final version-1 check: 1,360 native unit cases and eight managed procedural cases
+passed, plus the GPU abstraction guard and an isolated native replay. Scene exit
+cancelled a started 66,049-vertex / 131,072-triangle request and returned outstanding
+jobs/reservations to zero. See `tests/evidence/procedural-streaming/native-summary.json`.
+The fixture was unfocused/idle-throttled with another editor open; its small-mesh
+commit timings are not a measurement of playable camera frame pacing. Generic
+editor/runtime smokes, other build configurations and cross-platform execution were
+not run. A clangd refresh was attempted but clang-cl is unavailable on this machine.

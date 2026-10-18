@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "gpu/GpuTypes.hpp"
+#include "scripting/ProceduralStream.hpp"
 #include "scene/Entity.hpp"
 #include "scene/LoadedModel.hpp"
 #include "material/EffectManager.hpp"
@@ -94,6 +95,7 @@ namespace aether::app::scripting
 		std::vector<CachedMesh> meshCache;
 		// Entity-owned runtime geometry; retired only with the frame pipeline quiesced.
 		std::unordered_map<std::uint32_t, std::unique_ptr<aether::Mesh>> proceduralMeshes;
+		ProceduralStream proceduralStream;
 		aether::MaterialAsset defaultMaterial{};
 		bool defaultMaterialInitialized = false;
 	};

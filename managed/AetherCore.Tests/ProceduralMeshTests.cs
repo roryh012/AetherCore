@@ -72,4 +72,21 @@ public sealed class ProceduralMeshTests
         Assert.Throws<ArgumentException>(()=>ProceduralMesh.SetTexturedBatch([upload with {SecondaryTexcoords=[]}]));
         Assert.Throws<ArgumentException>(()=>ProceduralMesh.SetTexturedBatch([upload with {SecondaryTexcoords=[new(float.NaN,0)]}]));
     }
+
+    [Fact]
+    public void StreamingAbiAndInvalidRequestsStayOutsideInterop()
+    {
+        Assert.Equal(72,System.Runtime.InteropServices.Marshal.SizeOf<ProceduralMesh.UploadStatus>());
+        Assert.Equal(24,System.Runtime.InteropServices.Marshal.SizeOf<ProceduralMesh.StreamingStatistics>());
+        var upload=new ProceduralMesh.TexturedUpdate(default,[Vector3.Zero],[Vector3.UnitY],[0,0,0],[Vector2.Zero],[Vector3.One],[Vector2.Zero]);
+        Assert.Throws<ArgumentException>(()=>ProceduralMesh.QueueTextured(upload with {Indices=[0,0,1]}));
+        Assert.Throws<ArgumentException>(()=>ProceduralMesh.QueueTextured(upload with {SecondaryTexcoords=[]}));
+        Assert.Throws<ArgumentException>(()=>ProceduralMesh.QueueTextured(upload with {Texcoords=[new(float.NaN,0)]}));
+        Assert.Throws<ArgumentException>(()=>ProceduralMesh.QueueTextured(upload,collision:true,horizon:true));
+        Assert.Throws<ArgumentException>(()=>ProceduralMesh.QueueCollision(default,[Vector3.Zero],[0,0,1]));
+        Assert.Throws<ArgumentException>(()=>ProceduralMesh.QueueSection(default,Vector3.Zero,1,1,1,[],[0,0,0,0]));
+        Assert.Throws<ArgumentException>(()=>ProceduralMesh.QueueSection(default,Vector3.Zero,float.MaxValue,2,1,new float[18],[0,0,0,0]));
+        Assert.False(default(ProceduralMesh.UploadTicket).IsValid);
+        default(ProceduralMesh.UploadTicket).Dispose();
+    }
 }

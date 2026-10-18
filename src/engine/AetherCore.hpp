@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <mutex>
 
 #include "Defines.hpp" // AE_VALIDATION_DEFAULT_ON (force-included, named here for clarity)
 #include "EngineClient.hpp"
@@ -154,6 +155,8 @@ namespace aether
 
 		void RunExclusive(QuiesceMode mode, std::function<void()> mutation) override;
 		void RetireAfterRendering(std::shared_ptr<void> resource) override;
+		bool QueueGpuWork(std::function<bool()> work, int priority = 0) override;
+		void RetireQueuedRendering(std::shared_ptr<void> resource) override;
 
 		[[nodiscard]] double RealElapsedSeconds() const override
 		{
@@ -380,6 +383,16 @@ namespace aether
 		// Producer/game-thread frame loop state (distinct from the render-side
 		RenderThread m_renderThread;
 		RenderRetirementQueue m_retiredRenderResources;
+		RenderRetirementQueue m_asyncRetiredResources;
+		struct PendingGpuWork
+		{
+			std::uint64_t afterFrame;
+			int priority;
+			std::function<bool()> step;
+		};
+		std::mutex m_gpuWorkMutex;
+		std::vector<PendingGpuWork> m_gpuWork;
+		void ProcessGpuWork(std::uint64_t frame);
 		FramePacer m_framePacer;
 		// Per-frame timings for the Performance panel. Always present, in every build
 		// config - the Tracy plots beside it compile out in Release.

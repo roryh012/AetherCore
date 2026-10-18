@@ -89,6 +89,16 @@ namespace aether
 		return MaterialHandle{slot, e.generation};
 	}
 
+	bool MaterialRegistry::Retain(MaterialHandle handle)
+	{
+		const std::scoped_lock lock(m_mutex);
+		if (!handle.IsValid() || handle.index >= m_slots.size()) { return false; }
+		auto& entry = m_slots[handle.index];
+		if (!entry.alive || entry.generation != handle.generation) { return false; }
+		++entry.refcount;
+		return true;
+	}
+
 	void MaterialRegistry::Release(MaterialHandle handle)
 	{
 		if (!handle.IsValid() || handle.index >= m_slots.size())

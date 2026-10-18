@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <span>
 
 #include "gpu/GpuHandles.hpp"
 #include "gpu/GpuTypes.hpp"
@@ -32,6 +33,12 @@ namespace aether::gpu
 
 		// Blocking: returns once the copy has completed, so the caller may free `src`.
 		void CopyBuffer(BufferHandle src, BufferHandle dst, DeviceSize size);
+		// Caller retains both buffers until IsComplete. Does not wait for the GPU.
+		struct BufferCopy { BufferHandle src; BufferHandle dst; DeviceSize size; };
+		[[nodiscard]] std::uint64_t CopyBuffersAsync(std::span<const BufferCopy> copies, bool background = false);
+		bool PublishCompleted(std::uint64_t ticket);
+		[[nodiscard]] std::uint64_t CopyBufferAsync(BufferHandle src, BufferHandle dst, DeviceSize size);
+		[[nodiscard]] bool IsComplete(std::uint64_t ticket) const;
 
 		[[nodiscard]] void* GetCommandPool() const;
 

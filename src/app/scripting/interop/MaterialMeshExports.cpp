@@ -89,6 +89,7 @@ static int SetProceduralMesh(std::uint32_t id, const Vec3* positions,
 			}
 			triangleIndices.push_back(indices[i]);
 		}
+		ctx.proceduralStream.Invalidate(ctx, id);
 		const aether::Entity entity{id};
 		glm::vec3 boundsMin(0.0f), boundsMax(0.0f);
 		if (!vertices.empty())
@@ -273,6 +274,7 @@ AE_SCRIPT_API int aether_set_procedural_collision(std::uint32_t id, const Vec3* 
             if (indices[i] >= static_cast<std::uint32_t>(vertexCount)) return 0;
             collider.meshIndices.push_back(indices[i]);
         }
+        ctx.proceduralStream.Invalidate(ctx, id);
         const aether::Entity entity{id};
         ctx.physics->WaitForStepIdle();
         ctx.physics->RemoveBody(world, entity);

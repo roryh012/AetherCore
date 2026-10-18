@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <memory>
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -55,6 +56,8 @@ namespace aether
 		Mesh,
 	};
 
+	struct PreparedTriangleCollider;
+
 	struct ColliderComponent
 	{
 		PhysicsShapeType shape = PhysicsShapeType::Box;
@@ -74,6 +77,7 @@ namespace aether
 		// other shape.
 		std::string meshSource;
 		// Runtime-only Mesh geometry. Never serialized or retained in the shape cache.
+		std::shared_ptr<const PreparedTriangleCollider> preparedMesh;
 		std::vector<glm::vec3> meshVertices;
 		std::vector<std::uint32_t> meshIndices;
 	};

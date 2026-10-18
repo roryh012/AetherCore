@@ -92,33 +92,49 @@ namespace aether::gpu
 
 	void UploadContext::CopyBuffer(BufferHandle src, BufferHandle dst, DeviceSize size)
 	{
-		if (m_impl == nullptr)
+		if (m_impl == nullptr) { AE_ERROR(LogCategory::Vulkan, "UploadContext::CopyBuffer called on invalid context."); return; }
+		const auto ticket = CopyBufferAsync(src, dst, size);
+		static_cast<Impl*>(m_impl)->transfer->WaitFor(ticket);
+	}
+
+	bool UploadContext::IsComplete(std::uint64_t ticket) const
+	{
+		return m_impl != nullptr && static_cast<const Impl*>(m_impl)->transfer->IsComplete(ticket);
+	}
+
+	std::uint64_t UploadContext::CopyBufferAsync(BufferHandle src, BufferHandle dst, DeviceSize size)
+	{
+		const BufferCopy copy{src, dst, size};
+		return CopyBuffersAsync(std::span(&copy, 1));
+	}
+
+	std::uint64_t UploadContext::CopyBuffersAsync(std::span<const BufferCopy> copies, bool background)
+	{
+		if (!m_impl) { AE_ERROR(LogCategory::Vulkan, "UploadContext::CopyBuffersAsync called on invalid context."); return 0; }
+		const auto* impl = static_cast<const Impl*>(m_impl);
+		struct ResolvedCopy { VkBuffer src; VkBuffer dst; DeviceSize size; };
+		std::vector<ResolvedCopy> resolved;
+		for (const auto& copy : copies)
 		{
-			AE_ERROR(LogCategory::Vulkan, "UploadContext::CopyBuffer called on invalid context.");
-			return;
+			const auto* src = impl->backendRegistry->Resolve(copy.src);
+			const auto* dst = impl->backendRegistry->Resolve(copy.dst);
+			if (!src || !dst) { AE_ERROR(LogCategory::Vulkan, "UploadContext::CopyBuffersAsync: failed to resolve src or dst buffer."); return 0; }
+			resolved.push_back({src->buffer, dst->buffer, copy.size});
 		}
-
-		const Impl* impl = static_cast<Impl*>(m_impl);
-		AE_ASSERT(impl->backendRegistry != nullptr && impl->transfer != nullptr, "UploadContext: backendRegistry or transfer manager is null.");
-
-		const auto* const srcEntry = impl->backendRegistry->Resolve(src);
-		const auto* const dstEntry = impl->backendRegistry->Resolve(dst);
-		if (srcEntry == nullptr || dstEntry == nullptr)
+		return impl->transfer->Submit([&](CommandList& list)
 		{
-			AE_ERROR(LogCategory::Vulkan, "UploadContext::CopyBuffer: failed to resolve src or dst buffer.");
-			return;
-		}
+			for (const auto& copy : resolved)
+			{
+				list.CopyBuffer(static_cast<void*>(copy.src), static_cast<void*>(copy.dst), 0, 0, copy.size);
+			}
+		}, {}, !background);
+	}
 
-		// On the TransferManager's queue (a dedicated DMA queue where the hardware has one),
-		// not the graphics queue: a one-shot there queued behind the frame in flight and
-		// cost ~3.7 ms per copy, which made a level's mesh uploads take seconds. The wait
-		// keeps this call blocking so callers can free the staging buffer straight after;
-		// the frame's submission waits on the transfer timeline, which publishes the copy
-		// to rendering (see TransferManager).
-		VkBuffer srcBuffer = srcEntry->buffer;
-		VkBuffer dstBuffer = dstEntry->buffer;
-		const aether::vulkan::TransferManager::Ticket ticket = impl->transfer->Submit([srcBuffer, dstBuffer, size](CommandList& cmdList) { cmdList.CopyBuffer(static_cast<void*>(srcBuffer), static_cast<void*>(dstBuffer), 0, 0, size); });
-		impl->transfer->WaitFor(ticket);
+	bool UploadContext::PublishCompleted(std::uint64_t ticket)
+	{
+		if (!IsComplete(ticket)) { return false; }
+		static_cast<Impl*>(m_impl)->transfer->PublishToGraphics(ticket);
+		return true;
 	}
 
 	void* UploadContext::GetCommandPool() const

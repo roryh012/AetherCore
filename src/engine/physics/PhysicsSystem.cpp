@@ -867,8 +867,79 @@ namespace aether
 		return out;
 	}
 
+	struct PreparedTriangleCollider
+	{
+		JPH::ShapeRefC shape;
+	};
+
+	std::shared_ptr<const PreparedTriangleCollider> PhysicsSystem::PrepareTriangleCollider(std::span<const glm::vec3> positions, std::span<const std::uint32_t> indices)
+	{
+		if (positions.empty() || indices.empty() || indices.size() % 3 != 0) { return {}; }
+		JPH::VertexList vertices;
+		JPH::IndexedTriangleList triangles;
+		for (const auto& p : positions)
+		{
+			if (!std::isfinite(p.x) || !std::isfinite(p.y) || !std::isfinite(p.z)) { return {}; }
+			vertices.emplace_back(p.x, p.y, p.z);
+		}
+		for (std::size_t i = 0; i < indices.size(); i += 3)
+		{
+			if (indices[i] >= positions.size() || indices[i+1] >= positions.size() || indices[i+2] >= positions.size()) { return {}; }
+			triangles.emplace_back(indices[i], indices[i+1], indices[i+2], 0);
+		}
+		auto result = JPH::MeshShapeSettings{vertices, triangles}.Create();
+		if (result.HasError()) { return {}; }
+		return std::make_shared<PreparedTriangleCollider>(PreparedTriangleCollider{result.Get()});
+	}
+
+	bool PhysicsSystem::TryCommitTriangleCollider(World& world, Entity entity, std::shared_ptr<const PreparedTriangleCollider> prepared, bool* failed)
+	{
+		if (failed) { *failed = false; }
+		if (!world.GetRegistry().valid(World::ToEntt(entity)) || physics_gate::EntityHas2DPhysics(world, entity) || world.Has<CharacterControllerComponent>(entity))
+		{
+			if (failed) { *failed = true; }
+			return false;
+		}
+		if (m_stepInFlight)
+		{
+			if (!m_stepDone.try_acquire()) { return false; }
+			m_stepInFlight = false;
+		}
+		if (!prepared)
+		{
+			RemoveBody(world, entity);
+			world.Remove<ColliderComponent>(entity);
+			world.Remove<RigidBodyComponent>(entity);
+			return true;
+		}
+		const auto* tc = world.TryGet<TransformComponent>(entity);
+		const auto position = tc ? ExtractPosition(*tc) : glm::vec3(0);
+		const auto rotation = tc ? ExtractRotation(*tc) : glm::quat(1, 0, 0, 0);
+		JPH::BodyCreationSettings settings{prepared->shape, ToJolt(position), ToJolt(rotation), JPH::EMotionType::Static, ToJoltLayer(PhysicsLayer::NonMoving)};
+		settings.mUserData = entity.id;
+		settings.mFriction = ColliderComponent{}.friction;
+		settings.mRestitution = ColliderComponent{}.restitution;
+		auto& bi = m_impl->physics->GetBodyInterface();
+		const auto* body = bi.CreateBody(settings);
+		if (!body) { if (failed) { *failed = true; } return false; }
+		const auto id = body->GetID();
+		RemoveBody(world, entity);
+		world.Remove<RigidBodyComponent>(entity);
+		ColliderComponent collider{};
+		collider.shape = PhysicsShapeType::Mesh;
+		collider.layer = PhysicsLayer::NonMoving;
+		collider.preparedMesh = std::move(prepared);
+		world.EmplaceOrReplace<ColliderComponent>(entity, std::move(collider));
+		world.Emplace<RigidBodyComponent>(entity, RigidBodyComponent{.body = FromJolt(id), .motionType = PhysicsMotionType::Static});
+		const auto scale = tc ? ExtractScale(tc->localToWorld) : glm::vec3(1);
+		world.EmplaceOrReplace<PhysicsStateComponent>(entity, position, rotation, position, rotation, scale);
+		bi.AddBody(id, JPH::EActivation::DontActivate);
+		return true;
+	}
+
 	static JPH::ShapeRefC GetOrCreateColliderShape(std::unordered_map<uint64_t, std::pair<JPH::ShapeRefC, std::uint64_t>>& cache, const ColliderComponent& c)
 	{
+		if (c.shape == PhysicsShapeType::Mesh && c.preparedMesh) { return c.preparedMesh->shape; }
 		if (c.shape == PhysicsShapeType::Mesh && !c.meshVertices.empty())
 		{
 			JPH::VertexList vertices;

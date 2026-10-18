@@ -274,3 +274,21 @@ TEST_CASE("TransferManager: tickets are monotonic and shutdown drains in-flight 
 	src->Destroy();
 	dst->Destroy();
 }
+
+TEST_CASE("TransferManager: background uploads do not become graphics waits until published")
+{
+	if (!Gpu().valid) { return; }
+	vulkan::TransferManager transfer;
+	transfer.Initialize(Gpu().device.device, Gpu().queue, Gpu().queueFamily, Gpu().queueFamily);
+	const auto visible = transfer.Submit([](gpu::CommandList&) {});
+	CHECK(transfer.GraphicsDependency() == visible);
+	const auto background = transfer.Submit([](gpu::CommandList&) {}, {}, false);
+	CHECK(transfer.LastSubmitted() == background);
+	CHECK(transfer.GraphicsDependency() == visible);
+	transfer.WaitFor(background);
+	transfer.PublishToGraphics(background);
+	CHECK(transfer.GraphicsDependency() == background);
+	transfer.PublishToGraphics(visible);
+	CHECK(transfer.GraphicsDependency() == background);
+	transfer.Shutdown();
+}

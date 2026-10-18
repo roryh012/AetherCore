@@ -44,6 +44,14 @@ namespace aether
 		// Call inside RunExclusive: retain ownership until previously submitted rendering completes.
 		virtual void RetireAfterRendering(std::shared_ptr<void> resource) = 0;
 
+		// Game-thread submission; callbacks run only on the render thread. Return true when
+		// finished; false schedules a nonblocking poll next frame. Never capture the ECS.
+		virtual bool QueueGpuWork(std::function<bool()>, int = 0) { return false; }
+		virtual void RetireQueuedRendering(std::shared_ptr<void> resource)
+		{
+			RunExclusive(QuiesceMode::DrainCpuOnly, [&] { RetireAfterRendering(std::move(resource)); });
+		}
+
 		// Real (wall-clock) seconds since the frame loop started, unaffected by the play-speed /
 		// pause time scale. Use this to animate UI while the game is frozen (e.g. a pause menu),
 		// where the scaled game clock (Time.TotalTime) stops advancing.

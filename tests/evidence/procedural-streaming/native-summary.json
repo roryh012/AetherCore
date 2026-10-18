@@ -1,0 +1,104 @@
+{
+  "date": "2026-10-18",
+  "apiVersion": 1,
+  "platform": "Windows x64 RelWithDebInfo",
+  "otherLiveEditorPids": [
+    6888
+  ],
+  "fixtureFocused": false,
+  "fixtureIdleThrottled": true,
+  "unitTests": 1360,
+  "managedProceduralTests": 8,
+  "gpuAbstractionGuard": "pass",
+  "nativeFixture": "4b8c0ab2-acb5-49c1-88b2-d1072bf7fe85",
+  "nativeResult": {
+    "passed": true,
+    "frames": 15,
+    "timings": [
+      {
+        "VisualReady": true,
+        "CollisionReady": true,
+        "State": 4,
+        "InputCopyMs": 0.0019,
+        "ColliderPreparationMs": 0.048,
+        "AllocationCopyMs": 0.0606,
+        "UploadCompletionMs": 7.9236,
+        "ColliderCommitMs": 0.063,
+        "CommitMs": 0.0643,
+        "ReservedBytes": 1272
+      },
+      {
+        "VisualReady": true,
+        "CollisionReady": true,
+        "State": 4,
+        "InputCopyMs": 0.0127,
+        "ColliderPreparationMs": 0.0001,
+        "AllocationCopyMs": 0.0826,
+        "UploadCompletionMs": 1.4928,
+        "ColliderCommitMs": 0.0003,
+        "CommitMs": 0.0022,
+        "ReservedBytes": 1464
+      },
+      {
+        "VisualReady": true,
+        "CollisionReady": true,
+        "State": 4,
+        "InputCopyMs": 0.0018,
+        "ColliderPreparationMs": 0.0189,
+        "AllocationCopyMs": 0,
+        "UploadCompletionMs": 0,
+        "ColliderCommitMs": 0.0289,
+        "CommitMs": 0.029,
+        "ReservedBytes": 1272
+      },
+      {
+        "VisualReady": true,
+        "CollisionReady": true,
+        "State": 4,
+        "InputCopyMs": 0.0009,
+        "ColliderPreparationMs": 0.0001,
+        "AllocationCopyMs": 0.0001,
+        "UploadCompletionMs": 0.0001,
+        "ColliderCommitMs": 0.0069,
+        "CommitMs": 0.0089,
+        "ReservedBytes": 0
+      }
+    ],
+    "stats": {
+      "Jobs": 0,
+      "ReservedBytes": 0,
+      "Rejected": 0
+    }
+  },
+  "pendingSceneExitResult": {
+    "passed": true,
+    "frames": 31,
+    "stats": {
+      "Jobs": 0,
+      "ReservedBytes": 0,
+      "Rejected": 0
+    }
+  },
+  "nativeErrors": 0,
+  "gameSdkCompatibility": "current game sources compile against updated SDK, zero warnings/errors",
+  "sdkSha256": "880790482d1257f8c5e6d61e5e66fccf1e0c46ab06503dbc59f00a070aca6998",
+  "editorSha256": "be823171dadde8dc9668bde08891ebc91914a1344a87e4512215fd5057ea1887",
+  "skipped": [
+    "generic editor/runtime gauntlet smokes (isolated native streaming fixture used)",
+    "authored Graihan-Kyne traversal/frame-tail acceptance (game lead owns integration)",
+    "cross-platform and Release/Debug configurations",
+    "clangd refresh: attempted; clang-cl compiler unavailable"
+  ],
+  "limits": [
+    "Small-fixture timings include idle editor polling cadence; no game FPS claim",
+    "Queue reservation excludes active entity meshes, deferred GPU frees and Jolt internal overhead",
+    "Render preparation budget is soft; individual allocations are not preemptible",
+    "Buffer capacity pooling deferred until regional measurements identify allocation as a bottleneck"
+  ],
+  "memoryAfterSceneExit": {
+    "bufferBytes": 48351384,
+    "bufferCount": 127,
+    "allocatorUsedBytes": 186364728,
+    "allocatorBlockBytes": 494927872
+  }
+}

@@ -163,11 +163,11 @@ namespace aether
 		Swapchain& swapchain = m_gfx->GetSwapchain();
 		const VulkanContext& vk = m_gfx->GetVulkanContext();
 
-		// Order this frame after every TransferManager upload submitted so far. Skipped
+		// Order this frame after published uploads; off-screen preparation is excluded. Skipped
 		// entirely until the first upload; waiting an already-signalled timeline value
 		// is a no-op, so steady state costs nothing.
 		vulkan::TransferManager& transfer = vk.GetTransferManager();
-		const std::uint64_t transferTicket = transfer.LastSubmitted();
+		const std::uint64_t transferTicket = transfer.GraphicsDependency();
 		void* transferSemaphore = transferTicket > 0 ? static_cast<void*>(transfer.TimelineSemaphore()) : nullptr;
 
 		swapchain.SubmitAndPresent(vk.GetGraphicsQueue(), vk.GetPresentQueue(), asyncComputeSemaphoreHandle, asyncComputeTimelineValue, transferSemaphore, transferTicket);

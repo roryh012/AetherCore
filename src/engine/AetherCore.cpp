@@ -229,6 +229,8 @@ namespace aether
 
 		m_gpu->WaitIdle();
 		m_retiredRenderResources.Clear();
+		m_asyncRetiredResources.Clear();
+		m_gpuWork.clear();
 		m_screenshotService.Shutdown();
 
 		m_services.Get<AsyncComputeContext>().Shutdown(*m_gpu);
@@ -301,6 +303,49 @@ namespace aether
 	{
 		AE_ASSERT_ALWAYS(m_renderThread.IsReloadInProgress(), "Retirement requires parked submission");
 		m_retiredRenderResources.Retire(m_gpu->LastRenderSubmission(), std::move(resource));
+	}
+
+	bool AetherCore::QueueGpuWork(std::function<bool()> work, int priority)
+	{
+		const std::lock_guard lock(m_gpuWorkMutex);
+		m_gpuWork.push_back({m_producerFrameIndex, priority, std::move(work)});
+		return true;
+	}
+
+	void AetherCore::RetireQueuedRendering(std::shared_ptr<void> resource)
+	{
+		QueueGpuWork([this, resource = std::move(resource)]() mutable
+		{
+			m_asyncRetiredResources.Retire(m_gpu->LastRenderSubmission(), std::move(resource));
+			return true;
+		}, 2147483647);
+	}
+
+	void AetherCore::ProcessGpuWork(std::uint64_t frame)
+	{
+		// Registry allocations/destruction stay serialized with rendering. The frame
+		// marker keeps raw mesh pointers in all older CPU packets alive until submitted.
+		m_asyncRetiredResources.Collect([this](std::uint64_t ticket) { return m_gpu->IsRenderingComplete(ticket); });
+		std::vector<PendingGpuWork> work;
+		{
+			const std::lock_guard lock(m_gpuWorkMutex);
+			work.swap(m_gpuWork);
+		}
+		std::stable_sort(work.begin(), work.end(), [](const auto& a, const auto& b) { return a.priority > b.priority; });
+		const auto start = std::chrono::steady_clock::now();
+		std::vector<PendingGpuWork> pending;
+		for (auto& item : work)
+		{
+			if (item.afterFrame > frame || std::chrono::steady_clock::now() - start > std::chrono::milliseconds(2) || !item.step())
+			{
+				pending.push_back(std::move(item));
+			}
+		}
+		const std::lock_guard lock(m_gpuWorkMutex);
+		for (auto& item : pending)
+		{
+			m_gpuWork.push_back(std::move(item));
+		}
 	}
 
 	int AetherCore::RunFrameLoop(EngineClient& client)
@@ -1413,6 +1458,7 @@ namespace aether
 	{
 		AE_PROFILE_ZONE();
 		const auto execStart = std::chrono::steady_clock::now();
+		ProcessGpuWork(packet.frameIndex);
 		m_frameIndex = packet.frameIndex;
 		// Rides along to the present so the present-wait thread can pair the flip with the
 		// input that produced it. Set once here, where the packet enters the render thread,

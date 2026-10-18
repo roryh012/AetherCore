@@ -14,6 +14,15 @@ internal static unsafe partial class Native
 {
     private const string Lib = "AetherHost";
 
+    [LibraryImport(Lib)] internal static partial int aether_procedural_streaming_version();
+    [LibraryImport(Lib)] internal static partial uint aether_create_procedural_instance(uint source);
+    [LibraryImport(Lib)] internal static partial ulong aether_queue_procedural_mesh(uint entity, Vector3* positions, Vector3* normals, Vector3* colors, int vertices, uint* indices, int count, Vector2* uv, Vector2* uv2, int flags, int priority);
+    [LibraryImport(Lib)] internal static partial ulong aether_queue_procedural_section(uint entity, Vector3 origin, float spacing, int cells, int height, float* density, int count, float* basalt, int priority);
+    [LibraryImport(Lib)] internal static partial ProceduralMesh.UploadStatus aether_procedural_poll(ulong ticket);
+    [LibraryImport(Lib)] internal static partial ProceduralMesh.StreamingStatistics aether_procedural_stats();
+    [LibraryImport(Lib)] internal static partial int aether_procedural_commit(ulong ticket);
+    [LibraryImport(Lib)] internal static partial int aether_procedural_cancel(ulong ticket);
+
     [LibraryImport(Lib)]
     internal static partial int aether_set_procedural_mesh_batch(ProceduralMesh.BatchItem* items,int count);
 

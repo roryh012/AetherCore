@@ -140,3 +140,21 @@ TEST_CASE("Buffer-full Acquire does not corrupt the default material") {
     // Default must still be intact after releasing the fallback handle:
     CHECK(reg.ResolveSlot(reg.DefaultHandle()) == reg.DefaultHandle().index);
 }
+
+TEST_CASE("Retain shares a material slot without upload and rejects released generations")
+{
+	FakeSlotSink sink(8);
+	FakeTextureSink textureSink;
+	TextureRegistry textures(textureSink);
+	MaterialRegistry registry(sink, textures);
+	MaterialAsset asset;
+	const auto handle = registry.Acquire(asset);
+	const auto writes = sink.writeCount;
+	REQUIRE(registry.Retain(handle));
+	CHECK(sink.writeCount == writes);
+	registry.Release(handle);
+	CHECK(registry.ResolveSlot(handle) == handle.index);
+	registry.Release(handle);
+	CHECK_FALSE(registry.Retain(handle));
+	CHECK_FALSE(registry.Retain({}));
+}

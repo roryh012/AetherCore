@@ -44,6 +44,8 @@ namespace aether
 		AssetManager() = default;
 		~AssetManager() = default;
 
+		[[nodiscard]] gpu::UploadContext& GetUploadContext() { return *m_uploadContext; }
+
 		[[nodiscard]] Mesh CreateMesh(std::span<const Mesh::Vertex> vertices);
 		[[nodiscard]] Mesh CreateMesh(std::span<const Mesh::Vertex> vertices, std::span<const std::uint32_t> indices);
 		[[nodiscard]] Mesh CreateMesh(std::span<const Mesh::Vertex> vertices, std::span<const std::uint32_t> indices, const float* aabbMin, const float* aabbMax, const float* sphereCenter, float sphereRadius, std::span<const std::byte> shaderData = {});

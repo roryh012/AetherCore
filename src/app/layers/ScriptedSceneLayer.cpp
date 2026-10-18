@@ -43,6 +43,7 @@ namespace aether::app
 	void ScriptedSceneLayer::DestroySceneEntities(LayerContext& context)
 	{
 		auto& world = context.Get<World>();
+		m_sceneCtx.proceduralStream.Clear(m_sceneCtx);
 		for (const aether::Entity e: m_sceneCtx.sceneEntities)
 		{
 			world.Destroy(e);

@@ -50,6 +50,7 @@ namespace aether::vulkan
 		m_graphicsFamily = graphicsFamily;
 		m_nextValue = 1;
 		m_lastSubmitted.store(0, std::memory_order_release);
+		m_graphicsDependency.store(0, std::memory_order_release);
 
 		AE_INFO(LogCategory::Vulkan, "TransferManager initialised on queue family {} ({}).", transferFamily, HasDedicatedFamily() ? "dedicated transfer" : "graphics fallback");
 	}
@@ -78,13 +79,15 @@ namespace aether::vulkan
 		m_queue = VK_NULL_HANDLE;
 	}
 
-	TransferManager::Ticket TransferManager::Submit(const std::function<void(gpu::CommandList&)>& record, std::function<void()> onComplete)
+	TransferManager::Ticket TransferManager::Submit(const std::function<void(gpu::CommandList&)>& record, std::function<void()> onComplete, bool includeInGraphics)
 	{
 		AE_PROFILE_ZONE();
 		AE_ASSERT(m_device != VK_NULL_HANDLE, "TransferManager: Submit before Initialize");
 
 		const std::lock_guard<std::mutex> lock(m_mutex);
 		CollectCompleted();
+		// Recording ownership must not allocate after a successful queue submission.
+		m_inFlight.reserve(m_inFlight.size() + 1);
 
 		const VkCommandBufferAllocateInfo allocInfo{
 		        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -153,7 +156,14 @@ namespace aether::vulkan
 		m_inFlight.push_back(InFlight{.value = value, .cmd = cmd, .onComplete = std::move(onComplete)});
 		++m_nextValue;
 		m_lastSubmitted.store(value, std::memory_order_release);
+		if (includeInGraphics) { PublishToGraphics(value); }
 		return value;
+	}
+
+	void TransferManager::PublishToGraphics(Ticket ticket)
+	{
+		auto current = m_graphicsDependency.load(std::memory_order_relaxed);
+		while (current < ticket && !m_graphicsDependency.compare_exchange_weak(current, ticket, std::memory_order_release, std::memory_order_relaxed)) {}
 	}
 
 	bool TransferManager::IsComplete(Ticket ticket) const
