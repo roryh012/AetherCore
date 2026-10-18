@@ -1,0 +1,86 @@
+{
+  "purpose": "Original-camera game attribution; not current integrated readiness or matched regression win",
+  "gameCommit": "c21d51c63ea6e38afaa791cf8670e4db1279127b",
+  "engineSourceCommit": "91d22ed262b89cc5b3813b6b473939538403ca30",
+  "artifact": "artifacts\\static-scene-pacing\\forest-boundaries-c21d",
+  "setupPassed": true,
+  "results": [
+    {
+      "label": "forest",
+      "motion": {
+        "Count": 667,
+        "TotalMs": 13422.519099999996,
+        "MeanMs": 20.123716791604192,
+        "P50Ms": 19.9524,
+        "P95Ms": 32.5349,
+        "MaxMs": 54.8997,
+        "RetainedSamples": 667,
+        "P99Ms": 46.3091
+      },
+      "nonzeroUploadOrNativeDeltas": {},
+      "gpuSnapshot": {
+        "totalGpuMs": 8.768925666809082,
+        "hottest": {
+          "cpuTimeMs": 1.5293999910354614,
+          "gpuTimeMs": 3.3503599166870117,
+          "name": "$EngineForward"
+        }
+      },
+      "gate25msPassed": false
+    },
+    {
+      "label": "cave",
+      "motion": {
+        "Count": 2967,
+        "TotalMs": 48003.19290000014,
+        "MeanMs": 16.179033670374164,
+        "P50Ms": 12.3319,
+        "P95Ms": 31.2979,
+        "MaxMs": 69.196,
+        "RetainedSamples": 2967,
+        "P99Ms": 54.6436
+      },
+      "nonzeroUploadOrNativeDeltas": {},
+      "gpuSnapshot": {
+        "totalGpuMs": 3.6340818405151367,
+        "hottest": {
+          "cpuTimeMs": 0.8126000165939331,
+          "gpuTimeMs": 1.3267600536346436,
+          "name": "$EngineForward"
+        }
+      },
+      "gate25msPassed": false
+    }
+  ],
+  "allFifoReportsUnfocused": true,
+  "normalSaveUnchanged": true,
+  "nativeErrors": 0,
+  "cleanupBufferRatioAtTwoSeconds": 0.04848433992349548,
+  "cleanupTwoSecondGatePassed": true,
+  "immediateFollowup": {
+    "status": "INVALID - aborted on first observed focus transition",
+    "error": "Focus guard failed",
+    "normalSaveUnchanged": true,
+    "finalReport": {
+      "n": 600.0,
+      "avg": 18.4,
+      "median": 15.9,
+      "p95": 30.22,
+      "p99": 58.39,
+      "max": 644.83,
+      "game": 11.659,
+      "inflight": 6.653,
+      "present": 8.745,
+      "focused": 1.0,
+      "focusflips": 1.0
+    },
+    "observation": "Swapchain resized to3440x1369 near first focus transition; activation cause unknown; no timing comparison claimed"
+  },
+  "limitations": [
+    "Source exported from committed c21; project reference redirected to matching frozen SDK; game behavior otherwise unchanged",
+    "Private profiles and save directory; only own17320/47800 processes controlled and stopped",
+    "Two other primary editors observed concurrently; GPU load not controlled",
+    "Native600frame summaries can include benchmark exports and travel, so do not attribute maxima directly to motion",
+    "No new-camera integration, full warm round-trip, foreground proof or25ms acceptance pass"
+  ]
+}

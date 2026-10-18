@@ -239,3 +239,21 @@ emits zero for incomplete render records. Slot reuse clears all render waits.
 Static runtime/editor validation passed unfocused with zero focus transitions;
 this validates attribution, not the integrated forest-to-cave pacing gate.
 Evidence: `tests/evidence/static-scene-pacing/pacing-boundaries.json`.
+
+
+Original-camera game replay (`c21d51c`, diagnostic host `91d22ed2`) still failed
+the 25 ms motion p95 gate: forest 32.5349 ms, cave 31.2979 ms. No native/section
+or scenery upload counters advanced during either settled zoom window. Native
+errors were zero, two-second GPU-buffer cleanup passed, normal save unchanged,
+and all FIFO reports stayed unfocused with zero transitions. Fine timings show
+fence/image-acquisition waits and UI build work; submit/present calls are short.
+Native rolling windows also include exports/travel, so their maxima are not
+pure motion samples. The two concurrent external editors make cross-run GPU
+comparisons uncontrolled.
+
+An IMMEDIATE follow-up was stopped on its first focus transition, near a
+swapchain resize from 1280x720 to 3440x1369. Activation cause remains unknown;
+no comparison or pass is claimed, and no speculative window policy was changed.
+Do not conflate this baseline attribution with the new camera integration, warm
+return acceptance, or foreground pacing. Evidence and retained failures:
+`tests/evidence/static-scene-pacing/original-camera-boundaries.json`.
