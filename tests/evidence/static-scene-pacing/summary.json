@@ -1,0 +1,1064 @@
+{
+  "date": "2026-10-18",
+  "baselineCommit": "055eeb8e3ff7b8cefdf656066e17058952d23a7c",
+  "candidateCommit": "ad09555727bd46eaca5f5a50e18830961679e022",
+  "platform": "Windows x64 MSVC RelWithDebInfo",
+  "cpu": "AMD Ryzen 7 5800X",
+  "gpu": "AMD Radeon RX 6900 XT",
+  "backgroundEditorPids": [
+    6888,
+    45496
+  ],
+  "backgroundNotes": "User review editor and creature-combat editor preserved. Lead native traversal held; baseline compilation completed before timings. No compiler processes observed during samples.",
+  "captureParitySha256": "0ab4eefea1e5f5a2855a6379cafa4faea8aa528001b4c140cd198db43556e033",
+  "configuration": {
+    "width": 1280,
+    "height": 720,
+    "targetFps": 60,
+    "idleFps": 0,
+    "vsync": false,
+    "framesInFlight": 2,
+    "validation": false,
+    "agentSession": true
+  },
+  "validationCases": [
+    "0580a24d-e0a2-463c-ac13-70ed555f5833",
+    "c94eaa09-b3d8-43f8-acc1-cfdb9f3e6c6c",
+    "25373c8b-c5b1-4a9e-927d-e1834b0393dd"
+  ],
+  "notes": "Earlier runtime reload comparison was rejected due to an unstaged fixture assembly; valid runtime static/reload records are in 25373c8b-c5b1-4a9e-927d-e1834b0393dd, before its editor CLI availability failure.",
+  "initialBatch": {
+    "case": "6a9f2326-db7d-4a40-99b5-5e5b705d1f9e",
+    "passed": false,
+    "gates": [
+      {
+        "mode": "runtime",
+        "scene": "Empty",
+        "metrics": {
+          "p95": {
+            "baseline": 41.665,
+            "candidate": 29.925,
+            "limit": 46.331500000000005,
+            "passed": true
+          },
+          "p99": {
+            "baseline": 52.875,
+            "candidate": 30.545,
+            "limit": 61.80625,
+            "passed": true
+          },
+          "max": {
+            "baseline": 65.73,
+            "candidate": 30.66,
+            "limit": 85.16250000000001,
+            "passed": true
+          },
+          "game": {
+            "baseline": 0.202,
+            "candidate": 0.119,
+            "limit": 0.2823,
+            "passed": true
+          }
+        }
+      },
+      {
+        "mode": "runtime",
+        "scene": "Static",
+        "metrics": {
+          "p95": {
+            "baseline": 29.96,
+            "candidate": 29.905,
+            "limit": 33.456,
+            "passed": true
+          },
+          "p99": {
+            "baseline": 30.509999999999998,
+            "candidate": 30.675,
+            "limit": 36.086499999999994,
+            "passed": true
+          },
+          "max": {
+            "baseline": 37.115,
+            "candidate": 32.105,
+            "limit": 49.393750000000004,
+            "passed": true
+          },
+          "game": {
+            "baseline": 0.206,
+            "candidate": 0.1935,
+            "limit": 0.2869,
+            "passed": true
+          }
+        }
+      },
+      {
+        "mode": "runtime",
+        "scene": "Motion",
+        "metrics": {
+          "p95": {
+            "baseline": 30.06,
+            "candidate": 30.155,
+            "limit": 33.566,
+            "passed": true
+          },
+          "p99": {
+            "baseline": 30.75,
+            "candidate": 30.78,
+            "limit": 36.3625,
+            "passed": true
+          },
+          "max": {
+            "baseline": 31.215,
+            "candidate": 39.48,
+            "limit": 42.01875,
+            "passed": true
+          },
+          "game": {
+            "baseline": 0.3435,
+            "candidate": 0.381,
+            "limit": 0.445025,
+            "passed": true
+          }
+        }
+      },
+      {
+        "mode": "editor",
+        "scene": "Empty",
+        "metrics": {
+          "p95": {
+            "baseline": 16.67,
+            "candidate": 16.69,
+            "limit": 18.837000000000003,
+            "passed": true
+          },
+          "p99": {
+            "baseline": 16.689999999999998,
+            "candidate": 16.884999999999998,
+            "limit": 20.193499999999997,
+            "passed": true
+          },
+          "max": {
+            "baseline": 16.825000000000003,
+            "candidate": 17.06,
+            "limit": 24.031250000000004,
+            "passed": true
+          },
+          "game": {
+            "baseline": 1.134,
+            "candidate": 1.3415,
+            "limit": 1.3540999999999999,
+            "passed": true
+          }
+        }
+      },
+      {
+        "mode": "editor",
+        "scene": "Static",
+        "metrics": {
+          "p95": {
+            "baseline": 16.67,
+            "candidate": 16.67,
+            "limit": 18.837000000000003,
+            "passed": true
+          },
+          "p99": {
+            "baseline": 16.68,
+            "candidate": 18.365000000000002,
+            "limit": 20.182,
+            "passed": true
+          },
+          "max": {
+            "baseline": 16.985,
+            "candidate": 31.075,
+            "limit": 24.23125,
+            "passed": false
+          },
+          "game": {
+            "baseline": 1.524,
+            "candidate": 1.595,
+            "limit": 1.8026,
+            "passed": true
+          }
+        }
+      },
+      {
+        "mode": "editor",
+        "scene": "Motion",
+        "metrics": {
+          "p95": {
+            "baseline": 16.67,
+            "candidate": 16.67,
+            "limit": 18.837000000000003,
+            "passed": true
+          },
+          "p99": {
+            "baseline": 16.770000000000003,
+            "candidate": 16.675,
+            "limit": 20.285500000000003,
+            "passed": true
+          },
+          "max": {
+            "baseline": 17.115000000000002,
+            "candidate": 16.845,
+            "limit": 24.393750000000004,
+            "passed": true
+          },
+          "game": {
+            "baseline": 1.955,
+            "candidate": 1.9745,
+            "limit": 2.29825,
+            "passed": true
+          }
+        }
+      }
+    ]
+  },
+  "repeatBatch": {
+    "case": "c19dba42-1248-4025-96f6-2dbf8f871784",
+    "passed": true,
+    "gates": [
+      {
+        "mode": "editor",
+        "scene": "Static",
+        "metrics": {
+          "p95": {
+            "baseline": 16.67,
+            "candidate": 16.67,
+            "limit": 18.837000000000003,
+            "passed": true
+          },
+          "p99": {
+            "baseline": 16.71,
+            "candidate": 16.745,
+            "limit": 20.2165,
+            "passed": true
+          },
+          "max": {
+            "baseline": 18.22,
+            "candidate": 17.66,
+            "limit": 25.775,
+            "passed": true
+          },
+          "game": {
+            "baseline": 1.49,
+            "candidate": 1.701,
+            "limit": 1.7634999999999998,
+            "passed": true
+          }
+        }
+      }
+    ]
+  },
+  "combinedGates": [
+    {
+      "mode": "runtime",
+      "scene": "Empty",
+      "metrics": {
+        "p95": {
+          "baseline": 41.665,
+          "candidate": 29.925,
+          "limit": 46.331500000000005,
+          "passed": true
+        },
+        "p99": {
+          "baseline": 52.875,
+          "candidate": 30.545,
+          "limit": 61.80625,
+          "passed": true
+        },
+        "max": {
+          "baseline": 65.73,
+          "candidate": 30.66,
+          "limit": 85.16250000000001,
+          "passed": true
+        },
+        "game": {
+          "baseline": 0.202,
+          "candidate": 0.119,
+          "limit": 0.2823,
+          "passed": true
+        }
+      }
+    },
+    {
+      "mode": "runtime",
+      "scene": "Static",
+      "metrics": {
+        "p95": {
+          "baseline": 29.96,
+          "candidate": 29.905,
+          "limit": 33.456,
+          "passed": true
+        },
+        "p99": {
+          "baseline": 30.509999999999998,
+          "candidate": 30.675,
+          "limit": 36.086499999999994,
+          "passed": true
+        },
+        "max": {
+          "baseline": 37.115,
+          "candidate": 32.105,
+          "limit": 49.393750000000004,
+          "passed": true
+        },
+        "game": {
+          "baseline": 0.206,
+          "candidate": 0.1935,
+          "limit": 0.2869,
+          "passed": true
+        }
+      }
+    },
+    {
+      "mode": "runtime",
+      "scene": "Motion",
+      "metrics": {
+        "p95": {
+          "baseline": 30.06,
+          "candidate": 30.155,
+          "limit": 33.566,
+          "passed": true
+        },
+        "p99": {
+          "baseline": 30.75,
+          "candidate": 30.78,
+          "limit": 36.3625,
+          "passed": true
+        },
+        "max": {
+          "baseline": 31.215,
+          "candidate": 39.48,
+          "limit": 42.01875,
+          "passed": true
+        },
+        "game": {
+          "baseline": 0.3435,
+          "candidate": 0.381,
+          "limit": 0.445025,
+          "passed": true
+        }
+      }
+    },
+    {
+      "mode": "editor",
+      "scene": "Empty",
+      "metrics": {
+        "p95": {
+          "baseline": 16.67,
+          "candidate": 16.69,
+          "limit": 18.837000000000003,
+          "passed": true
+        },
+        "p99": {
+          "baseline": 16.689999999999998,
+          "candidate": 16.884999999999998,
+          "limit": 20.193499999999997,
+          "passed": true
+        },
+        "max": {
+          "baseline": 16.825000000000003,
+          "candidate": 17.06,
+          "limit": 24.031250000000004,
+          "passed": true
+        },
+        "game": {
+          "baseline": 1.134,
+          "candidate": 1.3415,
+          "limit": 1.3540999999999999,
+          "passed": true
+        }
+      }
+    },
+    {
+      "mode": "editor",
+      "scene": "Static",
+      "metrics": {
+        "p95": {
+          "baseline": 16.67,
+          "candidate": 16.67,
+          "limit": 18.837000000000003,
+          "passed": true
+        },
+        "p99": {
+          "baseline": 16.68,
+          "candidate": 16.795,
+          "limit": 20.182,
+          "passed": true
+        },
+        "max": {
+          "baseline": 16.985,
+          "candidate": 18.195,
+          "limit": 24.23125,
+          "passed": true
+        },
+        "game": {
+          "baseline": 1.524,
+          "candidate": 1.6219999999999999,
+          "limit": 1.8026,
+          "passed": true
+        }
+      }
+    },
+    {
+      "mode": "editor",
+      "scene": "Motion",
+      "metrics": {
+        "p95": {
+          "baseline": 16.67,
+          "candidate": 16.67,
+          "limit": 18.837000000000003,
+          "passed": true
+        },
+        "p99": {
+          "baseline": 16.770000000000003,
+          "candidate": 16.675,
+          "limit": 20.285500000000003,
+          "passed": true
+        },
+        "max": {
+          "baseline": 17.115000000000002,
+          "candidate": 16.845,
+          "limit": 24.393750000000004,
+          "passed": true
+        },
+        "game": {
+          "baseline": 1.955,
+          "candidate": 1.9745,
+          "limit": 2.29825,
+          "passed": true
+        }
+      }
+    }
+  ],
+  "combinedPassed": true,
+  "runs": [
+    {
+      "label": "baseline",
+      "mode": "runtime",
+      "scene": "Empty",
+      "seconds": 28,
+      "binarySha256": "c78d01be1f91e362c7650d72701ef8546019b39f119dabe9a074376263cce3c3",
+      "entityCount": 1,
+      "last": {
+        "n": 600.0,
+        "avg": 21.55,
+        "median": 16.06,
+        "p95": 53.45,
+        "p99": 75.26,
+        "max": 100.76,
+        "game": 0.275,
+        "inflight": 0.002,
+        "present": 1.79,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "candidate",
+      "mode": "runtime",
+      "scene": "Empty",
+      "seconds": 28,
+      "binarySha256": "2894ca6b1bf5deec7f790577da264513ed1bd61cc4399fb6b34814628d1a346e",
+      "entityCount": 1,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 15.6,
+        "p95": 29.93,
+        "p99": 30.55,
+        "max": 30.64,
+        "game": 0.116,
+        "inflight": 0.0,
+        "present": 1.223,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "candidate",
+      "mode": "runtime",
+      "scene": "Empty",
+      "seconds": 28,
+      "binarySha256": "2894ca6b1bf5deec7f790577da264513ed1bd61cc4399fb6b34814628d1a346e",
+      "entityCount": 1,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 15.6,
+        "p95": 29.92,
+        "p99": 30.54,
+        "max": 30.68,
+        "game": 0.122,
+        "inflight": 0.001,
+        "present": 1.262,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "baseline",
+      "mode": "runtime",
+      "scene": "Empty",
+      "seconds": 28,
+      "binarySha256": "c78d01be1f91e362c7650d72701ef8546019b39f119dabe9a074376263cce3c3",
+      "entityCount": 1,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 15.56,
+        "p95": 29.88,
+        "p99": 30.49,
+        "max": 30.7,
+        "game": 0.129,
+        "inflight": 0.001,
+        "present": 1.345,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "baseline",
+      "mode": "runtime",
+      "scene": "Static",
+      "seconds": 28,
+      "binarySha256": "c78d01be1f91e362c7650d72701ef8546019b39f119dabe9a074376263cce3c3",
+      "entityCount": 40,
+      "last": {
+        "n": 600.0,
+        "avg": 16.68,
+        "median": 15.58,
+        "p95": 29.98,
+        "p99": 30.5,
+        "max": 32.45,
+        "game": 0.206,
+        "inflight": 0.001,
+        "present": 1.664,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "candidate",
+      "mode": "runtime",
+      "scene": "Static",
+      "seconds": 28,
+      "binarySha256": "2894ca6b1bf5deec7f790577da264513ed1bd61cc4399fb6b34814628d1a346e",
+      "entityCount": 40,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 15.54,
+        "p95": 29.86,
+        "p99": 30.71,
+        "max": 31.73,
+        "game": 0.193,
+        "inflight": 0.001,
+        "present": 1.677,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "candidate",
+      "mode": "runtime",
+      "scene": "Static",
+      "seconds": 28,
+      "binarySha256": "2894ca6b1bf5deec7f790577da264513ed1bd61cc4399fb6b34814628d1a346e",
+      "entityCount": 40,
+      "last": {
+        "n": 600.0,
+        "avg": 16.68,
+        "median": 15.59,
+        "p95": 29.95,
+        "p99": 30.64,
+        "max": 32.48,
+        "game": 0.194,
+        "inflight": 0.001,
+        "present": 1.652,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "baseline",
+      "mode": "runtime",
+      "scene": "Static",
+      "seconds": 28,
+      "binarySha256": "c78d01be1f91e362c7650d72701ef8546019b39f119dabe9a074376263cce3c3",
+      "entityCount": 40,
+      "last": {
+        "n": 600.0,
+        "avg": 16.73,
+        "median": 15.53,
+        "p95": 29.94,
+        "p99": 30.52,
+        "max": 41.78,
+        "game": 0.206,
+        "inflight": 0.001,
+        "present": 1.692,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "baseline",
+      "mode": "runtime",
+      "scene": "Motion",
+      "seconds": 28,
+      "binarySha256": "c78d01be1f91e362c7650d72701ef8546019b39f119dabe9a074376263cce3c3",
+      "entityCount": 441,
+      "last": {
+        "n": 600.0,
+        "avg": 16.66,
+        "median": 15.53,
+        "p95": 30.04,
+        "p99": 30.78,
+        "max": 31.53,
+        "game": 0.362,
+        "inflight": 0.001,
+        "present": 1.597,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "candidate",
+      "mode": "runtime",
+      "scene": "Motion",
+      "seconds": 28,
+      "binarySha256": "2894ca6b1bf5deec7f790577da264513ed1bd61cc4399fb6b34814628d1a346e",
+      "entityCount": 441,
+      "last": {
+        "n": 600.0,
+        "avg": 16.8,
+        "median": 15.57,
+        "p95": 30.27,
+        "p99": 30.79,
+        "max": 47.72,
+        "game": 0.382,
+        "inflight": 0.001,
+        "present": 1.645,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "candidate",
+      "mode": "runtime",
+      "scene": "Motion",
+      "seconds": 28,
+      "binarySha256": "2894ca6b1bf5deec7f790577da264513ed1bd61cc4399fb6b34814628d1a346e",
+      "entityCount": 441,
+      "last": {
+        "n": 600.0,
+        "avg": 16.68,
+        "median": 15.86,
+        "p95": 30.04,
+        "p99": 30.77,
+        "max": 31.24,
+        "game": 0.38,
+        "inflight": 0.001,
+        "present": 1.66,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "baseline",
+      "mode": "runtime",
+      "scene": "Motion",
+      "seconds": 28,
+      "binarySha256": "c78d01be1f91e362c7650d72701ef8546019b39f119dabe9a074376263cce3c3",
+      "entityCount": 441,
+      "last": {
+        "n": 600.0,
+        "avg": 16.68,
+        "median": 15.68,
+        "p95": 30.08,
+        "p99": 30.72,
+        "max": 30.9,
+        "game": 0.325,
+        "inflight": 0.0,
+        "present": 1.462,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "baseline",
+      "mode": "editor",
+      "scene": "Empty",
+      "seconds": 28,
+      "binarySha256": "256e90d1561fca57e5e226baf14bf794ca395086746df2a4891e9f0202af0ccc",
+      "entityCount": 1,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 16.68,
+        "max": 16.73,
+        "game": 1.203,
+        "inflight": 0.0,
+        "present": 1.168,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "candidate",
+      "mode": "editor",
+      "scene": "Empty",
+      "seconds": 28,
+      "binarySha256": "be823171dadde8dc9668bde08891ebc91914a1344a87e4512215fd5057ea1887",
+      "entityCount": 1,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 16.81,
+        "max": 16.97,
+        "game": 1.289,
+        "inflight": 0.0,
+        "present": 1.321,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "candidate",
+      "mode": "editor",
+      "scene": "Empty",
+      "seconds": 28,
+      "binarySha256": "be823171dadde8dc9668bde08891ebc91914a1344a87e4512215fd5057ea1887",
+      "entityCount": 1,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.71,
+        "p99": 16.96,
+        "max": 17.15,
+        "game": 1.394,
+        "inflight": 0.0,
+        "present": 1.112,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "baseline",
+      "mode": "editor",
+      "scene": "Empty",
+      "seconds": 28,
+      "binarySha256": "256e90d1561fca57e5e226baf14bf794ca395086746df2a4891e9f0202af0ccc",
+      "entityCount": 1,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 16.7,
+        "max": 16.92,
+        "game": 1.065,
+        "inflight": 0.0,
+        "present": 1.161,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "baseline",
+      "mode": "editor",
+      "scene": "Static",
+      "seconds": 28,
+      "binarySha256": "256e90d1561fca57e5e226baf14bf794ca395086746df2a4891e9f0202af0ccc",
+      "entityCount": 40,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 16.68,
+        "max": 16.97,
+        "game": 1.523,
+        "inflight": 0.0,
+        "present": 1.375,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "candidate",
+      "mode": "editor",
+      "scene": "Static",
+      "seconds": 28,
+      "binarySha256": "be823171dadde8dc9668bde08891ebc91914a1344a87e4512215fd5057ea1887",
+      "entityCount": 40,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 16.77,
+        "max": 18.46,
+        "game": 1.642,
+        "inflight": 0.0,
+        "present": 1.689,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "candidate",
+      "mode": "editor",
+      "scene": "Static",
+      "seconds": 28,
+      "binarySha256": "be823171dadde8dc9668bde08891ebc91914a1344a87e4512215fd5057ea1887",
+      "entityCount": 40,
+      "last": {
+        "n": 600.0,
+        "avg": 16.71,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 19.96,
+        "max": 43.69,
+        "game": 1.548,
+        "inflight": 0.0,
+        "present": 1.543,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "baseline",
+      "mode": "editor",
+      "scene": "Static",
+      "seconds": 28,
+      "binarySha256": "256e90d1561fca57e5e226baf14bf794ca395086746df2a4891e9f0202af0ccc",
+      "entityCount": 40,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 16.68,
+        "max": 17.0,
+        "game": 1.525,
+        "inflight": 0.0,
+        "present": 1.637,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "baseline",
+      "mode": "editor",
+      "scene": "Motion",
+      "seconds": 28,
+      "binarySha256": "256e90d1561fca57e5e226baf14bf794ca395086746df2a4891e9f0202af0ccc",
+      "entityCount": 441,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 16.85,
+        "max": 17.07,
+        "game": 1.934,
+        "inflight": 0.0,
+        "present": 1.535,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "candidate",
+      "mode": "editor",
+      "scene": "Motion",
+      "seconds": 28,
+      "binarySha256": "be823171dadde8dc9668bde08891ebc91914a1344a87e4512215fd5057ea1887",
+      "entityCount": 441,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 16.68,
+        "max": 17.02,
+        "game": 1.908,
+        "inflight": 0.0,
+        "present": 1.563,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "candidate",
+      "mode": "editor",
+      "scene": "Motion",
+      "seconds": 28,
+      "binarySha256": "be823171dadde8dc9668bde08891ebc91914a1344a87e4512215fd5057ea1887",
+      "entityCount": 441,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 16.67,
+        "max": 16.67,
+        "game": 2.041,
+        "inflight": 0.0,
+        "present": 1.664,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "baseline",
+      "mode": "editor",
+      "scene": "Motion",
+      "seconds": 28,
+      "binarySha256": "256e90d1561fca57e5e226baf14bf794ca395086746df2a4891e9f0202af0ccc",
+      "entityCount": 441,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 16.69,
+        "max": 17.16,
+        "game": 1.976,
+        "inflight": 0.0,
+        "present": 1.236,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "baseline",
+      "mode": "editor",
+      "scene": "Static",
+      "seconds": 28,
+      "binarySha256": "256e90d1561fca57e5e226baf14bf794ca395086746df2a4891e9f0202af0ccc",
+      "entityCount": 40,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 16.67,
+        "max": 16.74,
+        "game": 1.272,
+        "inflight": 0.0,
+        "present": 1.132,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "candidate",
+      "mode": "editor",
+      "scene": "Static",
+      "seconds": 28,
+      "binarySha256": "be823171dadde8dc9668bde08891ebc91914a1344a87e4512215fd5057ea1887",
+      "entityCount": 40,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 16.82,
+        "max": 17.93,
+        "game": 1.8,
+        "inflight": 0.0,
+        "present": 1.532,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "candidate",
+      "mode": "editor",
+      "scene": "Static",
+      "seconds": 28,
+      "binarySha256": "be823171dadde8dc9668bde08891ebc91914a1344a87e4512215fd5057ea1887",
+      "entityCount": 40,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 16.67,
+        "max": 17.39,
+        "game": 1.602,
+        "inflight": 0.0,
+        "present": 1.481,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    },
+    {
+      "label": "baseline",
+      "mode": "editor",
+      "scene": "Static",
+      "seconds": 28,
+      "binarySha256": "256e90d1561fca57e5e226baf14bf794ca395086746df2a4891e9f0202af0ccc",
+      "entityCount": 40,
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 16.67,
+        "p99": 16.75,
+        "max": 19.7,
+        "game": 1.708,
+        "inflight": 0.0,
+        "present": 1.448,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "errors": []
+    }
+  ],
+  "validation": "Matched baseline/candidate static and repeated replacement in Editor and Runtime; candidate-only motion/replacement runs. Sync validation and best practices enabled. No native/resource/sync errors; installed overlay duplicate/API-version loader warnings present.",
+  "visualParity": "Static Editor baseline/candidate PNG files are byte-identical; visually inspected candidate geometry/materials.",
+  "conclusion": "No reproducible streaming-induced static regression demonstrated. Initial static-editor maximum failure is retained, full ABBA repeat passes; no production code changed.",
+  "limitations": [
+    "Unfocused agent windows, explicitly capped at 60 FPS with VSync and idle throttling disabled; this measures loop pacing, not foreground presentation latency.",
+    "Each reported percentile is the last rolling 600-frame window; ABBA replicates are compared by median.",
+    "Other live editors and compilation/system load must be recorded externally.",
+    "Single Windows machine/build configuration; no foreground display/latency or uncapped GPU throughput claim.",
+    "One initial candidate static-editor window contained a43.69ms outlier; repeat candidate maxima17.39/17.93ms. Cause not established; no claim of zero hitches.",
+    "Authored forest/cave integration and adapter visibility/cancellation are lead-owned acceptance."
+  ]
+}

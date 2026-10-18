@@ -262,3 +262,41 @@ The fixture was unfocused/idle-throttled with another editor open; its small-mes
 commit timings are not a measurement of playable camera frame pacing. Generic
 editor/runtime smokes, other build configurations and cross-platform execution were
 not run. A clangd refresh was attempted but clang-cl is unavailable on this machine.
+
+
+### Static-scene and pacing regression checks
+
+The shared frame loop and transfer dependency changes also affect ordinary static
+scenes. They are not a procedural-mesh-only optimization. The static regression
+fixture uses old public APIs and the same script assembly on both builds:
+
+```powershell
+python tools/mcp/tests/test_static_scene_pacing.py
+python tools/mcp/tests/verify_static_scene_pacing.py --baseline-build <pre-streaming-build> --candidate-build build/default
+python tools/mcp/tests/verify_static_scene_pacing.py --baseline-build <pre-streaming-build> --candidate-build build/default --validation --seconds 12 --scenes Static ReloadA
+```
+
+Use isolated build roots: the fixture temporarily stages its own AetherGame assembly
+and editor layout, then restores them. Do not run it against a build used by another
+editor. Profiles/projects/results live under ignored `artifacts/static-scene-pacing/`.
+The baseline must support `AETHER_USER_CONFIG_DIR` (055eeb8e does). Build Editor,
+GameRuntime, StageAppBundle on both revisions and AssetPacker/aether-ctl on the
+candidate. Stop competing builds and coordinate other native workloads first.
+
+The workloads are an empty scene, ordinary PBR geometry with six textured imported
+Fox meshes, and 400 additional static cubes with orbit/zoom camera motion. ReloadA/B
+exercise ordinary scene replacement under explicit synchronization validation.
+The editor capture verifies visual parity after sampling ends. No capture or control
+query occurs in timed intervals. Windows stay unfocused with idle throttling off,
+VSync off, 1280x720, two frames in flight and an explicit 60 FPS cap.
+
+ABBA runs compare medians of the last rolling 600-frame window's p95, p99, maximum
+and mean game work. Relative limits plus small absolute allowances are defined in
+`assess`; the command fails when any metric exceeds its limit. These are regression
+tolerances, not a smoothness target. Retain failed runs and investigate repeatability;
+a maximum from one short window is sensitive to workstation scheduling.
+
+See `tests/evidence/static-scene-pacing/summary.json` for the measured revisions,
+all final sample windows, validation outcomes, repeat results and limitations.
+This does not establish foreground presentation latency, uncapped throughput or the
+game's forest/cave acceptance. The lead must still test the integrated adapter.
