@@ -2410,6 +2410,17 @@
         "type": "object"
       },
       "tool": "set_session_name"
+    },
+    {
+      "description": "Decide later: close the recovery prompt for this project session without restoring, discarding or modifying any scene or recovery copy. Completes synchronously, including detached/unfocused dialogs; returns deferred or not_open and promptOpen=false. Recovery is offered again on the next project open.",
+      "mutates": true,
+      "name": "editor.recovery_defer",
+      "paramsSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      },
+      "tool": "recovery_defer"
     }
   ]
 }

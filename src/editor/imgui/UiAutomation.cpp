@@ -103,15 +103,46 @@ namespace aether::app
 		return std::nullopt;
 	}
 
+	void UiAutomation::CancelInput()
+	{
+		m_input.Cancel();
+		if (ImGui::GetCurrentContext() != nullptr)
+		{
+			ImGui::GetIO().ClearInputKeys();
+			ImGui::GetIO().ClearInputMouse();
+		}
+	}
+
 	void UiAutomation::ApplyInput(ImGuiIO& io)
 	{
-		for (const SynEvent& e: m_input.Step())
+		const auto events = m_input.Step();
+		if (!events.empty())
+		{
+			io.AddFocusEvent(true);
+		}
+		for (const SynEvent& e: events)
 		{
 			switch (e.kind)
 			{
 				case SynKind::MousePos:
+				{
+					// The backend reports the viewport under the real cursor, not this injected one.
+					ImGuiID viewportId = 0;
+					const ImGuiContext& gui = *ImGui::GetCurrentContext();
+					for (int i = gui.Windows.Size - 1; i >= 0; --i)
+					{
+						const ImGuiWindow* window = gui.Windows[i];
+						if (window->Active && !window->Hidden && !(window->Flags & ImGuiWindowFlags_NoMouseInputs)
+						    && !(window->Viewport->Flags & ImGuiViewportFlags_NoInputs) && window->OuterRectClipped.Contains(ImVec2(e.x, e.y)))
+						{
+							viewportId = window->ViewportId;
+							break;
+						}
+					}
+					io.AddMouseViewportEvent(viewportId);
 					io.AddMousePosEvent(e.x, e.y);
 					break;
+				}
 				case SynKind::MouseButton:
 					io.AddMouseButtonEvent(e.button, e.down);
 					break;

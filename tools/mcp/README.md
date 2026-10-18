@@ -187,3 +187,42 @@ printf '%s\n%s\n' \
 Call `set_session_name` (`app.session_name` on the control endpoint) with `{"name":"Artist - water review"}` to label the OS window/task switcher and editor menu header. `engine_info` returns `sessionName` and `windowTitle`; calling `app.session_name` without `name` reads the current values, and `{"name":""}` clears the label. Labels are display text: whitespace/control characters are normalized and the result is capped at 64 UTF-8 bytes without splitting a character. They do not rename projects or alter focus, persistence or ports.
 
 Set `AETHER_SESSION_NAME` before launch to name a copy from startup. If absent, the existing agent name is used; otherwise a control-enabled copy defaults to `MCP :<port>`. Startup labels apply to all main windows; the editor additionally shows them in its menu header. This lets each agent label its own endpoint without restarting the other editors. Restart the MCP client tool discovery after updating the engine if its cached tool list predates `set_session_name`; `aether-ctl app.session_name` works directly.
+
+
+## Recovery prompt: decide later
+
+Use MCP `recovery_defer {}` (wire: `editor.recovery_defer {}`) to close the recovery
+offer without restoring, discarding, saving or changing any scene/recovery copy.
+It returns `{"status":"deferred","promptOpen":false,"filesUntouched":true}` after
+closing the popup. Unexpected arguments are rejected without closing it. Calling again returns `status:"not_open"`. The offer returns
+on the next project/editor session; `recovery_list` continues to list its copies.
+Pending synthetic editor input is cancelled on dismissal to prevent click-through.
+
+This does not depend on OS focus, mouse coordinates or whether the dialog has its
+own platform viewport. An unavailable editor UI layer returns an error. An unknown
+method means the running editor predates this capability: launch a matching build
+and refresh the MCP tool list; do not substitute restore/discard for defer.
+
+`ui.click` remains asynchronous: `queued` confirms scheduling, not activation.
+Its injected pointer now supplies the matching ImGui viewport, rather than using
+the viewport under the real OS cursor. `ui.query` adds `windowRect`, `viewportId`
+and `detachedViewport` so callers can diagnose/detach the actual target window.
+
+Native verification (stdlib Python, matching built editor/CLI, unused ports):
+
+```powershell
+python tools/mcp/tests/verify_recovery_defer.py --build build/default --port 9062
+```
+
+The fixture creates only its own project, saved scene, recovery copy and preferences
+under ignored `artifacts/recovery-control/`. It drives JSON-RPC MCP calls, detaches
+the dialog at negative coordinates, checks both dismissal paths and repeat/reopen
+behaviour, and compares file hashes and modification times. `--expect-click-failure`
+is for a comparison build with the old input implementation. Focus-loss delivery is
+covered by the ImGui event regression; native tests do not force OS foreground focus.
+`AETHER_USER_CONFIG_DIR` selects an isolated preferences directory (exact path,
+without appending another folder); omit it to retain the normal per-user location.
+
+The native negative-coordinate fixture assumes a work area left of the primary
+display. The ImGui event regression covers both coordinate signs without that
+desktop requirement.

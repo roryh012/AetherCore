@@ -211,6 +211,10 @@ namespace aether::io
 
 	std::filesystem::path PlatformPaths::GetUserConfigDir()
 	{
+		if (const std::string overrideDir = EnvironmentString("AETHER_USER_CONFIG_DIR"); !overrideDir.empty())
+		{
+			return EnsureDirectory(overrideDir);
+		}
 		std::filesystem::path root;
 
 #if defined(_WIN32)

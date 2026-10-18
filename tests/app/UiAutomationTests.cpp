@@ -1,6 +1,8 @@
 #include <doctest/doctest.h>
 
 #include "imgui/UiAutomation.hpp"
+#include <imgui.h>
+#include <imgui_internal.h>
 
 using namespace aether::app;
 
@@ -27,4 +29,64 @@ TEST_CASE("UiAutomation FindItem resolves by window+label and computes centre")
     CHECK_FALSE(missing.has_value());
 
     a.BeginFrameSwap(); // clear so this test leaves no residue for others
+}
+
+TEST_CASE("Synthetic clicks route to detached viewports while the OS reports another viewport and focus loss")
+{
+	for (const float x : {-1470.0f, 470.0f})
+	{
+		ImGuiContext* gui = ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO();
+		io.IniFilename = nullptr;
+		io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
+		ImGuiViewportP detached;
+		detached.ID = 700;
+		ImGuiWindow* window = IM_NEW(ImGuiWindow)(gui, "Detached recovery");
+		gui->Windows.push_back(window);
+		window->Viewport = &detached;
+		window->ViewportId = detached.ID;
+		window->Active = true;
+		window->OuterRectClipped = ImRect(x - 20, 1000, x + 20, 1120);
+		UiAutomation& automation = UiAutomation::Get();
+		automation.Input().ClearHover();
+		automation.Input().QueueClick(x, 1093.5f, 0, false);
+		int frame = 0;
+		while (automation.Input().Busy())
+		{
+			io.AddMouseViewportEvent(ImGui::GetMainViewport()->ID);
+			io.AddFocusEvent(false);
+			automation.ApplyInput(io);
+			ImGui::UpdateInputEvents(false);
+			CHECK(io.MouseHoveredViewport == detached.ID);
+			CHECK_FALSE(io.AppFocusLost);
+			CHECK(io.MousePos.x == x);
+			CHECK(io.MouseDown[0] == (frame == 3));
+			++frame;
+		}
+		CHECK(frame == 5);
+		window->Viewport = gui->Viewports[0];
+		ImGui::DestroyContext(gui);
+	}
+}
+
+TEST_CASE("Deferring a modal can cancel queued UI input without a click-through or held modifiers")
+{
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.IniFilename = nullptr;
+	auto& automation = UiAutomation::Get();
+	automation.Input().QueueClick(30, 40, 0, true, true);
+	automation.Input().QueueHover(30, 40);
+	io.MouseDown[0] = true;
+	io.KeyCtrl = true;
+	io.KeyMods = ImGuiMod_Ctrl;
+	automation.CancelInput();
+	CHECK_FALSE(automation.Input().Busy());
+	CHECK(automation.Input().Step().empty());
+	CHECK_FALSE(io.MouseDown[0]);
+	CHECK_FALSE(io.KeyCtrl);
+	CHECK(io.KeyMods == 0);
+	automation.ApplyInput(io);
+	CHECK(ImGui::GetCurrentContext()->InputEventsQueue.empty());
+	ImGui::DestroyContext();
 }

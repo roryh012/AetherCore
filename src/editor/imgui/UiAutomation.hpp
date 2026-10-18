@@ -46,6 +46,7 @@ namespace aether::app
 		// Per-frame, from ImguiSubsystem::BeginFrame:
 		void BeginFrameSwap();      // publish building -> snapshot, clear building
 		void ApplyInput(ImGuiIO& io); // drain the input script into io events
+		void CancelInput();
 
 		// Reads (main thread):
 		[[nodiscard]] const std::vector<UiItem>& Snapshot() const { return m_snapshot; }

@@ -1,0 +1,98 @@
+{
+  "date": "2026-10-18",
+  "base": "ae8801deb1fed563e397c9a313e1ee997462cced",
+  "unitPassed": 1355,
+  "focusedAssertionsPassed": 51,
+  "guardPassed": true,
+  "nativeFixed": {
+    "case": "571ae16c-c00b-4294-812c-331e83bec8ac",
+    "runs": [
+      {
+        "mode": "click",
+        "target": {
+          "active": false,
+          "clipped": false,
+          "clippedHorizontally": false,
+          "detachedViewport": true,
+          "h": 29.0,
+          "hovered": false,
+          "label": "Decide later",
+          "viewportId": 557284164,
+          "w": 120.0,
+          "window": "Recover Unsaved Work###recoverScenes",
+          "windowRect": [
+            -2426.0,
+            672.0,
+            675.0,
+            191.0
+          ],
+          "x": -2333.0,
+          "y": 826.0
+        },
+        "focused": true,
+        "click": {
+          "status": "queued",
+          "target": {
+            "x": -2442.0,
+            "y": 840.5
+          }
+        }
+      },
+      {
+        "mode": "defer",
+        "target": {
+          "active": false,
+          "clipped": false,
+          "clippedHorizontally": false,
+          "detachedViewport": true,
+          "h": 29.0,
+          "hovered": false,
+          "label": "Decide later",
+          "viewportId": 557284164,
+          "w": 120.0,
+          "window": "Recover Unsaved Work###recoverScenes",
+          "windowRect": [
+            -2341.0,
+            672.0,
+            675.0,
+            191.0
+          ],
+          "x": -2249.0,
+          "y": 826.0
+        },
+        "focused": true,
+        "invalidArgumentsRejected": true,
+        "defer": {
+          "filesUntouched": true,
+          "promptOpen": false,
+          "status": "deferred"
+        },
+        "repeat": {
+          "filesUntouched": true,
+          "promptOpen": false,
+          "status": "not_open"
+        }
+      }
+    ],
+    "hashesAndMtimesUnchanged": true,
+    "recoverableAfterDefer": 1,
+    "reofferedOnNextSession": true,
+    "nativeErrors": 0,
+    "invalidArgumentsRejectedWithoutDismissing": true
+  },
+  "counterfactual": {
+    "case": "d8add63b-b33d-473f-8b03-d1513e971e50",
+    "legacyInputClickQueuedButPromptRemained": true,
+    "semanticDeferStillWorked": {
+      "filesUntouched": true,
+      "promptOpen": false,
+      "status": "deferred"
+    },
+    "inputRegressionAssertionsFailedAsExpected": 32
+  },
+  "limits": [
+    "Native detached/negative-coordinate paths tested; OS focus was true in the native runs. Focus-loss and wrong-backend-viewport delivery were exercised through ImGui input events in unit tests.",
+    "Generic GPU editor/runtime gauntlet smokes skipped; separate native MCP recovery fixture passed.",
+    "Review editor and real recovery copies were not modified."
+  ]
+}

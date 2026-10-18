@@ -139,3 +139,15 @@ TEST_CASE("ResolveBundlePath resolves env override -> dev hint -> staged bundle 
 	fs::remove(hintFile, ec);
 	fs::remove_all(stagedAbsolute.parent_path(), ec);
 }
+
+TEST_CASE("User config override isolates native editor verification preferences")
+{
+	const std::string previous = PlatformPaths::ReadEnvironmentVariable("AETHER_USER_CONFIG_DIR");
+	const auto profile = std::filesystem::temp_directory_path() / "aether-recovery-profile-test";
+	SetEnv("AETHER_USER_CONFIG_DIR", profile.string().c_str());
+	CHECK(PlatformPaths::GetUserConfigDir() == profile);
+	CHECK(std::filesystem::is_directory(profile));
+	SetEnv("AETHER_USER_CONFIG_DIR", previous.empty() ? nullptr : previous.c_str());
+	CHECK(std::filesystem::is_directory(PlatformPaths::GetUserConfigDir()));
+	std::filesystem::remove(profile);
+}

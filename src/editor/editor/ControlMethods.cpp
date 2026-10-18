@@ -2979,6 +2979,26 @@ namespace aether::editor
 			        return json{{"recoverable", list}};
 		        }});
 
+		methods.push_back({"editor.recovery_defer",
+		        "recovery_defer",
+		        "Decide later: close the recovery prompt for this project session without restoring, discarding or modifying any scene or recovery copy. Completes synchronously, including detached/unfocused dialogs; returns deferred or not_open and promptOpen=false. Recovery is offered again on the next project open.",
+		        true,
+		        json{{"type", "object"}, {"properties", json::object()}, {"additionalProperties", false}},
+		        [](const json& p, MethodContext& ctx) -> json
+		        {
+			        if (!p.is_object() || !p.empty())
+			        {
+				        return json{{"error", "recovery_defer takes no parameters; pass {}. The recovery prompt and files are unchanged."}};
+			        }
+			        auto* windows = ctx.services.TryGet<EditorWindowActions>();
+			        if (windows == nullptr || !windows->deferRecovery)
+			        {
+				        return json{{"error", "recovery prompt control is unavailable: the editor UI layer is not attached"}};
+			        }
+			        const bool closed = windows->deferRecovery();
+			        return json{{"status", closed ? "deferred" : "not_open"}, {"promptOpen", false}, {"filesUntouched", true}};
+		        }});
+
 		methods.push_back({"editor.recovery_restore",
 		        "recovery_restore",
 		        "Promote a scene's autosaved recovery copy over its saved file. Explicit on purpose - nothing is ever restored automatically. Refuses if the copy does not parse, so a stale-but-valid scene is never destroyed by a bad one. Reload the scene afterwards to see it.",

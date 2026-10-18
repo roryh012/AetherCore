@@ -54,6 +54,7 @@ namespace aether::app
 		void QueueKeyChord(int imguiKey, bool ctrl, bool shift, bool alt);
 		void QueueText(std::string utf8);
 		void ClearHover();
+		void Cancel();
 
 		// Events for one frame; advances the action cursor. Empty when idle and no
 		// hover is held.

@@ -124,7 +124,13 @@ namespace aether::editor
 				        {
 					        continue;
 				        }
-				        items.push_back(json{{"window", item.window}, {"label", item.label}, {"x", item.x}, {"y", item.y}, {"w", item.w}, {"h", item.h}, {"hovered", g != nullptr && g->HoveredId == item.id}, {"active", g != nullptr && g->ActiveId == item.id}, {"clipped", item.clipped}, {"clippedHorizontally", item.clippedHorizontally}});
+				        const ImGuiWindow* window = g != nullptr ? ImGui::FindWindowByName(item.window.c_str()) : nullptr;
+				        items.push_back(json{
+				                {"window", item.window}, {"label", item.label}, {"x", item.x}, {"y", item.y}, {"w", item.w}, {"h", item.h},
+				                {"windowRect", window != nullptr ? json::array({window->Pos.x, window->Pos.y, window->Size.x, window->Size.y}) : json::array()},
+				                {"viewportId", window != nullptr ? window->ViewportId : 0u}, {"detachedViewport", window != nullptr && window->ViewportId != ImGui::GetMainViewport()->ID},
+				                {"hovered", g != nullptr && g->HoveredId == item.id}, {"active", g != nullptr && g->ActiveId == item.id},
+				                {"clipped", item.clipped}, {"clippedHorizontally", item.clippedHorizontally}});
 			        }
 			        return json{{"items", std::move(items)}};
 		        }});

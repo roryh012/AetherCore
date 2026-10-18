@@ -48,6 +48,7 @@ namespace aether::io
 
 		[[nodiscard]] static std::string ReadEnvironmentVariable(std::string_view name);
 
+		// AETHER_USER_CONFIG_DIR isolates editor preferences for a separate profile.
 		[[nodiscard]] static std::filesystem::path GetUserConfigDir();
 
 		// Where the user's own documents live, for content they author and keep - not the

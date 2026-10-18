@@ -58,6 +58,14 @@ namespace aether::app
 		m_hover.reset();
 	}
 
+	void UiInputScript::Cancel()
+	{
+		m_steps.clear();
+		m_frameBoundaries.clear();
+		m_cursor = 0;
+		m_hover.reset();
+	}
+
 	void UiInputScript::QueueClick(float x, float y, int button, bool doubleClick, bool ctrl, bool shift, bool alt)
 	{
 		// Modifiers are re-asserted on every frame of the click, for the same reason the

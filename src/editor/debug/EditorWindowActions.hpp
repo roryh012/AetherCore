@@ -31,6 +31,8 @@ namespace aether::editor
 		// Opens the File > Open scene dialog (used by the menu and the control
 		// endpoint alike).
 		std::function<void()> openSceneDialog;
+		// Dismiss the recovery offer without touching saved scenes or recovery copies.
+		std::function<bool()> deferRecovery;
 		// Built-in workflow dock layouts: list their names, and apply one by name
 		// (case-insensitive). Used by Window > Layouts and the control endpoint.
 		std::function<std::vector<std::string>()> listLayouts;

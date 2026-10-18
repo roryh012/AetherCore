@@ -32,6 +32,8 @@ using namespace std::string_view_literals;
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include "imgui/UiAutomation.hpp"
+
 #include "debug/EditorShortcuts.hpp"
 #include "debug/ConsolePanel.hpp"
 #include "debug/OpenInEditor.hpp"
@@ -747,6 +749,34 @@ namespace aether::editor
 			// the world, so it has to pass the same unsaved-work check the File menu does,
 			// and that needs the frame's context.
 			m_pendingOpenSceneDialog = true;
+		};
+		windowActions.deferRecovery = [this]()
+		{
+			if (m_layerContext != nullptr)
+			{
+				PollRecoveryOffer(*m_layerContext);
+			}
+			bool closed = m_openRecoveryPopup;
+			m_openRecoveryPopup = false;
+			if (ImGuiContext* gui = ImGui::GetCurrentContext())
+			{
+				for (int i = gui->OpenPopupStack.Size - 1; i >= 0; --i)
+				{
+					const ImGuiWindow* window = gui->OpenPopupStack[i].Window;
+					if (window != nullptr && std::string_view(window->Name) == "Recover Unsaved Work###recoverScenes")
+					{
+						ImGui::ClosePopupToLevel(i, true);
+						closed = true;
+						break;
+					}
+				}
+			}
+			if (closed)
+			{
+				// Do not let a previously queued click land behind the dismissed modal.
+				app::UiAutomation::Get().CancelInput();
+			}
+			return closed;
 		};
 		windowActions.listLayouts = []()
 		{
