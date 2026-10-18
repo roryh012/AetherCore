@@ -1,0 +1,175 @@
+{
+  "status": "PASS; owned-window handover only, not new pacing acceptance",
+  "wireMethod": "app.handover",
+  "mcpTool": "handover_to_user",
+  "parameters": {
+    "release": "optional boolean; omitted/false reads; true releases startup protection"
+  },
+  "canonicalTests": 1371,
+  "guard": "PASS",
+  "editorBuild": "PASS",
+  "renderSourceChanged": false,
+  "shaderBinariesIdenticalTo902": true,
+  "staticImagesIdenticalToBaseline": true,
+  "nativeChecks": [
+    {
+      "mode": "hidden",
+      "wire": {
+        "before": {
+          "activationBlocked": true,
+          "focused": false,
+          "focusedBefore": false,
+          "previousActivationBlocked": true,
+          "released": false,
+          "sessionName": "Verification - editor-Static-0-candidate",
+          "supported": true,
+          "windowTitle": "AetherCore [session: Verification - editor-Static-0-candidate]"
+        },
+        "released": {
+          "activationBlocked": false,
+          "focused": false,
+          "focusedBefore": false,
+          "previousActivationBlocked": true,
+          "released": true,
+          "sessionName": "Verification - editor-Static-0-candidate",
+          "supported": true,
+          "windowTitle": "AetherCore [session: Verification - editor-Static-0-candidate]"
+        },
+        "repeated": {
+          "activationBlocked": false,
+          "focused": false,
+          "focusedBefore": false,
+          "previousActivationBlocked": false,
+          "released": false,
+          "sessionName": "Verification - editor-Static-0-candidate",
+          "supported": true,
+          "windowTitle": "AetherCore [session: Verification - editor-Static-0-candidate]"
+        },
+        "nativeBefore": {
+          "style": 134480144,
+          "rect": [
+            -2712,
+            284,
+            -1844,
+            801
+          ],
+          "visible": false,
+          "foreground": 68312,
+          "previous": 4528944
+        },
+        "nativeAfter": {
+          "style": 262416,
+          "rect": [
+            -2712,
+            284,
+            -1844,
+            801
+          ],
+          "visible": false,
+          "foreground": 68312,
+          "previous": 4528944
+        }
+      },
+      "windows": [
+        {
+          "pid": 15288,
+          "windowSamples": 3009,
+          "visibleSamples": 0,
+          "foregroundSamples": 0,
+          "hwnds": [
+            11539616,
+            12457664,
+            14947300,
+            6357574,
+            4528944,
+            7871250,
+            3217148
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "visible",
+      "wire": {
+        "before": {
+          "activationBlocked": true,
+          "focused": false,
+          "focusedBefore": false,
+          "previousActivationBlocked": true,
+          "released": false,
+          "sessionName": "Verification - editor-Static-0-candidate",
+          "supported": true,
+          "windowTitle": "AetherCore [session: Verification - editor-Static-0-candidate]"
+        },
+        "released": {
+          "activationBlocked": false,
+          "focused": false,
+          "focusedBefore": false,
+          "previousActivationBlocked": true,
+          "released": true,
+          "sessionName": "Verification - editor-Static-0-candidate",
+          "supported": true,
+          "windowTitle": "AetherCore [session: Verification - editor-Static-0-candidate]"
+        },
+        "repeated": {
+          "activationBlocked": false,
+          "focused": false,
+          "focusedBefore": false,
+          "previousActivationBlocked": false,
+          "released": false,
+          "sessionName": "Verification - editor-Static-0-candidate",
+          "supported": true,
+          "windowTitle": "AetherCore [session: Verification - editor-Static-0-candidate]"
+        },
+        "nativeBefore": {
+          "style": 134480144,
+          "rect": [
+            -2712,
+            284,
+            -1844,
+            801
+          ],
+          "visible": true,
+          "foreground": 68312,
+          "previous": 132092
+        },
+        "nativeAfter": {
+          "style": 262416,
+          "rect": [
+            -2712,
+            284,
+            -1844,
+            801
+          ],
+          "visible": true,
+          "foreground": 68312,
+          "previous": 132092
+        }
+      },
+      "windows": [
+        {
+          "pid": 46720,
+          "windowSamples": 3044,
+          "visibleSamples": 440,
+          "foregroundSamples": 0,
+          "hwnds": [
+            4199140,
+            2235048,
+            4135724,
+            9834734,
+            9307924,
+            2431610,
+            8526558
+          ]
+        }
+      ]
+    }
+  ],
+  "streaming": "PASS, including new handover typed rejection/read/release/idempotency and existing native burst/cleanup",
+  "streamingArtifact": "artifacts/procedural-streaming/6ebbf5ee-3da1-4f7a-b2b7-b87ffa11bc5e",
+  "limits": [
+    "No foreground activation is requested or tested; human deliberate focus remains for user",
+    "Unsupported platforms reject release; native Windows path tested",
+    "Initial hidden wire harness failed parsing expected CLI stderr rejection; fixed harness, retained failed attempt"
+  ]
+}

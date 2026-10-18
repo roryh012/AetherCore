@@ -194,3 +194,15 @@ called into physics before the Jolt body existed.
 **Root cause and fix** for that specific crash: committed as `f110d153`
 (`PhysicsSystem.cpp` refuses/queues the motion-type change for a body that has
 not been baked yet, rather than dereferencing it).
+
+### Hand an agent window to the user
+
+Read `app.handover` (generated MCP tool `handover_to_user`) to inspect this
+process's main-window activation protection. Send `{"release":true}` only when
+handing that editor to the user. On Windows this releases its startup
+`WS_EX_NOACTIVATE` protection so a deliberate human click can focus it; it does
+not activate, show, move, resize or reorder the window. The reply includes the
+previous/current protection and actual focus. Invalid requests fail before any
+change; the operation is idempotent and future agent launches remain protected.
+There is no window/PID parameter and no operation on other sessions. Unsupported
+platforms report `supported:false` on reads and reject release requests.

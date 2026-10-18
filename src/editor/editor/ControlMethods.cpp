@@ -341,6 +341,24 @@ namespace aether::editor
 			        return json{{"sessionName", window->GetSessionName()}, {"windowTitle", window->GetTitle()}};
 		        }});
 
+		methods.push_back({"app.handover",
+		        "handover_to_user",
+		        "Read this process's main-window activation protection. Set release=true to allow deliberate human focus without activating, moving, resizing or reordering any window. Future agent launches keep their protection.",
+		        true,
+		        Obj({{"release", {{"type", "boolean"}}}}),
+		        [](const json& params, MethodContext& ctx) -> json
+		        {
+			        const bool release = params.value("release", false);
+			        auto* window = ctx.services.TryGet<Window>();
+			        if (window == nullptr) { throw std::runtime_error("No main window is available."); }
+			        const auto before = window->GetActivationState();
+			        if (release) { window->ReleaseActivationBlock(); }
+			        const auto after = window->GetActivationState();
+			        return json{{"supported", after.supported}, {"previousActivationBlocked", before.blocked}, {"activationBlocked", after.blocked},
+			                {"focusedBefore", before.focused}, {"focused", after.focused}, {"released", before.blocked && !after.blocked},
+			                {"sessionName", window->GetSessionName()}, {"windowTitle", window->GetTitle()}};
+		        }});
+
 		methods.push_back({"info",
 		        "engine_info",
 		        "Live editor summary: current scene name and kind, entity count, frame index, fps, and any connected gamepads with their live stick/trigger/button state - the first thing to check when a controller seems dead.",

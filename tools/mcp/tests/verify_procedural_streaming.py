@@ -32,6 +32,14 @@ with (case/'native.log').open('w') as log:
   else:raise AssertionError('Control endpoint did not start')
   assert not info.get('focused',False),'Background fixture unexpectedly focused'
   (case/'engine-info.json').write_text(json.dumps(info,indent=2))
+  handover=call('app.handover');assert handover['supported'] and handover['activationBlocked'] and not handover['focused'],handover
+  for invalid in ['true',1,None]:
+   rejected=call('app.handover',dict(release=invalid));assert 'error' in rejected,rejected
+   assert call('app.handover')['activationBlocked'],'Invalid handover changed activation policy'
+  released=call('app.handover',dict(release=True))
+  assert released['previousActivationBlocked'] and released['released'] and not released['activationBlocked'] and not released['focusedBefore'] and not released['focused'],released
+  repeated=call('app.handover',dict(release=True));assert not repeated['previousActivationBlocked'] and not repeated['activationBlocked'] and not repeated['released'] and not repeated['focused'],repeated
+  (case/'window-handover.json').write_text(json.dumps(dict(before=handover,released=released,repeated=repeated),indent=2))
   marker=call('engine.frame_times');assert marker['frames']==[] and marker['nextCursor']>=0,marker
   cursor=marker['nextCursor'];time.sleep(.12)
   raw=call('engine.frame_times',dict(cursor=cursor));assert raw['nextCursor']>cursor and raw['droppedFrames']==0,raw

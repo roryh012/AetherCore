@@ -200,6 +200,31 @@ namespace aether
 		return m_window != nullptr && glfwGetWindowAttrib(m_window, GLFW_FOCUSED) != 0;
 	}
 
+	WindowActivationState Window::GetActivationState() const
+	{
+		if (m_window == nullptr) { throw WindowError("No main window is available."); }
+#ifdef _WIN32
+		bool blocked = false;
+		const HWND native = glfwGetWin32Window(m_window);
+		if (!ReadOwnedWindowActivationBlock(native, blocked)) { throw WindowError("Cannot read this main window's activation policy on its owning thread."); }
+		return {.supported = true, .blocked = blocked, .focused = GetForegroundWindow() == native};
+#else
+		return {.focused = IsFocused()};
+#endif
+	}
+
+	void Window::ReleaseActivationBlock()
+	{
+#ifdef _WIN32
+		if (m_window == nullptr || !ReleaseOwnedWindowActivationBlock(glfwGetWin32Window(m_window)))
+		{
+			throw WindowError("Cannot release this main window's activation protection.");
+		}
+#else
+		throw WindowError("Window activation handover is only supported on Windows.");
+#endif
+	}
+
 	void Window::FitToPrimaryWorkArea()
 	{
 		if (m_window == nullptr || m_mode != Mode::Windowed)

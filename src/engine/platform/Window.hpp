@@ -14,6 +14,13 @@ namespace aether
 		int height = 0;
 	};
 
+	struct WindowActivationState
+	{
+		bool supported = false;
+		bool blocked = false;
+		bool focused = false;
+	};
+
 	class Window
 	{
 	public:
@@ -84,6 +91,9 @@ namespace aether
 		// background wakes up and renders flat out because the mouse moved over some other
 		// application.
 		[[nodiscard]] bool IsFocused() const;
+		// Main thread only; release startup protection for deliberate human input without activating the window.
+		[[nodiscard]] WindowActivationState GetActivationState() const;
+		void ReleaseActivationBlock();
 		// Requests a clean application-loop exit on the next close check. Main thread only.
 		void RequestClose();
 		// Withdraws a close request the OS has already recorded (the title-bar X, Alt+F4).

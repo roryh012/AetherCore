@@ -106,5 +106,8 @@
     "Prior unsafe index-pulling prototype rejected and source restored; not part of passing build",
     "Prior safe run rejected and own process closed on one foreground sample",
     "Existing regional texture/seams and HUD overlap remain visual limitations"
-  ]
+  ],
+  "testedSdkSha256": "8a35cc4f98fded075d839bd30df822a9eac2237cd2fe51f86c152a469a05e65c",
+  "manifestSdkNote": "Outer raw manifest.sdkSha256 was a stale copied template field (d77059); both frozen SDK files and explicit csproj HintPath used the recorded8a35 SDK. Raw artifacts preserved.",
+  "outwardRestoresWholeWorld": true
 }
