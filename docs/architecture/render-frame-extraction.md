@@ -148,3 +148,26 @@ callbacks unchanged. The GLFW backend already creates secondary windows with foc
 on show disabled. External focus changes can still invalidate a background sample;
 the pacing harness stops only its own test session when it observes one. This guard
 is not evidence that the earlier transient focus event had a known cause.
+
+
+## Windows frame-cap sleep
+
+`FramePacer` uses an unnamed, per-thread high-resolution waitable timer on Windows,
+with a 500 microsecond final spin allowance. The timer handle is reused and closed
+at thread exit. Timer creation/set/wait failure falls back to `sleep_until`; other
+platforms retain their standard sleep and two millisecond spin allowance. No global
+timer resolution or thread-priority policy changes. Frame deadlines, overrun reset,
+uncapped operation and the separate event-driven idle wait remain unchanged.
+
+A native actual-class ABBA probe reproduced 60 FPS baseline p95 around 29.8 ms and
+120 FPS baseline around 16 ms. The final timer measured 60 FPS p95 16.67–16.85 ms
+and 120 FPS 8.35 ms. The initial two millisecond spin cost about 0.61 CPU seconds
+per five wall seconds; calibration to 500 microseconds reduced the sampled CPU
+cost to 0.016–0.078 seconds at 60 FPS. CPU accounting is quantized; short samples
+reporting zero are not proof of zero cost. Handle counts remained stable.
+
+This is limiter evidence, not dense forest or foreground acceptance. A retained
+candidate maximum reached 25.10 ms under shared scheduling. Unsupported timer/OS
+and non-Windows paths were not run on this machine. Reproduction sources, complete
+measurements and limitations are in
+`tests/evidence/static-scene-pacing/frame-pacer-timer.json`.

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <chrono>
-#include <thread>
 
 #include "utils/Profiler.hpp"
 
@@ -54,7 +53,7 @@ namespace aether
 			if (remaining > kSpinThreshold)
 			{
 				AE_PROFILE_ZONE_N("FramePacer::Sleep");
-				std::this_thread::sleep_for(remaining - kSpinThreshold);
+				SleepUntil(deadline - kSpinThreshold);
 			}
 
 			{
@@ -72,7 +71,13 @@ namespace aether
 		}
 
 	private:
+		static void SleepUntil(TimePoint deadline);
+
+#ifdef _WIN32
+		static constexpr Duration kSpinThreshold{std::chrono::duration_cast<Duration>(std::chrono::microseconds(500))};
+#else
 		static constexpr Duration kSpinThreshold{std::chrono::duration_cast<Duration>(std::chrono::milliseconds(2))};
+#endif
 
 		Duration m_targetDuration{0};
 		TimePoint m_nextFrameTime;
