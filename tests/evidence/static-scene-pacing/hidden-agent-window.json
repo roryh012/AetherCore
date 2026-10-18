@@ -1,0 +1,131 @@
+{
+  "purpose": "Keep correctness verification invisible without changing normal editor display; no presented pacing acceptance",
+  "buildSourceBase": "470533e3f4d81d6cce9d9aa8c1733042409e05a5",
+  "policy": {
+    "enable": "AETHER_AGENT_SESSION=1 and AETHER_AGENT_HIDE_WINDOW=1",
+    "implementation": "Central Window.Show returns before OS positioning/show for agent hide request; constructor already creates agent windows hidden",
+    "normalEditor": "Hide flag is ignored outside agent context; existing defaults unchanged",
+    "scope": "Existing GLFW HWND/swapchain retained; not a no-window/headless renderer",
+    "requiredProfile": "Private windowed profile, imguiViewports=false, isolated saves/control port",
+    "timings": "Hidden-window timings cannot establish visible forest/cave/zoom acceptance"
+  },
+  "sourcePolicyProbe": {
+    "cases": 16,
+    "actualOSCalls": 0,
+    "method": "Compile actual Window.Show body with mocked OS calls; verifies normal/agent, exact flag values and null window",
+    "log": "artifacts/static-scene-pacing/hidden-show-probe/result.log"
+  },
+  "nativeVerification": {
+    "conditions": "Separate hidden runtime/editor,1280x720, IMMEDIATE,target60,Vulkan sync validation+best practices; ownPID Win32 monitor every50ms",
+    "allReportsUnfocused": true,
+    "nativeErrors": 0,
+    "windows": [
+      {
+        "pid": 3580,
+        "windowSamples": 2118,
+        "visibleSamples": 0,
+        "foregroundSamples": 0,
+        "hwnds": [
+          10687844,
+          21238574,
+          3279728,
+          8979056,
+          7539094,
+          5445014,
+          25367482
+        ]
+      },
+      {
+        "pid": 49556,
+        "windowSamples": 3271,
+        "visibleSamples": 0,
+        "foregroundSamples": 0,
+        "hwnds": [
+          10753380,
+          21304110,
+          9044592,
+          3345264,
+          7604630,
+          5510550,
+          25433018
+        ]
+      }
+    ],
+    "staticImage": {
+      "size": [
+        1280,
+        720
+      ],
+      "rgbVariance": [
+        1021.6684780696862,
+        960.1656586756268,
+        1227.3541730982356
+      ],
+      "sha256": "0ab4eefea1e5f5a2855a6379cafa4faea8aa528001b4c140cd198db43556e033",
+      "parityWithPriorStatic": {
+        "baselineSize": [
+          1280,
+          720
+        ],
+        "candidateSize": [
+          1280,
+          720
+        ],
+        "meanAbsoluteRgbDifference": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "maximumChannelDifference": [
+          0,
+          0,
+          0
+        ],
+        "identical": true
+      }
+    },
+    "visualInspection": "Captured scene inspected: imported foxes, primitive pillars/spheres, sky and lit ground; identical image with prior91staticbaseline",
+    "postprocess": "Initial default Python lacked Pillow; corrected offline with bundled runtime, initial failure retained; no native rerun"
+  },
+  "streamingVerification": {
+    "passed": true,
+    "case": "artifacts/procedural-streaming/e7d2c3b8-6775-441f-8973-8ffbaa1e7680",
+    "windows": [
+      {
+        "pid": 36300,
+        "windowSamples": 555,
+        "visibleSamples": 0,
+        "foregroundSamples": 0,
+        "hwnds": [
+          10426468,
+          3804016,
+          9110128,
+          4982160,
+          5576086,
+          7670166,
+          25498554
+        ]
+      }
+    ],
+    "visualBurstStarts": 32,
+    "nativeErrors": 0,
+    "pendingExitJobs": 0,
+    "pendingExitReservedBytes": 0,
+    "scope": "SDK/collider/section/failure/cancel/pending-exit replay and main culling control restoration"
+  },
+  "limitations": [
+    "Full managed-game preview correctness and visible continuous-motion25ms gate pending with lead",
+    "No new scene quality, culling defaults, frame cap, queue/fence policy or managed API change",
+    "Default normal-window display behavior verified in CPU intent model, not by opening a normal foreground window",
+    "Private profile viewportsfalse is mandatory; this guard does not control third-party native dialogs or detached ImGui window Show calls"
+  ],
+  "canonicalRegression": {
+    "passed": 1369,
+    "failed": 0,
+    "skipped": 5,
+    "assertions": 219101,
+    "gpuGuard": "pass",
+    "report": "logs/hidden-agent-gauntlet.json",
+    "buildAndNativeSmokes": "Build and separate guarded hidden runtime/editor/streaming replays passed; corresponding partial-gauntlet stages deliberately skipped"
+  }
+}

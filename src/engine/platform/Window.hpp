@@ -40,7 +40,8 @@ namespace aether
 		Window(const char* title, int width, int height, Mode mode = Mode::Windowed, bool startHidden = false);
 		~Window();
 
-		// Map a window created with startHidden. Safe to call when already visible.
+		// Map a window created with startHidden. Agent diagnostics may keep it hidden
+		// with AETHER_AGENT_HIDE_WINDOW=1; ordinary windows ignore that flag.
 		void Show();
 
 		// Process-local display identity for agent/editor copies. Main thread only;

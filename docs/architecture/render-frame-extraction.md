@@ -276,3 +276,25 @@ These probes are not driver or whole-game pacing proof. Build, 1,369 canonical
 native cases and the GPU guard passed; the new in-memory ImGui child visibility
 test passed. Native GUI/image parity and integrated motion gates remain pending.
 Evidence: `tests/evidence/static-scene-pacing/ui-draw-overhead.json`.
+
+
+## Invisible agent correctness verification
+
+Set `AETHER_AGENT_SESSION=1` and `AETHER_AGENT_HIDE_WINDOW=1` in an isolated
+child process to keep the agent main window hidden after startup. `Window.Show`
+returns before positioning/showing it; ordinary windows ignore the hide flag.
+The existing GLFW HWND, Vulkan swapchain, managed scripts, control endpoint and
+FinalColor capture remain operational. This is not a headless/no-HWND backend.
+Use private windowed profiles with `imguiViewports=false`, isolated saves and a
+unique control port; verify the exact host/SDK hashes before launch. Do not use
+older hosts that silently ignore this flag. Keep ownPID visibility/foreground
+and frame-focus guards active and stop only the owned test if they fail.
+
+Hidden runtime/editor Vulkan validation completed without any visible/foreground
+own window samples or native focus changes. The 1280x720 static capture was
+pixel-identical to the earlier 91d22ed2 capture. The complete native streaming
+replay also passed hidden, including sections/colliders/cancellation/pending exit.
+These verify correctness and isolation, not visible presentation pacing: hidden
+window p95 must never satisfy the integrated forest-to-cave/zoom readiness gate.
+The user review session must use normal display policy only after those gates.
+Evidence: `tests/evidence/static-scene-pacing/hidden-agent-window.json`.

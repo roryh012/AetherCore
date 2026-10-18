@@ -375,6 +375,11 @@ namespace aether
 
 	void Window::Show()
 	{
+		// Keep diagnostic rendering invisible; hidden-window timings are not presentation evidence.
+		if (io::PlatformPaths::IsAgentSession() && io::PlatformPaths::ReadEnvironmentVariable("AETHER_AGENT_HIDE_WINDOW") == "1")
+		{
+			return;
+		}
 		if (m_window != nullptr)
 		{
 			if (io::PlatformPaths::IsAgentSession())
