@@ -1,4 +1,5 @@
 #include "platform/Window.hpp"
+#include "platform/WindowActivation.hpp"
 #include "platform/WindowPlacement.hpp"
 #include "platform/WindowSessionLabel.hpp"
 
@@ -106,6 +107,17 @@ namespace aether
 			glfwTerminate();
 			throw WindowError("Failed to create GLFW window.");
 		}
+
+#ifdef _WIN32
+		// Focus-on-show hints do not stop Windows activating a background window after another closes.
+		if (!ApplyAgentWindowActivationPolicy(glfwGetWin32Window(m_window), background))
+		{
+			glfwDestroyWindow(m_window);
+			m_window = nullptr;
+			glfwTerminate();
+			throw WindowError("Failed to protect agent window from activation.");
+		}
+#endif
 
 		if (mode == Mode::Borderless && videoMode != nullptr)
 		{

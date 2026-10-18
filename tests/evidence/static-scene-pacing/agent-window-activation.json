@@ -1,0 +1,181 @@
+{
+  "date": "2026-10-18",
+  "base": "49defbbc",
+  "policy": "Agent main HWND receives WS_EX_NOACTIVATE before mapping; creation fails closed on style API failure. Normal main HWND untouched. Secondary ImGui HWND not covered; private imguiViewports=false for background verification.",
+  "exactActivationCause": "Not established; GLFW show-focus hints alone do not cover automatic Windows activation.",
+  "targetedUnit": {
+    "cases": 4,
+    "assertions": 15,
+    "passed": true
+  },
+  "candidateOnly": {
+    "case": "noactivate-ee21e3c6-c067-4512-902d-c02071a22b83",
+    "results": [
+      {
+        "mode": "runtime",
+        "last": {
+          "n": 600.0,
+          "avg": 16.75,
+          "median": 16.67,
+          "p95": 23.1,
+          "p99": 30.81,
+          "max": 46.91,
+          "game": 0.326,
+          "inflight": 0.001,
+          "present": 0.48,
+          "focused": 0.0,
+          "focusflips": 0.0
+        },
+        "phases": {
+          "n": 600,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 1.7,
+              "max": 6.307
+            },
+            "begin": {
+              "mean": 0.003,
+              "max": 0.034
+            },
+            "pump": {
+              "mean": 0.061,
+              "max": 19.1
+            },
+            "update": {
+              "mean": 0.131,
+              "max": 4.296
+            },
+            "ui": {
+              "mean": 0.001,
+              "max": 0.101
+            },
+            "extract": {
+              "mean": 0.099,
+              "max": 2.077
+            },
+            "sceneui": {
+              "mean": 0.005,
+              "max": 0.098
+            },
+            "submit": {
+              "mean": 0.02,
+              "max": 4.026
+            }
+          }
+        }
+      },
+      {
+        "mode": "editor",
+        "last": {
+          "n": 600.0,
+          "avg": 17.25,
+          "median": 16.67,
+          "p95": 22.49,
+          "p99": 39.18,
+          "max": 81.6,
+          "game": 3.24,
+          "inflight": 0.002,
+          "present": 0.47,
+          "focused": 0.0,
+          "focusflips": 0.0
+        },
+        "phases": {
+          "n": 600,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 1.739,
+              "max": 6.341
+            },
+            "begin": {
+              "mean": 0.004,
+              "max": 0.24
+            },
+            "pump": {
+              "mean": 0.035,
+              "max": 6.409
+            },
+            "update": {
+              "mean": 0.214,
+              "max": 10.3
+            },
+            "ui": {
+              "mean": 2.888,
+              "max": 81.115
+            },
+            "extract": {
+              "mean": 0.074,
+              "max": 0.914
+            },
+            "sceneui": {
+              "mean": 0.005,
+              "max": 0.085
+            },
+            "submit": {
+              "mean": 0.015,
+              "max": 2.051
+            }
+          }
+        }
+      }
+    ]
+  },
+  "limits": [
+    "Candidate-only replay, not a complete matched static regression result.",
+    "No user/other editor stopped, focused, rebuilt or sent desktop input.",
+    "Foreground/game pacing not established. Larger candidate outliers retained.",
+    "Old GUI baselines are not retried after focus changes; earlier runtime sample invalidated."
+  ],
+  "fullNativeCanonical": {
+    "passed": 1365,
+    "assertions": 216627,
+    "skipped": 5,
+    "gauntletReport": {
+      "timestamp": "2026-10-18T17:52:04.8158367+11:00",
+      "repoRoot": "C:\\Users\\rory0\\.codex\\worktrees\\recovery-control\\AetherCore",
+      "buildDir": "C:\\Users\\rory0\\.codex\\worktrees\\recovery-control\\AetherCore\\build\\default",
+      "config": "RelWithDebInfo",
+      "mode": "full",
+      "overall": "PASS",
+      "phases": [
+        {
+          "status": "pass",
+          "name": "guard"
+        },
+        {
+          "status": "skip",
+          "name": "build"
+        },
+        {
+          "status": "pass",
+          "name": "unit",
+          "passed": 1365,
+          "failed": 0,
+          "testCases": 1365
+        },
+        {
+          "status": "skip",
+          "name": "editor"
+        },
+        {
+          "status": "skip",
+          "name": "runtime"
+        }
+      ]
+    },
+    "note": "Build and GUI smoke skipped in gauntlet; rebuilt Editor/GameRuntime/EngineTests/StageAppBundle separately, candidate background runtime/editor checks separately."
+  },
+  "priorRunnerFailures": {
+    "count": 2,
+    "failedCase": "NetClientAuthorityTests.cpp527: A non-owned entity is still interpolated, and an owned one is not",
+    "observed": "lagging103.942 <100 assertion false on retained second run",
+    "isolatedCase": "1case115assertions pass",
+    "isolatedSourceFile": "8cases699assertions pass",
+    "cause": "Not established; old gauntlet used repository CWD and live PowerShell native-output capture. Native CMake entrypoint now matches CTest working directory and retains completed native output. Networking source unchanged.",
+    "rawSecondRun": "logs/gauntlet-bee1a1ffc17f4a71bfcda863f5164210/unit.log"
+  },
+  "noTestsNegativeControl": "CTest --no-tests=error on empty registered test directory returned8 as expected."
+}

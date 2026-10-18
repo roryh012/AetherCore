@@ -171,3 +171,32 @@ candidate maximum reached 25.10 ms under shared scheduling. Unsupported timer/OS
 and non-Windows paths were not run on this machine. Reproduction sources, complete
 measurements and limitations are in
 `tests/evidence/static-scene-pacing/frame-pacer-timer.json`.
+
+
+### Agent main-window activation
+
+Focus-on-show hints alone do not prevent Windows from selecting a background
+window after the foreground window closes. Agent main windows now receive
+`WS_EX_NOACTIVATE` before showing; failure aborts creation after cleaning up the
+GLFW window. Normal editor windows retain their existing styles. A hidden native
+window test checks normal-style preservation, agent flag installation, repeated
+application and invalid-handle failure without activating any window.
+
+This policy covers the engine main HWND only. Background verification currently
+uses private `imguiViewports=false` profiles; detached ImGui HWND activation is
+not covered by this helper. Do not run old GUI baselines that lack this policy or
+claim a complete before/after editor comparison from aborted focus samples. The
+runtime sample in `616b6618-00bc-4ee1-9ba8-32dbd5c83dc3` was stopped on focus1/flips1;
+it remains invalid. No precise external activation cause has been established.
+
+
+The rebuilt agent candidate completed runtime/editor static replays unfocused with
+zero focus transitions (p95 23.10/22.49 ms, maxima 46.91/81.60 ms retained). These
+are candidate-only samples, not a complete matched regression result or a claim
+that hitches are eliminated. Final canonical CMake native gate: 1,365 passed,
+216,627 assertions, five skipped; GPU guard clean. Earlier gauntlet native-output
+pipeline runs each failed one wall-clock networking interpolation assertion;
+isolated case/file passed. These failures remain recorded, with no networking
+source change or claimed root cause. The gauntlet now invokes the standard CTest
+entrypoint and retains raw native output instead of processing it live in PowerShell.
+Build and GUI smokes are reported separately when skipped by a partial gauntlet.
