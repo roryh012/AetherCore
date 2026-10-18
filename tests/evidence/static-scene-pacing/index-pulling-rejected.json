@@ -1,0 +1,13 @@
+{
+  "status": "REJECTED; do not integrate or enable",
+  "reason": "Full authored world GPU invalid memory access during first chunk loading; root cause not established",
+  "sourceBase": "902a474fcc2567abb5cf28c00dca7c952101abdf",
+  "patchSha256": "c23f68d4f69f89557ea0f854fd4eaf3367d969b45df62e3c3e737205756d9802",
+  "unitTests": 1372,
+  "staticValidation": "default and opt-in runtime/editor passed; images exact baseline parity",
+  "streaming": "hidden procedural API/burst checks passed",
+  "realRun": "artifacts/static-scene-pacing/real-integrated-023-index-pulling",
+  "faultAddress": "0x0000000319687000",
+  "allOwnEditorsClosed": true,
+  "scope": "No real pacing result from candidate; static checks insufficient; default source restored"
+}

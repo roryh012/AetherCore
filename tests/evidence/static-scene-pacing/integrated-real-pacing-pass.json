@@ -1,0 +1,110 @@
+{
+  "status": "PASS for background review at tested settings; foreground latency and visual polish unverified",
+  "budgetP95Ms": 25,
+  "gameCommit": "023427df6dee2d6846b654c5757cf2916e0f20cb",
+  "sceneryCommit": "a388e39",
+  "engineCommit": "902a474fcc2567abb5cf28c00dca7c952101abdf",
+  "engineSha256": "878e1faf9ec72893d2eeae48d6ed6e86456d84b1ed1fe1de97b360ecfe13146f",
+  "settings": {
+    "client": [
+      1280,
+      720
+    ],
+    "renderScale": 1,
+    "presentMode": "IMMEDIATE",
+    "framesInFlight": 2,
+    "forceVisible": true,
+    "asyncStreaming": true,
+    "sceneryBatches": true,
+    "indexPulling": false
+  },
+  "travel": [
+    {
+      "label": "forest",
+      "p95Ms": 15.968600273132324,
+      "maxMs": 81.76270294189453,
+      "frameCount": 467,
+      "seconds": 2.9680000000007567
+    },
+    {
+      "label": "cave",
+      "p95Ms": 12.02970027923584,
+      "maxMs": 93.56050109863281,
+      "frameCount": 634,
+      "seconds": 4.328000000001339
+    },
+    {
+      "label": "forest-return",
+      "p95Ms": 10.553299903869629,
+      "maxMs": 135.69760131835938,
+      "frameCount": 392,
+      "seconds": 2.1569999999992433
+    },
+    {
+      "label": "cave-return",
+      "p95Ms": 8.680299758911133,
+      "maxMs": 141.84280395507812,
+      "frameCount": 392,
+      "seconds": 2.1089999999967404
+    }
+  ],
+  "zoom": [
+    {
+      "label": "forest",
+      "motion": {
+        "Count": 1403,
+        "TotalMs": 12877.195900000006,
+        "MeanMs": 9.178329223093376,
+        "P50Ms": 8.3491,
+        "P95Ms": 10.2961,
+        "MaxMs": 47.3668,
+        "RetainedSamples": 1403,
+        "P99Ms": 31.3965
+      },
+      "view": "VIEW | Whole world\nDepth 0 m\nBuild 178 m\nWheel inward: descend\nWheel outward: rise",
+      "usedSteps": 18
+    },
+    {
+      "label": "cave",
+      "motion": {
+        "Count": 3900,
+        "TotalMs": 35763.289699999965,
+        "MeanMs": 9.170074282051273,
+        "P50Ms": 8.3354,
+        "P95Ms": 9.9744,
+        "MaxMs": 50.8875,
+        "RetainedSamples": 3900,
+        "P99Ms": 36.0541
+      },
+      "view": "VIEW | Cut 178.9 m\nDepth 51.7 m\nBuild 178 m\nWheel inward: descend\nWheel outward: rise",
+      "usedSteps": 47
+    }
+  ],
+  "windowGuard": {
+    "samples": 1575,
+    "visibleSamples": 1575,
+    "foregroundSamples": 0,
+    "sizes": [
+      [
+        1280,
+        720
+      ]
+    ]
+  },
+  "normalSaveUnchanged": true,
+  "cleanupAtTwoSecondsPassed": true,
+  "zoomUploadAndCommitCountersUnchanged": true,
+  "imagesInspected": [
+    "forest-zoomed.png",
+    "cave-zoomed.png"
+  ],
+  "artifact": "artifacts/static-scene-pacing/real-integrated-023-indexed-safe902/summary.json",
+  "limits": [
+    "Visible but unfocused benchmark; no foreground latency claim",
+    "Captures/timing exports retained in observed tail spikes; p99 ~31/36ms and maximum ~47/51ms during zoom",
+    "Single successful final-source run under shared GPU load; no sole-cause attribution",
+    "Prior unsafe index-pulling prototype rejected and source restored; not part of passing build",
+    "Prior safe run rejected and own process closed on one foreground sample",
+    "Existing regional texture/seams and HUD overlap remain visual limitations"
+  ]
+}

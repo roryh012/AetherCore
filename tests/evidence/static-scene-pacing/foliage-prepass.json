@@ -1,0 +1,24 @@
+{
+  "status": "REJECTED; source restored, not retained or integrated",
+  "reason": "The actual generated landscape materials lack foliage/baked_lighting extras. The soft-cutout edge path targets PS2 cards, not this forest; no meaningful measured forest prepass win. Do not ship unused colorOnly metadata/filtering.",
+  "sourceBase": "275868358e4228d43c272e4ddb214416ecaac052",
+  "rejectedPatch": "artifacts/static-scene-pacing/foliage-prepass-probe/rejected-candidate.patch",
+  "patchSha256": "10bd0b57973f9342b15ab2e56c52a9d8264a8c7fb3e6cc9bf927cd6f099fe235",
+  "verification": {
+    "build": "PASS",
+    "nativeCasesPassed": 1370,
+    "sourceDrawSinkCombinations": 16,
+    "staticRuntimeEditorValidationErrors": 0,
+    "hiddenWindowVisibleOrForegroundSamples": 0,
+    "staticPixelIdentical": true,
+    "realZoomP95Ms": {
+      "forest": 39.0873,
+      "cave": 38.7595
+    },
+    "realBudgetMs": 25,
+    "realPacing": "FAIL",
+    "rawEvidence": "artifacts/static-scene-pacing/real-integrated-092-foliage-prepass/summary.json",
+    "firstSetupAttempt": "Failed UI transition race before timing; retained attempt1; helper now waits before a single click"
+  },
+  "scope": "Retain failed experiments honestly; no engine default, culling or visual quality change promoted"
+}

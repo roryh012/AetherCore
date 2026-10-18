@@ -1,0 +1,818 @@
+{
+  "status": "Earlier failed candidates retained; latest safe023+indexed+902 passes tested background25ms gates; see integrated-real-pacing-pass.json",
+  "budgetP95Ms": 25,
+  "gameCommit": "0925f71975193bf87a183801266692bd66d273b4",
+  "runs": [
+    {
+      "artifact": "artifacts\\static-scene-pacing\\real-integrated-e84-dc\\summary.json",
+      "manifest": {
+        "gameCommit": "e84b31ae7d7b179210a59a0a0b6fb0dfe294310c",
+        "testCommit": "e84b31ae7d7b179210a59a0a0b6fb0dfe294310c",
+        "engineSourceCommit": "dc249a7e1d3e81c87252677e648d26e3dd0e395b",
+        "sdkSha256": "245a5e85c90b489a90b13124424d6c31d010475b3679ba5dc11b19e4bc9835fc",
+        "projectReferenceOverride": "Matching frozen SDK direct reference; exported game behavior otherwise unchanged",
+        "purpose": "Real visible unfocused integrated camera+async world pacing, no foreground latency proof",
+        "nativePolicy": "NoActivate; hiddenflag0; ownPID/extent/focus guards; culling startup defaulttrue; original VSync settings"
+      },
+      "stages": [
+        {
+          "stage": "setup",
+          "exitCode": 0,
+          "seconds": 33.57800000000134
+        },
+        {
+          "stage": "travel",
+          "exitCode": 0,
+          "seconds": 31.328999999997905
+        },
+        {
+          "stage": "zoom",
+          "exitCode": 1,
+          "seconds": 106.4210000000021
+        }
+      ],
+      "windows": {
+        "samples": 1685,
+        "visibleSamples": 1685,
+        "foregroundSamples": 0,
+        "sizes": [
+          [
+            1280,
+            720
+          ]
+        ]
+      },
+      "normalSaveUnchanged": true,
+      "zoom": [
+        {
+          "label": "forest",
+          "motion": {
+            "Count": 513,
+            "TotalMs": 13318.128100000004,
+            "MeanMs": 25.961263352826517,
+            "P50Ms": 28.9049,
+            "P95Ms": 39.6783,
+            "MaxMs": 45.8567,
+            "RetainedSamples": 513,
+            "P99Ms": 41.2981
+          },
+          "deepPose": null
+        },
+        {
+          "label": "cave",
+          "motion": {
+            "Count": 2290,
+            "TotalMs": 46430.29239999997,
+            "MeanMs": 20.275236855895184,
+            "P50Ms": 20.0499,
+            "P95Ms": 31.9952,
+            "MaxMs": 97.4883,
+            "RetainedSamples": 2290,
+            "P99Ms": 40.3029
+          },
+          "deepPose": null
+        }
+      ],
+      "travel": [
+        {
+          "label": "forest",
+          "p50": 19.169200897216797,
+          "p95": 20.62700080871582,
+          "max": 20.76110076904297
+        },
+        {
+          "label": "cave",
+          "p50": 23.4685001373291,
+          "p95": 25.386199951171875,
+          "max": 25.52989959716797
+        },
+        {
+          "label": "forest-return",
+          "p50": 21.110300064086914,
+          "p95": 21.171300888061523,
+          "max": 21.406400680541992
+        },
+        {
+          "label": "cave-return",
+          "p50": 21.53339958190918,
+          "p95": 22.020099639892578,
+          "max": 22.09709930419922
+        }
+      ],
+      "travelTimingSemantics": "p95 of rolling medians from info.frameMs; not real frame p95",
+      "passed": false,
+      "gateFailures": [
+        "Required scenario did not pass",
+        "Zoom motion25ms p95 gate not met"
+      ],
+      "hidden": false,
+      "focusTransitions": 0.0
+    },
+    {
+      "artifact": "artifacts\\static-scene-pacing\\real-integrated-092-dc\\summary.json",
+      "manifest": {
+        "gameCommit": "0925f71975193bf87a183801266692bd66d273b4",
+        "testCommit": "0925f71975193bf87a183801266692bd66d273b4",
+        "engineSourceCommit": "dc249a7e1d3e81c87252677e648d26e3dd0e395b",
+        "sdkSha256": "245a5e85c90b489a90b13124424d6c31d010475b3679ba5dc11b19e4bc9835fc",
+        "projectReferenceOverride": "Frozen matching SDK",
+        "driverAdjustments": [
+          "Stop cave descent at authored174<Cut<180 band; retain actual clicks",
+          "Capture wide/deep positions and rendered views outside reset/before outward interval",
+          "Warm info.frameMs is rolling median; macro p95 is not true frame p95"
+        ],
+        "purpose": "Corrected real camera/forest-cave pacing; no hidden or foreground proof"
+      },
+      "stages": [
+        {
+          "stage": "setup",
+          "exitCode": 0,
+          "seconds": 31.625
+        },
+        {
+          "stage": "travel",
+          "exitCode": 0,
+          "seconds": 31.29699999999866
+        },
+        {
+          "stage": "zoom",
+          "exitCode": 1,
+          "seconds": 97.5309999999954
+        }
+      ],
+      "windows": {
+        "samples": 1633,
+        "visibleSamples": 1633,
+        "foregroundSamples": 0,
+        "sizes": [
+          [
+            1280,
+            720
+          ]
+        ]
+      },
+      "normalSaveUnchanged": true,
+      "zoom": [
+        {
+          "label": "forest",
+          "motion": {
+            "Count": 442,
+            "TotalMs": 13349.212699999995,
+            "MeanMs": 30.201838687782793,
+            "P50Ms": 30.0066,
+            "P95Ms": 40.6023,
+            "MaxMs": 61.122,
+            "RetainedSamples": 442,
+            "P99Ms": 49.8274
+          },
+          "deepPose": null
+        },
+        {
+          "label": "cave",
+          "motion": {
+            "Count": 1463,
+            "TotalMs": 37658.085700000054,
+            "MeanMs": 25.74031831852362,
+            "P50Ms": 29.1487,
+            "P95Ms": 39.7958,
+            "MaxMs": 50.6147,
+            "RetainedSamples": 1463,
+            "P99Ms": 41.5595
+          },
+          "deepPose": null
+        }
+      ],
+      "travel": [
+        {
+          "label": "forest",
+          "p50": 19.717100143432617,
+          "p95": 20.680500030517578,
+          "max": 20.680500030517578
+        },
+        {
+          "label": "cave",
+          "p50": 21.6117000579834,
+          "p95": 21.863399505615234,
+          "max": 23.252899169921875
+        },
+        {
+          "label": "forest-return",
+          "p50": 20.340200424194336,
+          "p95": 20.43589973449707,
+          "max": 20.603500366210938
+        },
+        {
+          "label": "cave-return",
+          "p50": 20.707700729370117,
+          "p95": 20.786699295043945,
+          "max": 20.786699295043945
+        }
+      ],
+      "travelTimingSemantics": "p95 of rolling medians from info.frameMs; not real frame p95",
+      "passed": false,
+      "gateFailures": [
+        "Required scenario did not pass",
+        "Zoom motion25ms p95 gate not met"
+      ],
+      "hidden": false,
+      "focusTransitions": 0.0
+    },
+    {
+      "artifact": "artifacts\\static-scene-pacing\\real-integrated-092-immediate-raw\\summary.json",
+      "manifest": {
+        "gameCommit": "0925f71975193bf87a183801266692bd66d273b4",
+        "testCommit": "0925f71975193bf87a183801266692bd66d273b4",
+        "engineSourceCommit": "dc249a7e plus raw cursor RPC candidate",
+        "sdkSha256": "d77059a09c08c9d4ae6e2efce31240ef2a6c3ef74f75db9fae957be9e879b776",
+        "projectReferenceOverride": "Frozen matching SDK",
+        "driverAdjustments": [
+          "Stop cave descent at authored174<Cut<180 band; retain actual clicks",
+          "Capture wide/deep positions and rendered views outside reset/before outward interval",
+          "Warm info.frameMs is rolling median; macro p95 is not true frame p95",
+          "Collect every raw travel frame via cursor; reject drops and focus changes"
+        ],
+        "purpose": "Corrected real camera/forest-cave pacing; no hidden or foreground proof",
+        "presentation": "Private VSync false; require IMMEDIATE native confirmation"
+      },
+      "stages": [
+        {
+          "stage": "setup",
+          "exitCode": 0,
+          "seconds": 34.86000000000058
+        },
+        {
+          "stage": "travel",
+          "exitCode": 0,
+          "seconds": 33.71899999999732
+        },
+        {
+          "stage": "zoom",
+          "exitCode": 1,
+          "seconds": 100.9210000000021
+        }
+      ],
+      "windows": {
+        "samples": 1683,
+        "visibleSamples": 1683,
+        "foregroundSamples": 0,
+        "sizes": [
+          [
+            1280,
+            720
+          ]
+        ]
+      },
+      "normalSaveUnchanged": true,
+      "zoom": [
+        {
+          "label": "forest",
+          "motion": {
+            "Count": 454,
+            "TotalMs": 13273.841099999996,
+            "MeanMs": 29.23753546255506,
+            "P50Ms": 30.2001,
+            "P95Ms": 41.1701,
+            "MaxMs": 50.9803,
+            "RetainedSamples": 454,
+            "P99Ms": 44.1193
+          },
+          "deepPose": null
+        },
+        {
+          "label": "cave",
+          "motion": {
+            "Count": 1377,
+            "TotalMs": 36591.04700000003,
+            "MeanMs": 26.573018881626744,
+            "P50Ms": 27.9515,
+            "P95Ms": 38.0665,
+            "MaxMs": 52.3927,
+            "RetainedSamples": 1377,
+            "P99Ms": 41.0387
+          },
+          "deepPose": null
+        }
+      ],
+      "travel": [
+        {
+          "label": "forest",
+          "p50": 24.62459945678711,
+          "p95": 37.73759841918945,
+          "max": 62.68960189819336,
+          "frameCount": 267
+        },
+        {
+          "label": "cave",
+          "p50": 28.379199981689453,
+          "p95": 39.14149856567383,
+          "max": 104.42829895019531,
+          "frameCount": 205
+        },
+        {
+          "label": "forest-return",
+          "p50": 27.551700592041016,
+          "p95": 40.75640106201172,
+          "max": 128.18569946289062,
+          "frameCount": 135
+        },
+        {
+          "label": "cave-return",
+          "p50": 27.021400451660156,
+          "p95": 38.1515998840332,
+          "max": 136.37269592285156,
+          "frameCount": 138
+        }
+      ],
+      "travelTimingSemantics": "Raw complete frame series (cursor continuity and zero drops asserted)",
+      "passed": false,
+      "gateFailures": [
+        "Required scenario did not pass",
+        "Zoom motion25ms p95 gate not met",
+        "forest-return warm raw25ms p95 gate not met",
+        "cave-return warm raw25ms p95 gate not met"
+      ],
+      "hidden": false,
+      "focusTransitions": 0.0
+    },
+    {
+      "artifact": "artifacts\\static-scene-pacing\\real-integrated-092-culling-raw\\summary.json",
+      "manifest": {
+        "gameCommit": "0925f71975193bf87a183801266692bd66d273b4",
+        "testCommit": "0925f71975193bf87a183801266692bd66d273b4",
+        "engineSourceCommit": "275868358e4228d43c272e4ddb214416ecaac052",
+        "sdkSha256": "d77059a09c08c9d4ae6e2efce31240ef2a6c3ef74f75db9fae957be9e879b776",
+        "projectReferenceOverride": "Frozen matching SDK",
+        "driverAdjustments": [
+          "Stop cave descent at authored174<Cut<180 band; retain actual clicks",
+          "Capture wide/deep positions and rendered views outside reset/before outward interval",
+          "Warm info.frameMs is rolling median; macro p95 is not true frame p95",
+          "Collect every raw travel frame via cursor; reject drops and focus changes"
+        ],
+        "purpose": "Corrected real camera/forest-cave pacing; no hidden or foreground proof",
+        "presentation": "Private VSync false; require IMMEDIATE native confirmation",
+        "privateCulling": "forceVisible=false after setup; experimental comparison only; no default promotion"
+      },
+      "stages": [
+        {
+          "stage": "setup",
+          "exitCode": 0,
+          "seconds": 33.46899999999732
+        },
+        {
+          "stage": "travel",
+          "exitCode": 0,
+          "seconds": 33.937000000005355
+        },
+        {
+          "stage": "zoom",
+          "exitCode": 1,
+          "seconds": 92.10900000000402
+        }
+      ],
+      "windows": {
+        "samples": 1588,
+        "visibleSamples": 1588,
+        "foregroundSamples": 0,
+        "sizes": [
+          [
+            1280,
+            720
+          ]
+        ]
+      },
+      "normalSaveUnchanged": true,
+      "zoom": [
+        {
+          "label": "forest",
+          "motion": {
+            "Count": 475,
+            "TotalMs": 13074.693700000005,
+            "MeanMs": 27.525670947368432,
+            "P50Ms": 28.375,
+            "P95Ms": 39.6839,
+            "MaxMs": 47.6742,
+            "RetainedSamples": 475,
+            "P99Ms": 42.5982
+          }
+        },
+        {
+          "label": "cave",
+          "motion": {
+            "Count": 2228,
+            "TotalMs": 35470.36340000006,
+            "MeanMs": 15.92027082585281,
+            "P50Ms": 14.8601,
+            "P95Ms": 27.8886,
+            "MaxMs": 48.7172,
+            "RetainedSamples": 2228,
+            "P99Ms": 34.2031
+          }
+        }
+      ],
+      "travel": [
+        {
+          "label": "forest",
+          "p50": 16.602399826049805,
+          "p95": 34.26150131225586,
+          "max": 74.21880340576172,
+          "frameCount": 337
+        },
+        {
+          "label": "cave",
+          "p50": 14.53030014038086,
+          "p95": 27.555999755859375,
+          "max": 98.24150085449219,
+          "frameCount": 349
+        },
+        {
+          "label": "forest-return",
+          "p50": 28.222400665283203,
+          "p95": 38.479801177978516,
+          "max": 141.51759338378906,
+          "frameCount": 141
+        },
+        {
+          "label": "cave-return",
+          "p50": 16.487600326538086,
+          "p95": 29.653600692749023,
+          "max": 116.7645034790039,
+          "frameCount": 200
+        }
+      ],
+      "travelTimingSemantics": "Raw complete frame series, continuity and no drops asserted",
+      "privateCulling": {
+        "applies": "next prepared frame",
+        "forceVisible": false,
+        "scope": "main"
+      },
+      "restoredCulling": {
+        "applies": "next prepared frame",
+        "forceVisible": true,
+        "scope": "main"
+      },
+      "travelCaptureComparison": [
+        {
+          "label": "forest",
+          "pixelIdentical": false,
+          "meanAbsoluteChannelError": 0.4774265769675926,
+          "changedChannelSamples": 1186116
+        },
+        {
+          "label": "cave",
+          "pixelIdentical": false,
+          "meanAbsoluteChannelError": 0.4969332320601852,
+          "changedChannelSamples": 1363232
+        },
+        {
+          "label": "forest-return",
+          "pixelIdentical": false,
+          "meanAbsoluteChannelError": 0.08497178819444444,
+          "changedChannelSamples": 158457
+        },
+        {
+          "label": "cave-return",
+          "pixelIdentical": false,
+          "meanAbsoluteChannelError": 0.33589482060185183,
+          "changedChannelSamples": 917416
+        }
+      ],
+      "passed": false,
+      "gateFailures": [
+        "Required scenario did not pass",
+        "Zoom motion25ms p95 gate not met",
+        "forest-return warm raw25ms p95 gate not met",
+        "cave-return warm raw25ms p95 gate not met"
+      ],
+      "hidden": false,
+      "focusTransitions": 0.0
+    },
+    {
+      "artifact": "artifacts/static-scene-pacing/real-integrated-7d8-indexed/summary.json",
+      "manifest": {
+        "gameCommit": "7d8f3c5d7e4123be7bf2bce041cf58fd6d0fc043",
+        "testCommit": "0925f71975193bf87a183801266692bd66d273b4",
+        "engineSourceCommit": "275868358e4228d43c272e4ddb214416ecaac052",
+        "sdkSha256": "d77059a09c08c9d4ae6e2efce31240ef2a6c3ef74f75db9fae957be9e879b776",
+        "projectReferenceOverride": "Frozen matching SDK",
+        "driverAdjustments": [
+          "Stop cave descent at authored174<Cut<180 band; retain actual clicks",
+          "Capture wide/deep positions and rendered views outside reset/before outward interval",
+          "Warm info.frameMs is rolling median; macro p95 is not true frame p95",
+          "Collect every raw travel frame via cursor; reject drops and focus changes",
+          "Wait for active UI target before clicking; first setup attempt failed on async main-menu scene transition before any timing"
+        ],
+        "purpose": "Corrected real camera/forest-cave pacing; no hidden or foreground proof",
+        "presentation": "Private VSync false; require IMMEDIATE native confirmation",
+        "engineBundle": {
+          "sourceBase": "dc249a7e1d3e81c87252677e648d26e3dd0e395b",
+          "sourceCommit": "27586835",
+          "hashes": {
+            "src/app/RelWithDebInfo/Editor.exe": "1d914a17af210f59999251eb62d5d8f29035a4ae70b6e5eddf56184ee767d1fa",
+            "src/app/RelWithDebInfo/AetherGame.exe": "df93bff275408117e97f6b0be932f87eb2c6643261d386ce138d5616692626f9",
+            "data/scripts/managed/AetherCore.dll": "d77059a09c08c9d4ae6e2efce31240ef2a6c3ef74f75db9fae957be9e879b776",
+            "src/app/RelWithDebInfo/data/scripts/managed/AetherCore.dll": "d77059a09c08c9d4ae6e2efce31240ef2a6c3ef74f75db9fae957be9e879b776"
+          },
+          "status": "Raw cursor native wire/ring-wrap and canonical1369 suite passed; visible integrated pacing pending"
+        },
+        "culling": "Unchanged forceVisible=true",
+        "gamePatch": "Share exact position/normal/color/UV/wind vertices per authored template; preserve triangle indices/order",
+        "gamePatchSha256": "e2ba02ed3b168232fe5606a0c637ecc3d6841eddc7b284db64508889e1f56e07"
+      },
+      "passed": false,
+      "gateFailures": [
+        "Required scenario did not pass",
+        "Zoom motion25ms p95 gate not met",
+        "forest-return warm raw25ms p95 gate not met"
+      ],
+      "hidden": false,
+      "windows": {
+        "samples": 1458,
+        "visibleSamples": 1458,
+        "foregroundSamples": 0,
+        "sizes": [
+          [
+            1280,
+            720
+          ]
+        ]
+      },
+      "normalSaveUnchanged": true,
+      "zoom": [
+        {
+          "label": "forest",
+          "motion": {
+            "Count": 645,
+            "TotalMs": 13118.17399999999,
+            "MeanMs": 20.338254263565876,
+            "P50Ms": 19.7618,
+            "P95Ms": 30.3901,
+            "MaxMs": 50.0194,
+            "RetainedSamples": 645,
+            "P99Ms": 37.0683
+          }
+        },
+        {
+          "label": "cave",
+          "motion": {
+            "Count": 2092,
+            "TotalMs": 35058.601000000024,
+            "MeanMs": 16.75841347992353,
+            "P50Ms": 16.6142,
+            "P95Ms": 28.1143,
+            "MaxMs": 38.2859,
+            "RetainedSamples": 2092,
+            "P99Ms": 31.6389
+          }
+        }
+      ],
+      "travel": [
+        {
+          "label": "forest",
+          "p95": 18.8981990814209,
+          "max": 43.08250045776367,
+          "frameCount": 345
+        },
+        {
+          "label": "cave",
+          "p95": 24.118099212646484,
+          "max": 79.60269927978516,
+          "frameCount": 348
+        },
+        {
+          "label": "forest-return",
+          "p95": 26.719600677490234,
+          "max": 105.81439971923828,
+          "frameCount": 211
+        },
+        {
+          "label": "cave-return",
+          "p95": 24.64189910888672,
+          "max": 97.35289764404297,
+          "frameCount": 223
+        }
+      ]
+    },
+    {
+      "artifact": "artifacts/static-scene-pacing/real-integrated-7d8-indexed-flight3/summary.json",
+      "manifest": {
+        "gameCommit": "7d8f3c5d7e4123be7bf2bce041cf58fd6d0fc043",
+        "testCommit": "0925f71975193bf87a183801266692bd66d273b4",
+        "engineSourceCommit": "275868358e4228d43c272e4ddb214416ecaac052",
+        "sdkSha256": "d77059a09c08c9d4ae6e2efce31240ef2a6c3ef74f75db9fae957be9e879b776",
+        "projectReferenceOverride": "Frozen matching SDK",
+        "driverAdjustments": [
+          "Stop cave descent at authored174<Cut<180 band; retain actual clicks",
+          "Capture wide/deep positions and rendered views outside reset/before outward interval",
+          "Warm info.frameMs is rolling median; macro p95 is not true frame p95",
+          "Collect every raw travel frame via cursor; reject drops and focus changes",
+          "Wait for active UI target before clicking; first setup attempt failed on async main-menu scene transition before any timing"
+        ],
+        "purpose": "Corrected real camera/forest-cave pacing; no hidden or foreground proof",
+        "presentation": "Private VSync false; require IMMEDIATE native confirmation",
+        "engineBundle": {
+          "sourceBase": "dc249a7e1d3e81c87252677e648d26e3dd0e395b",
+          "sourceCommit": "27586835",
+          "hashes": {
+            "src/app/RelWithDebInfo/Editor.exe": "1d914a17af210f59999251eb62d5d8f29035a4ae70b6e5eddf56184ee767d1fa",
+            "src/app/RelWithDebInfo/AetherGame.exe": "df93bff275408117e97f6b0be932f87eb2c6643261d386ce138d5616692626f9",
+            "data/scripts/managed/AetherCore.dll": "d77059a09c08c9d4ae6e2efce31240ef2a6c3ef74f75db9fae957be9e879b776",
+            "src/app/RelWithDebInfo/data/scripts/managed/AetherCore.dll": "d77059a09c08c9d4ae6e2efce31240ef2a6c3ef74f75db9fae957be9e879b776"
+          },
+          "status": "Raw cursor native wire/ring-wrap and canonical1369 suite passed; visible integrated pacing pending"
+        },
+        "culling": "Unchanged forceVisible=true",
+        "gamePatch": "Share exact position/normal/color/UV/wind vertices per authored template; preserve triangle indices/order",
+        "gamePatchSha256": "e2ba02ed3b168232fe5606a0c637ecc3d6841eddc7b284db64508889e1f56e07",
+        "privateFramesInFlight": 3,
+        "latencyLimitation": "Existing startup setting, up to one more queued frame; no default or latency acceptance claim"
+      },
+      "passed": false,
+      "gateFailures": [
+        "Required scenario did not pass",
+        "Zoom motion25ms p95 gate not met",
+        "forest-return warm raw25ms p95 gate not met",
+        "cave-return warm raw25ms p95 gate not met"
+      ],
+      "hidden": false,
+      "windows": {
+        "samples": 1522,
+        "visibleSamples": 1522,
+        "foregroundSamples": 0,
+        "sizes": [
+          [
+            1280,
+            720
+          ]
+        ]
+      },
+      "normalSaveUnchanged": true,
+      "zoom": [
+        {
+          "label": "forest",
+          "motion": {
+            "Count": 566,
+            "TotalMs": 13018.855200000009,
+            "MeanMs": 23.00151095406362,
+            "P50Ms": 23.3893,
+            "P95Ms": 32.6852,
+            "MaxMs": 45.0469,
+            "RetainedSamples": 566,
+            "P99Ms": 35.5503
+          }
+        },
+        {
+          "label": "cave",
+          "motion": {
+            "Count": 2115,
+            "TotalMs": 35594.36489999996,
+            "MeanMs": 16.82948695035459,
+            "P50Ms": 16.2511,
+            "P95Ms": 28.4783,
+            "MaxMs": 68.7608,
+            "RetainedSamples": 2115,
+            "P99Ms": 35.6861
+          }
+        }
+      ],
+      "travel": [
+        {
+          "label": "forest",
+          "p95": 26.76300048828125,
+          "max": 82.05149841308594,
+          "frameCount": 429
+        },
+        {
+          "label": "cave",
+          "p95": 28.322099685668945,
+          "max": 115.93240356445312,
+          "frameCount": 304
+        },
+        {
+          "label": "forest-return",
+          "p95": 28.029499053955078,
+          "max": 140.71620178222656,
+          "frameCount": 181
+        },
+        {
+          "label": "cave-return",
+          "p95": 26.259700775146484,
+          "max": 96.44090270996094,
+          "frameCount": 198
+        }
+      ]
+    },
+    {
+      "artifact": "artifacts/static-scene-pacing/real-integrated-7d8-indexed-scale80-fifo/summary.json",
+      "manifest": {
+        "gameCommit": "7d8f3c5d7e4123be7bf2bce041cf58fd6d0fc043",
+        "testCommit": "0925f71975193bf87a183801266692bd66d273b4",
+        "engineSourceCommit": "902a474fcc2567abb5cf28c00dca7c952101abdf",
+        "sdkSha256": "8a35cc4f98fded075d839bd30df822a9eac2237cd2fe51f86c152a469a05e65c",
+        "projectReferenceOverride": "Frozen matching SDK",
+        "driverAdjustments": [
+          "Stop cave descent at authored174<Cut<180 band; retain actual clicks",
+          "Capture wide/deep positions and rendered views outside reset/before outward interval",
+          "Warm info.frameMs is rolling median; macro p95 is not true frame p95",
+          "Collect every raw travel frame via cursor; reject drops and focus changes",
+          "Wait for active UI target before clicking; first setup attempt failed on async main-menu scene transition before any timing"
+        ],
+        "purpose": "Corrected real camera/forest-cave pacing; no hidden or foreground proof",
+        "presentation": "Private VSync true; require FIFO actual confirmation",
+        "engineBundle": {
+          "sourceBase": "275868358e4228d43c272e4ddb214416ecaac052",
+          "sourceCommit": "902a474fcc2567abb5cf28c00dca7c952101abdf",
+          "diffSha256": "095268caef55765d5a9acfea22d837e73b90606fd9cacb5e447e322f8c0a0545",
+          "hashes": {
+            "src/app/RelWithDebInfo/Editor.exe": "878e1faf9ec72893d2eeae48d6ed6e86456d84b1ed1fe1de97b360ecfe13146f",
+            "src/app/RelWithDebInfo/AetherGame.exe": "d9ec3c86c53f4ea271120e01ceacb03568342d0d812c4625cc7be9c3a53cb176",
+            "data/scripts/managed/AetherCore.dll": "8a35cc4f98fded075d839bd30df822a9eac2237cd2fe51f86c152a469a05e65c",
+            "src/app/RelWithDebInfo/data/scripts/managed/AetherCore.dll": "8a35cc4f98fded075d839bd30df822a9eac2237cd2fe51f86c152a469a05e65c"
+          },
+          "status": "Native1371 tests, hiddenStreaming+Home/keysequence wire pass; restored275 renderer"
+        },
+        "culling": "Unchanged forceVisible=true",
+        "gamePatch": "Share exact position/normal/color/UV/wind vertices per authored template; preserve triangle indices/order",
+        "gamePatchSha256": "e2ba02ed3b168232fe5606a0c637ecc3d6841eddc7b284db64508889e1f56e07",
+        "privateRenderScale": 0.8,
+        "privateFramesInFlight": 2,
+        "acceptanceScope": "Reduced internal resolution only; not full-resolution acceptance. Authored geometry/distances retained."
+      },
+      "passed": false,
+      "gateFailures": [
+        "Required scenario did not pass",
+        "Zoom motion25ms p95 gate not met",
+        "Full travel evidence missing",
+        "forest-return warm raw25ms p95 gate not met"
+      ],
+      "hidden": false,
+      "windows": {
+        "samples": 2328,
+        "visibleSamples": 2328,
+        "foregroundSamples": 0,
+        "sizes": [
+          [
+            1280,
+            720
+          ]
+        ]
+      },
+      "normalSaveUnchanged": true,
+      "zoom": [
+        {
+          "label": "forest",
+          "motion": {
+            "Count": 274,
+            "TotalMs": 17838.092099999994,
+            "MeanMs": 65.10252591240874,
+            "P50Ms": 50.2211,
+            "P95Ms": 139.6091,
+            "MaxMs": 491.9342,
+            "RetainedSamples": 274,
+            "P99Ms": 311.0688
+          }
+        },
+        {
+          "label": "cave",
+          "motion": {
+            "Count": 1176,
+            "TotalMs": 41278.571799999954,
+            "MeanMs": 35.100826360544175,
+            "P50Ms": 29.7106,
+            "P95Ms": 88.7594,
+            "MaxMs": 189.7881,
+            "RetainedSamples": 1176,
+            "P99Ms": 129.9561
+          }
+        }
+      ],
+      "travel": [
+        {
+          "label": "forest",
+          "p95": 44.79610061645508,
+          "max": 106.97350311279297,
+          "frameCount": 295
+        },
+        {
+          "label": "cave",
+          "p95": 72.13410186767578,
+          "max": 191.89610290527344,
+          "frameCount": 215
+        },
+        {
+          "label": "forest-return",
+          "p95": 116.73370361328125,
+          "max": 227.18429565429688,
+          "frameCount": 78
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "All own editors closed after runs; primary checkout and other sessions untouched",
+    "FIFO vs IMMEDIATE did not recover25ms budget; private settings only, no defaults changed",
+    "Authored cave band174<Cut<180 used in corrected092 runs; original e84 overshotbelowfloor",
+    "Export-timing observer stalls retained in raw travel maxima; no slow frame filtering",
+    "Render and game phases overlap and must not be summed",
+    "Experimental culling also failed25ms gates; restoredtrue confirmed; ordinary force-visible default unchanged. Travel views inspected, not exhaustive skinned/sky/shear proof."
+  ]
+}
