@@ -1,5 +1,7 @@
 #include "gpu/GpuDevice.hpp"
 
+#include <chrono>
+
 #include "utils/Profiler.hpp"
 #include "utils/ServiceContainer.hpp"
 #include "gpu/BindlessManager.hpp"
@@ -98,6 +100,11 @@ namespace aether
 		return {extent.width, extent.height};
 	}
 
+	gpu::PresentMode GpuDevice::GetSwapchainPresentMode() const
+	{
+		return m_gfx->GetSwapchain().GetPresentMode();
+	}
+
 	std::uint32_t GpuDevice::GetCurrentSwapchainImageIndex() const
 	{
 		return m_gfx->GetSwapchain().GetCurrentImageIndex();
@@ -170,7 +177,9 @@ namespace aether
 		const std::uint64_t transferTicket = transfer.GraphicsDependency();
 		void* transferSemaphore = transferTicket > 0 ? static_cast<void*>(transfer.TimelineSemaphore()) : nullptr;
 
+		const auto submitStart = std::chrono::steady_clock::now();
 		swapchain.SubmitAndPresent(vk.GetGraphicsQueue(), vk.GetPresentQueue(), asyncComputeSemaphoreHandle, asyncComputeTimelineValue, transferSemaphore, transferTicket);
+		m_last_submit_present_ms = std::chrono::duration<float, std::milli>(std::chrono::steady_clock::now() - submitStart).count();
 	}
 
 	FrameTarget GpuDevice::BuildFrameTarget() const

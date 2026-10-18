@@ -11,7 +11,7 @@ case=repo/'artifacts/procedural-streaming'/str(uuid.uuid4());project=case/'proje
 (project/'scenes/StreamingExit.scene.toml').write_text("[scene]\nkind='3d'\nname='StreamingExit'\nversion=16\n[[entities]]\nname='Exit verifier'\nparent=-1\nposition=[0.0,0.0,0.0]\n[[entities.scripts]]\ntype='StreamingExitProbe'\n")
 (project/'scripts/StreamingFixture.cs').write_text((repo/'tools/mcp/tests/StreamingFixture.cs').read_text())
 (project/'scripts/AetherGame.csproj').write_text(f'<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><AssemblyName>AetherGame</AssemblyName><TargetFramework>net10.0</TargetFramework><Optimize>true</Optimize><Nullable>enable</Nullable></PropertyGroup><ItemGroup><ProjectReference Include="{repo.as_posix()}/managed/AetherCore/AetherCore.csproj" Private="false" ExcludeAssets="runtime" /></ItemGroup></Project>')
-env=os.environ.copy();env.update(AETHER_CONTROL_PORT=str(a.port),AETHER_AGENT_SESSION='1',AETHER_SESSION_NAME='Verification - streaming '+case.name[:12],AETHER_USER_CONFIG_DIR=str(case/'profile'),AETHER_STREAM_REPORT=str(case/'result.json'))
+env=os.environ.copy();env.update(AETHER_CONTROL_PORT=str(a.port),AETHER_AGENT_SESSION='1',AETHER_FRAME_REPORT='2',AETHER_SESSION_NAME='Verification - streaming '+case.name[:12],AETHER_USER_CONFIG_DIR=str(case/'profile'),AETHER_STREAM_REPORT=str(case/'result.json'))
 cli=build/'tools/control-client/RelWithDebInfo/aether-ctl.exe'
 def call(method,args={}):
  r=subprocess.run([str(cli),'--port',str(a.port),method,json.dumps(args)],capture_output=True,text=True,timeout=20)
@@ -28,6 +28,7 @@ with (case/'native.log').open('w') as log:
    except (ValueError,subprocess.TimeoutExpired):pass
    time.sleep(.2)
   else:raise AssertionError('Control endpoint did not start')
+  assert not info.get('focused',False),'Background fixture unexpectedly focused'
   (case/'engine-info.json').write_text(json.dumps(info,indent=2))
   call('engine.play')
   end=time.monotonic()+180

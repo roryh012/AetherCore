@@ -12,6 +12,7 @@
 #include <span>
 #include "Color.hpp"
 #include "io/FileSystem.hpp"
+#include "io/PlatformPaths.hpp"
 #include "gpu/GpuDevice.hpp"
 #include "gpu/FrameTarget.hpp"
 #include "imgui/ImguiFrameData.hpp"
@@ -628,6 +629,8 @@ namespace aether
 
 		// must do GLFW-only work and we never call RenderPlatformWindowsDefault().
 		ImGuiPlatformIO& platformIO = ImGui::GetPlatformIO();
+		// Internal dock focus must not activate an OS window during background verification.
+		ApplyAgentFocusPolicy(platformIO, io::PlatformPaths::IsAgentSession());
 		platformIO.Renderer_CreateWindow = nullptr;
 		platformIO.Renderer_DestroyWindow = nullptr;
 		platformIO.Renderer_SetWindowSize = nullptr;

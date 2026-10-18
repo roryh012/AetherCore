@@ -57,6 +57,9 @@ namespace aether
 		[[nodiscard]] GpuFormat GetSwapchainColorFormat() const;
 		[[nodiscard]] GpuFormat GetSwapchainDepthFormat() const;
 		[[nodiscard]] gpu::Extent2D GetSwapchainExtent() const;
+		[[nodiscard]] gpu::PresentMode GetSwapchainPresentMode() const;
+		// Render-thread elapsed CPU time for this frame's native submit/present call.
+		[[nodiscard]] float LastSubmitPresentMs() const { return m_last_submit_present_ms; }
 		[[nodiscard]] std::uint32_t GetCurrentSwapchainImageIndex() const;
 		[[nodiscard]] bool SwapchainNeedsRecreation() const;
 		void ClearSwapchainRecreationFlag();
@@ -110,6 +113,7 @@ namespace aether
 
 	private:
 		std::unique_ptr<GraphicsDevice> m_gfx;
+		float m_last_submit_present_ms = 0.0f;
 		std::function<void()> m_swapchainRecreatedCallback;
 
 		// Last frame's viewProj, published to shaders as FrameConstants::prevViewProj.

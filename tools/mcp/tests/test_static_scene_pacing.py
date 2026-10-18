@@ -1,5 +1,5 @@
 import unittest
-from verify_static_scene_pacing import reports,assess
+from verify_static_scene_pacing import reports,assess,phase_reports
 
 class StaticPacingTests(unittest.TestCase):
  def test_report_and_regression_thresholds(self):
@@ -11,5 +11,13 @@ class StaticPacingTests(unittest.TestCase):
   self.assertFalse(assess(values,[dict(values[0],p99=100)])['p99']['passed'])
   self.assertFalse(assess(values,[dict(values[0],max=100)])['max']['passed'])
   self.assertEqual(reports('FrameReport malformed'),[])
+
+ def test_actual_mode_and_phase_windows(self):
+  line='FramePhases n=600 mode=FIFO requested=MAILBOX mean/max | render=3.1/4.2 begin=0.1/0.2 pump=0.2/0.3 update=1.0/2.0 ui=5.0/30.0 extract=0.5/0.9 sceneui=0.1/0.2 submit=0.01/0.02 | BACKGROUND FIFO: foreground pacing unverified'
+  row=phase_reports(line)[0]
+  self.assertEqual((row['mode'],row['requested']),('FIFO','MAILBOX'))
+  self.assertEqual(row['phases']['ui'],dict(mean=5.0,max=30.0))
+  self.assertEqual(len(row['phases']),8)
+  self.assertEqual(phase_reports('FramePhases malformed'),[])
 
 if __name__=='__main__':unittest.main()

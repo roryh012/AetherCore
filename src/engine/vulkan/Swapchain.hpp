@@ -66,6 +66,7 @@ namespace aether
 
 		[[nodiscard]] VkCommandBuffer GetCurrentCommandBuffer() const;
 		[[nodiscard]] gpu::Extent2D GetExtent() const;
+		[[nodiscard]] gpu::PresentMode GetPresentMode() const;
 		[[nodiscard]] gpu::Format GetImageFormat() const;
 		[[nodiscard]] gpu::Format GetDepthFormat() const;
 		[[nodiscard]] VkImage GetCurrentImage() const;

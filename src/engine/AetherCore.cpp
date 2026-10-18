@@ -414,6 +414,8 @@ namespace aether
 		DeltaCadenceSnapper deltaSnapper;
 		auto lastFrameReport = std::chrono::steady_clock::now();
 		std::vector<FrameTiming> reportFrames(FrameTimeline::kCapacity);
+		constexpr std::array producerPhases{&FrameTiming::frameBeginMs, &FrameTiming::eventPumpMs, &FrameTiming::updateMs,
+		        &FrameTiming::editorUiMs, &FrameTiming::extractionMs, &FrameTiming::sceneUiMs, &FrameTiming::submitMs};
 		std::vector<float> reportWall;
 		reportWall.reserve(FrameTimeline::kCapacity);
 
@@ -489,6 +491,7 @@ namespace aether
 			if (!m_retiredRenderResources.Empty())
 				RunExclusive(QuiesceMode::DrainCpuOnly, [] {});
 			client.OnFrameBegin();
+			const auto afterFrameBegin = std::chrono::steady_clock::now();
 			Logger::SetFrameNumber(m_producerFrameIndex);
 
 			// rawDt is CLAMPED so a hitch cannot explode physics. wallSeconds is the same
@@ -584,6 +587,7 @@ namespace aether
 			}
 
 			client.OnUpdate(gameDt, m_producerFrameIndex);
+			const auto afterUpdate = std::chrono::steady_clock::now();
 
 			if (m_uiOverlay)
 			{
@@ -619,7 +623,9 @@ namespace aether
 				}
 			}
 
+			const auto beforeExtraction = std::chrono::steady_clock::now();
 			RenderFramePacket packet = PrepareFrame(drawSlot, m_producerFrameIndex);
+			const auto afterExtraction = std::chrono::steady_clock::now();
 			packet.elapsedTime = static_cast<float>(m_gameElapsedSeconds);
 			// The instant this frame's input was sampled. Travels with the frame to the
 			// present, where the flip time is finally known.
@@ -651,7 +657,9 @@ namespace aether
 				uiRenderer.BuildFrame({static_cast<float>(packet.uiExtent.width), static_cast<float>(packet.uiExtent.height)}, packet.drawSlot);
 			}
 
+			const auto beforeSubmit = std::chrono::steady_clock::now();
 			m_renderThread.SubmitFrame(std::move(packet));
+			const auto afterSubmit = std::chrono::steady_clock::now();
 
 			if (!screenshotPath.empty() && !screenshotRequested && m_producerFrameIndex >= screenshotFrame && m_screenshotService.IsInitialized())
 			{
@@ -682,6 +690,13 @@ namespace aether
 				timing.tailMs = loopTailMs;
 				previousFrameEnd = frameEnd;
 				timing.gameWorkMs = std::max(0.0f, ms(frameStart, frameEnd) - timing.pacerWaitMs - timing.inFlightWaitMs - pacerIdleMs);
+				timing.frameBeginMs = ms(afterPacer, afterFrameBegin);
+				timing.eventPumpMs = ms(latchStart, afterPump);
+				timing.updateMs = ms(beforeTick, afterUpdate);
+				timing.editorUiMs = ms(afterUpdate, beforeExtraction);
+				timing.extractionMs = ms(beforeExtraction, afterExtraction);
+				timing.sceneUiMs = ms(afterExtraction, beforeSubmit);
+				timing.submitMs = ms(beforeSubmit, afterSubmit);
 				m_frameTimeline.RecordGameFrame(timing);
 
 				// Feed the pacer the MEASURED display period, not the loop period: the loop can
@@ -712,6 +727,7 @@ namespace aether
 					float gameWork = 0.0f;
 					float inFlight = 0.0f;
 					float present = 0.0f;
+					float renderWork = 0.0f, renderMaximum = 0.0f;
 					float inputStale = 0.0f;
 					// Where a frame's wall time actually goes: the frame cap's sleep and the latency
 					// pacer's idle are both invisible otherwise, so a loop pinned to the wrong rate
@@ -719,11 +735,13 @@ namespace aether
 					float capWait = 0.0f;
 					float pacerIdle = 0.0f;
 					float tail = 0.0f;
+					std::array<float, producerPhases.size()> phaseTotals{}, phaseMaxima{};
 					std::size_t clamped = 0;
 					std::size_t unthrottled = 0;
 					// The occlusion heuristic below compares against the display period, which is
 					// only what the tracker reports when presents are display-paced.
-					const bool fifoPresent = DesiredPresentMode(m_settings) == gpu::PresentMode::Fifo;
+					const auto actualPresentMode = m_gpu->GetSwapchainPresentMode();
+					const bool fifoPresent = actualPresentMode == gpu::PresentMode::Fifo;
 					const auto flipPeriodMs = static_cast<float>(presentTiming.PeriodMs());
 					for (std::size_t i = 0; i < count; ++i)
 					{
@@ -732,10 +750,18 @@ namespace aether
 						gameWork += frame.gameWorkMs;
 						inFlight += frame.inFlightWaitMs;
 						present += frame.presentWaitMs;
+						renderWork += frame.renderExecMs;
+						renderMaximum = std::max(renderMaximum, frame.renderExecMs);
 						inputStale += frame.inputStaleMs;
 						capWait += frame.pacerWaitMs;
 						pacerIdle += frame.pacerIdleMs;
 						tail += frame.tailMs;
+						for (std::size_t phase = 0; phase < producerPhases.size(); ++phase)
+						{
+							const float value = frame.*producerPhases[phase];
+							phaseTotals[phase] += value;
+							phaseMaxima[phase] = std::max(phaseMaxima[phase], value);
+						}
 						if (frame.wallMs > frame.simDtMs + 0.01f)
 						{
 							++clamped;
@@ -784,6 +810,16 @@ namespace aether
 					        // Focus decides whether DWM throttles this window at all, so a sample
 					        // that spans a change is two different measurements averaged together.
 					        m_focusChanges > reportedFocusChanges ? "  <-- SAMPLE UNRELIABLE, focus changed mid-sample" : "");
+						const auto modeName = [](gpu::PresentMode mode)
+						{
+							return mode == gpu::PresentMode::Fifo ? "FIFO" : mode == gpu::PresentMode::Mailbox ? "MAILBOX" : "IMMEDIATE";
+						};
+						AE_INFO(LogCategory::Engine,
+						        "FramePhases n={} mode={} requested={} mean/max | render={:.3f}/{:.3f} begin={:.3f}/{:.3f} pump={:.3f}/{:.3f} update={:.3f}/{:.3f} ui={:.3f}/{:.3f} extract={:.3f}/{:.3f} sceneui={:.3f}/{:.3f} submit={:.3f}/{:.3f}{}",
+						        count, modeName(actualPresentMode), modeName(DesiredPresentMode(m_settings)), renderWork / n, renderMaximum,
+						        phaseTotals[0] / n, phaseMaxima[0], phaseTotals[1] / n, phaseMaxima[1], phaseTotals[2] / n, phaseMaxima[2],
+						        phaseTotals[3] / n, phaseMaxima[3], phaseTotals[4] / n, phaseMaxima[4], phaseTotals[5] / n, phaseMaxima[5], phaseTotals[6] / n, phaseMaxima[6],
+						        fifoPresent && !m_lastFocused ? " | BACKGROUND FIFO: foreground pacing unverified" : "");
 					        reportedFocusChanges = m_focusChanges;
 					}
 				}
@@ -1488,9 +1524,7 @@ namespace aether
 			}
 		}
 
-		const auto presentStart = std::chrono::steady_clock::now();
 		EndFrame(packet);
-		const auto presentEnd = std::chrono::steady_clock::now();
 		if (m_rendering && m_profile == RuntimeProfile::Full)
 		{
 			m_rendering->GetRenderer2D().EndFrame();
@@ -1515,7 +1549,7 @@ namespace aether
 			// presentWait is both places the render thread can block on the swapchain:
 			// acquiring an image, and submitting/presenting it. With FIFO vsync this is
 			// where the refresh cadence actually enters the frame.
-			const float presentWaitMs = ms(acquireStart, acquireEnd) + ms(presentStart, presentEnd);
+			const float presentWaitMs = ms(acquireStart, acquireEnd) + m_gpu->LastSubmitPresentMs();
 			// Report render EXEC with the present block taken out. The two are nested, and a
 			// phase breakdown whose rows overlap cannot be read as a breakdown - it would
 			// show the same blocked refresh interval twice and never sum to a frame.

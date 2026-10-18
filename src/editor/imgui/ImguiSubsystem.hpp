@@ -32,6 +32,14 @@ namespace aether
 		ImguiSubsystem();
 		~ImguiSubsystem() override;
 
+		static void ApplyAgentFocusPolicy(ImGuiPlatformIO& platform, bool agentSession)
+		{
+			if (agentSession)
+			{
+				platform.Platform_SetWindowFocus = nullptr;
+			}
+		}
+
 		ImguiSubsystem(const ImguiSubsystem&) = delete;
 		ImguiSubsystem& operator=(const ImguiSubsystem&) = delete;
 		ImguiSubsystem(ImguiSubsystem&&) = delete;

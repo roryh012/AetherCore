@@ -6,6 +6,13 @@ REPORT=re.compile(r"FrameReport n=(\d+) avg=([\d.]+) median=([\d.]+) p95=([\d.]+
 FIELDS=['n','avg','median','p95','p99','max','game','inflight','present','focused','focusflips']
 def reports(text):
  return [dict(zip(FIELDS,map(float,m.groups()))) for m in REPORT.finditer(text)]
+def phase_reports(text):
+ rows=[]
+ for match in re.finditer(r'FramePhases n=(\d+) mode=(\w+) requested=(\w+) mean/max \| ([^\n]*)',text):
+  phases={key:dict(mean=float(mean),max=float(maximum)) for key,mean,maximum in re.findall(r'(\w+)=([\d.]+)/([\d.]+)',match[4])}
+  rows.append(dict(n=int(match[1]),mode=match[2],requested=match[3],phases=phases))
+ return rows
+
 def assess(baseline,candidate):
  # Absolute allowances keep sub-millisecond differences from becoming large percentages.
  limits={'p95':(1.10,.5),'p99':(1.15,1),'max':(1.25,3),'game':(1.15,.05)}
@@ -66,6 +73,8 @@ def run(repo,case,project,build,label,scene,mode,index,seconds,port,validation):
    while time.monotonic()-start<seconds+90:
     assert process.poll() is None,f'{tag} exited: '+str(logpath)
     text=logpath.read_text(errors='replace')
+    observed=reports(text)
+    assert not observed or (observed[-1]['focused']==0 and observed[-1]['focusflips']==0),'Background verification changed focus; own session stopped'
     if re.search(r"Startup scene .* loaded",text) and not ready:
      ready=True;start=time.monotonic()
     if ready and time.monotonic()-start>=seconds:break
@@ -101,7 +110,7 @@ def run(repo,case,project,build,label,scene,mode,index,seconds,port,validation):
      deadline=time.monotonic()+12
      while not (folder/'scene.png').exists() and time.monotonic()<deadline:time.sleep(.1)
      assert (folder/'scene.png').exists(),capture
-   result=dict(entityCount=int(counts[-1]),label=label,mode=mode,scene=scene,validation=validation,seconds=seconds,binarySha256=hashlib.sha256(exe.read_bytes()).hexdigest(),reports=rows,last=rows[-1],errors=findings)
+   result=dict(entityCount=int(counts[-1]),label=label,mode=mode,scene=scene,validation=validation,seconds=seconds,binarySha256=hashlib.sha256(exe.read_bytes()).hexdigest(),reports=rows,phases=phase_reports(text),last=rows[-1],errors=findings)
    (folder/'result.json').write_text(json.dumps(result,indent=2));return result
   finally:
    if process.poll() is None:process.terminate()

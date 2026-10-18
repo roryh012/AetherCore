@@ -589,6 +589,19 @@ namespace aether
 		return gpu::Extent2D(m_swapchain.extent);
 	}
 
+	gpu::PresentMode Swapchain::GetPresentMode() const
+	{
+		switch (m_swapchain.present_mode)
+		{
+			case VK_PRESENT_MODE_MAILBOX_KHR:
+				return gpu::PresentMode::Mailbox;
+			case VK_PRESENT_MODE_IMMEDIATE_KHR:
+				return gpu::PresentMode::Immediate;
+			default:
+				return gpu::PresentMode::Fifo;
+		}
+	}
+
 	gpu::Format Swapchain::GetImageFormat() const
 	{
 		return gpu::FromVk(m_swapchain.image_format);

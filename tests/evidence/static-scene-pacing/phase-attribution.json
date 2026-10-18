@@ -1,0 +1,910 @@
+{
+  "date": "2026-10-18",
+  "sourceBase": "e2e869a4c2cb8cba248c218acd47f09bc6c7d0f6",
+  "changes": [
+    "Correct native submission/presentation boundary; rendering/overlay no longer classified as present.",
+    "Producer phase mean/max and actual vs requested presentation mode.",
+    "Agent-only ImGui OS-focus callback disabled; dock/tab focus and normal editor callback preserved."
+  ],
+  "nativeUnitSuite": {
+    "passed": 1361,
+    "skipped": 5,
+    "note": "Full suite before agent-only focus guard; two targeted phase/focus cases with12 assertions passed after guard."
+  },
+  "managedProceduralTests": 8,
+  "pythonParserTests": 2,
+  "gpuBoundaryGuard": "clean",
+  "nativeReplay": {
+    "case": "2e60dfac-5671-4b7b-a1b3-9e40c85ccd1d",
+    "result": {
+      "passed": true,
+      "frames": 22,
+      "visualBurstStarts": 32,
+      "burstFrames": 7,
+      "timings": [
+        {
+          "VisualReady": true,
+          "CollisionReady": true,
+          "State": 4,
+          "InputCopyMs": 0.0013,
+          "ColliderPreparationMs": 0.0397,
+          "AllocationCopyMs": 0.2474,
+          "UploadCompletionMs": 5.1142,
+          "ColliderCommitMs": 0.0667,
+          "CommitMs": 0.0676,
+          "ReservedBytes": 1272
+        },
+        {
+          "VisualReady": true,
+          "CollisionReady": true,
+          "State": 4,
+          "InputCopyMs": 0.0124,
+          "ColliderPreparationMs": 0,
+          "AllocationCopyMs": 0.2468,
+          "UploadCompletionMs": 18.2814,
+          "ColliderCommitMs": 0.0039,
+          "CommitMs": 0.0054,
+          "ReservedBytes": 1464
+        },
+        {
+          "VisualReady": true,
+          "CollisionReady": true,
+          "State": 4,
+          "InputCopyMs": 0.0032,
+          "ColliderPreparationMs": 0.0187,
+          "AllocationCopyMs": 0.0002,
+          "UploadCompletionMs": 0.0003,
+          "ColliderCommitMs": 0.0392,
+          "CommitMs": 0.0392,
+          "ReservedBytes": 1272
+        },
+        {
+          "VisualReady": true,
+          "CollisionReady": true,
+          "State": 4,
+          "InputCopyMs": 0.0013,
+          "ColliderPreparationMs": 0,
+          "AllocationCopyMs": 0,
+          "UploadCompletionMs": 0.0007,
+          "ColliderCommitMs": 0.0101,
+          "CommitMs": 0.0133,
+          "ReservedBytes": 0
+        }
+      ],
+      "stats": {
+        "Jobs": 0,
+        "ReservedBytes": 0,
+        "Rejected": 0
+      }
+    },
+    "exit": {
+      "passed": true,
+      "frames": 31,
+      "stats": {
+        "Jobs": 0,
+        "ReservedBytes": 0,
+        "Rejected": 0
+      }
+    },
+    "phases": [
+      {
+        "n": 135,
+        "mode": "FIFO",
+        "requested": "MAILBOX",
+        "phases": {
+          "render": {
+            "mean": 5.151,
+            "max": 180.877
+          },
+          "begin": {
+            "mean": 0.0,
+            "max": 0.002
+          },
+          "pump": {
+            "mean": 0.004,
+            "max": 0.133
+          },
+          "update": {
+            "mean": 3.047,
+            "max": 329.745
+          },
+          "ui": {
+            "mean": 2.166,
+            "max": 41.411
+          },
+          "extract": {
+            "mean": 0.014,
+            "max": 0.064
+          },
+          "sceneui": {
+            "mean": 0.003,
+            "max": 0.017
+          },
+          "submit": {
+            "mean": 0.002,
+            "max": 0.021
+          }
+        }
+      }
+    ]
+  },
+  "runtimeStatic": {
+    "case": "6af45b39-566d-43a8-b147-db0d5ccbf018",
+    "metrics": {
+      "p95": {
+        "baseline": 29.869999999999997,
+        "candidate": 29.86,
+        "limit": 33.357,
+        "passed": true
+      },
+      "p99": {
+        "baseline": 30.465,
+        "candidate": 30.485,
+        "limit": 36.034749999999995,
+        "passed": true
+      },
+      "max": {
+        "baseline": 31.025,
+        "candidate": 30.880000000000003,
+        "limit": 41.78125,
+        "passed": true
+      },
+      "game": {
+        "baseline": 0.191,
+        "candidate": 0.165,
+        "limit": 0.26965,
+        "passed": true
+      }
+    },
+    "runs": [
+      {
+        "label": "baseline",
+        "last": {
+          "n": 600.0,
+          "avg": 16.68,
+          "median": 15.5,
+          "p95": 29.91,
+          "p99": 30.36,
+          "max": 30.96,
+          "game": 0.165,
+          "inflight": 0.0,
+          "present": 1.194,
+          "focused": 0.0,
+          "focusflips": 0.0
+        },
+        "phases": []
+      },
+      {
+        "label": "candidate",
+        "last": {
+          "n": 600.0,
+          "avg": 16.67,
+          "median": 15.61,
+          "p95": 29.77,
+          "p99": 30.37,
+          "max": 30.96,
+          "game": 0.159,
+          "inflight": 0.001,
+          "present": 0.261,
+          "focused": 0.0,
+          "focusflips": 0.0
+        },
+        "phases": [
+          {
+            "n": 600,
+            "mode": "IMMEDIATE",
+            "requested": "IMMEDIATE",
+            "phases": {
+              "render": {
+                "mean": 0.935,
+                "max": 2.63
+              },
+              "begin": {
+                "mean": 0.002,
+                "max": 0.111
+              },
+              "pump": {
+                "mean": 0.006,
+                "max": 0.401
+              },
+              "update": {
+                "mean": 0.08,
+                "max": 0.229
+              },
+              "ui": {
+                "mean": 0.0,
+                "max": 0.001
+              },
+              "extract": {
+                "mean": 0.056,
+                "max": 0.22
+              },
+              "sceneui": {
+                "mean": 0.003,
+                "max": 0.017
+              },
+              "submit": {
+                "mean": 0.007,
+                "max": 0.027
+              }
+            }
+          }
+        ]
+      },
+      {
+        "label": "candidate",
+        "last": {
+          "n": 600.0,
+          "avg": 16.66,
+          "median": 15.62,
+          "p95": 29.95,
+          "p99": 30.6,
+          "max": 30.8,
+          "game": 0.171,
+          "inflight": 0.001,
+          "present": 0.281,
+          "focused": 0.0,
+          "focusflips": 0.0
+        },
+        "phases": [
+          {
+            "n": 600,
+            "mode": "IMMEDIATE",
+            "requested": "IMMEDIATE",
+            "phases": {
+              "render": {
+                "mean": 0.972,
+                "max": 1.853
+              },
+              "begin": {
+                "mean": 0.002,
+                "max": 0.031
+              },
+              "pump": {
+                "mean": 0.009,
+                "max": 0.529
+              },
+              "update": {
+                "mean": 0.084,
+                "max": 0.285
+              },
+              "ui": {
+                "mean": 0.0,
+                "max": 0.001
+              },
+              "extract": {
+                "mean": 0.06,
+                "max": 0.183
+              },
+              "sceneui": {
+                "mean": 0.003,
+                "max": 0.029
+              },
+              "submit": {
+                "mean": 0.007,
+                "max": 0.04
+              }
+            }
+          }
+        ]
+      },
+      {
+        "label": "baseline",
+        "last": {
+          "n": 600.0,
+          "avg": 16.66,
+          "median": 15.53,
+          "p95": 29.83,
+          "p99": 30.57,
+          "max": 31.09,
+          "game": 0.217,
+          "inflight": 0.001,
+          "present": 1.456,
+          "focused": 0.0,
+          "focusflips": 0.0
+        },
+        "phases": []
+      }
+    ]
+  },
+  "editorGuardedStatic": {
+    "case": "guarded-11497a81-9ff5-49e8-92cc-9d8adb358781",
+    "result": {
+      "last": {
+        "n": 600.0,
+        "avg": 16.67,
+        "median": 16.67,
+        "p95": 18.48,
+        "p99": 19.67,
+        "max": 28.56,
+        "game": 2.33,
+        "inflight": 0.001,
+        "present": 0.41,
+        "focused": 0.0,
+        "focusflips": 0.0
+      },
+      "binarySha256": "c4cd2c9662acde0f4e909b785c6022be26f80c788b298ecd2bac162146d4196f",
+      "phases": [
+        {
+          "n": 91,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 1.833,
+              "max": 18.049
+            },
+            "begin": {
+              "mean": 0.002,
+              "max": 0.008
+            },
+            "pump": {
+              "mean": 0.017,
+              "max": 1.023
+            },
+            "update": {
+              "mean": 5.228,
+              "max": 386.908
+            },
+            "ui": {
+              "mean": 2.107,
+              "max": 19.972
+            },
+            "extract": {
+              "mean": 0.066,
+              "max": 0.327
+            },
+            "sceneui": {
+              "mean": 0.004,
+              "max": 0.035
+            },
+            "submit": {
+              "mean": 0.01,
+              "max": 0.049
+            }
+          }
+        },
+        {
+          "n": 196,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 3.23,
+              "max": 299.325
+            },
+            "begin": {
+              "mean": 0.003,
+              "max": 0.02
+            },
+            "pump": {
+              "mean": 0.011,
+              "max": 1.023
+            },
+            "update": {
+              "mean": 2.496,
+              "max": 386.908
+            },
+            "ui": {
+              "mean": 2.031,
+              "max": 20.85
+            },
+            "extract": {
+              "mean": 0.064,
+              "max": 0.327
+            },
+            "sceneui": {
+              "mean": 0.004,
+              "max": 0.035
+            },
+            "submit": {
+              "mean": 0.011,
+              "max": 0.123
+            }
+          }
+        },
+        {
+          "n": 315,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 2.622,
+              "max": 299.325
+            },
+            "begin": {
+              "mean": 0.003,
+              "max": 0.02
+            },
+            "pump": {
+              "mean": 0.12,
+              "max": 35.188
+            },
+            "update": {
+              "mean": 1.62,
+              "max": 386.908
+            },
+            "ui": {
+              "mean": 1.996,
+              "max": 20.85
+            },
+            "extract": {
+              "mean": 0.065,
+              "max": 0.327
+            },
+            "sceneui": {
+              "mean": 0.004,
+              "max": 0.035
+            },
+            "submit": {
+              "mean": 0.017,
+              "max": 1.861
+            }
+          }
+        },
+        {
+          "n": 436,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 2.347,
+              "max": 299.325
+            },
+            "begin": {
+              "mean": 0.003,
+              "max": 0.02
+            },
+            "pump": {
+              "mean": 0.089,
+              "max": 35.188
+            },
+            "update": {
+              "mean": 1.205,
+              "max": 386.908
+            },
+            "ui": {
+              "mean": 1.989,
+              "max": 20.85
+            },
+            "extract": {
+              "mean": 0.065,
+              "max": 0.327
+            },
+            "sceneui": {
+              "mean": 0.004,
+              "max": 0.035
+            },
+            "submit": {
+              "mean": 0.016,
+              "max": 1.861
+            }
+          }
+        },
+        {
+          "n": 556,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 2.226,
+              "max": 299.325
+            },
+            "begin": {
+              "mean": 0.003,
+              "max": 0.056
+            },
+            "pump": {
+              "mean": 0.071,
+              "max": 35.188
+            },
+            "update": {
+              "mean": 0.975,
+              "max": 386.908
+            },
+            "ui": {
+              "mean": 2.002,
+              "max": 20.85
+            },
+            "extract": {
+              "mean": 0.067,
+              "max": 0.327
+            },
+            "sceneui": {
+              "mean": 0.004,
+              "max": 0.035
+            },
+            "submit": {
+              "mean": 0.015,
+              "max": 1.861
+            }
+          }
+        },
+        {
+          "n": 600,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 2.144,
+              "max": 299.325
+            },
+            "begin": {
+              "mean": 0.003,
+              "max": 0.193
+            },
+            "pump": {
+              "mean": 0.066,
+              "max": 35.188
+            },
+            "update": {
+              "mean": 0.142,
+              "max": 5.223
+            },
+            "ui": {
+              "mean": 1.986,
+              "max": 20.85
+            },
+            "extract": {
+              "mean": 0.066,
+              "max": 0.225
+            },
+            "sceneui": {
+              "mean": 0.004,
+              "max": 0.026
+            },
+            "submit": {
+              "mean": 0.018,
+              "max": 1.861
+            }
+          }
+        },
+        {
+          "n": 600,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 1.67,
+              "max": 4.32
+            },
+            "begin": {
+              "mean": 0.003,
+              "max": 0.193
+            },
+            "pump": {
+              "mean": 0.066,
+              "max": 35.188
+            },
+            "update": {
+              "mean": 0.139,
+              "max": 5.223
+            },
+            "ui": {
+              "mean": 2.024,
+              "max": 9.083
+            },
+            "extract": {
+              "mean": 0.069,
+              "max": 0.383
+            },
+            "sceneui": {
+              "mean": 0.004,
+              "max": 0.026
+            },
+            "submit": {
+              "mean": 0.018,
+              "max": 1.861
+            }
+          }
+        },
+        {
+          "n": 600,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 1.654,
+              "max": 4.32
+            },
+            "begin": {
+              "mean": 0.003,
+              "max": 0.193
+            },
+            "pump": {
+              "mean": 0.007,
+              "max": 1.024
+            },
+            "update": {
+              "mean": 0.128,
+              "max": 0.652
+            },
+            "ui": {
+              "mean": 2.014,
+              "max": 7.275
+            },
+            "extract": {
+              "mean": 0.069,
+              "max": 0.383
+            },
+            "sceneui": {
+              "mean": 0.004,
+              "max": 0.033
+            },
+            "submit": {
+              "mean": 0.018,
+              "max": 1.973
+            }
+          }
+        },
+        {
+          "n": 600,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 1.65,
+              "max": 4.32
+            },
+            "begin": {
+              "mean": 0.003,
+              "max": 0.193
+            },
+            "pump": {
+              "mean": 0.007,
+              "max": 1.024
+            },
+            "update": {
+              "mean": 0.133,
+              "max": 0.983
+            },
+            "ui": {
+              "mean": 2.032,
+              "max": 7.275
+            },
+            "extract": {
+              "mean": 0.07,
+              "max": 0.543
+            },
+            "sceneui": {
+              "mean": 0.004,
+              "max": 0.033
+            },
+            "submit": {
+              "mean": 0.018,
+              "max": 1.973
+            }
+          }
+        },
+        {
+          "n": 600,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 1.605,
+              "max": 4.094
+            },
+            "begin": {
+              "mean": 0.003,
+              "max": 0.193
+            },
+            "pump": {
+              "mean": 0.009,
+              "max": 1.216
+            },
+            "update": {
+              "mean": 0.13,
+              "max": 0.983
+            },
+            "ui": {
+              "mean": 2.002,
+              "max": 7.275
+            },
+            "extract": {
+              "mean": 0.07,
+              "max": 0.652
+            },
+            "sceneui": {
+              "mean": 0.005,
+              "max": 0.055
+            },
+            "submit": {
+              "mean": 0.02,
+              "max": 1.973
+            }
+          }
+        },
+        {
+          "n": 600,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 1.608,
+              "max": 4.094
+            },
+            "begin": {
+              "mean": 0.003,
+              "max": 0.059
+            },
+            "pump": {
+              "mean": 0.008,
+              "max": 1.216
+            },
+            "update": {
+              "mean": 0.137,
+              "max": 3.635
+            },
+            "ui": {
+              "mean": 2.009,
+              "max": 7.275
+            },
+            "extract": {
+              "mean": 0.074,
+              "max": 1.228
+            },
+            "sceneui": {
+              "mean": 0.005,
+              "max": 0.055
+            },
+            "submit": {
+              "mean": 0.023,
+              "max": 1.973
+            }
+          }
+        },
+        {
+          "n": 600,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 1.58,
+              "max": 3.828
+            },
+            "begin": {
+              "mean": 0.002,
+              "max": 0.031
+            },
+            "pump": {
+              "mean": 0.008,
+              "max": 1.216
+            },
+            "update": {
+              "mean": 0.136,
+              "max": 3.635
+            },
+            "ui": {
+              "mean": 1.988,
+              "max": 5.383
+            },
+            "extract": {
+              "mean": 0.074,
+              "max": 1.228
+            },
+            "sceneui": {
+              "mean": 0.004,
+              "max": 0.055
+            },
+            "submit": {
+              "mean": 0.028,
+              "max": 1.973
+            }
+          }
+        },
+        {
+          "n": 600,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 1.595,
+              "max": 3.828
+            },
+            "begin": {
+              "mean": 0.003,
+              "max": 0.031
+            },
+            "pump": {
+              "mean": 0.008,
+              "max": 1.216
+            },
+            "update": {
+              "mean": 0.137,
+              "max": 3.635
+            },
+            "ui": {
+              "mean": 2.031,
+              "max": 8.327
+            },
+            "extract": {
+              "mean": 0.076,
+              "max": 1.228
+            },
+            "sceneui": {
+              "mean": 0.005,
+              "max": 0.055
+            },
+            "submit": {
+              "mean": 0.026,
+              "max": 1.957
+            }
+          }
+        },
+        {
+          "n": 600,
+          "mode": "IMMEDIATE",
+          "requested": "IMMEDIATE",
+          "phases": {
+            "render": {
+              "mean": 1.597,
+              "max": 4.655
+            },
+            "begin": {
+              "mean": 0.003,
+              "max": 0.076
+            },
+            "pump": {
+              "mean": 0.009,
+              "max": 1.216
+            },
+            "update": {
+              "mean": 0.137,
+              "max": 3.635
+            },
+            "ui": {
+              "mean": 2.068,
+              "max": 8.327
+            },
+            "extract": {
+              "mean": 0.076,
+              "max": 1.228
+            },
+            "sceneui": {
+              "mean": 0.005,
+              "max": 0.06
+            },
+            "submit": {
+              "mean": 0.029,
+              "max": 1.957
+            }
+          }
+        }
+      ]
+    },
+    "limitation": "Candidate-only valid background replay. Original matched Editor baseline aborted on focusflips2; no matched Editor regression pass is claimed."
+  },
+  "sdkSha256": "d821dccfe09860b7dda910397fcfd96be0df2c04f60d2f34abead05de9e74059",
+  "backgroundInventoryBefore": [
+    {
+      "ProcessId": 6888,
+      "Name": "Editor.exe",
+      "ExecutablePath": "C:\\Users\\rory0\\.codex\\worktrees\\gpu-cutaway\\AsAboveSoBelow\\Engine\\AetherCore\\build\\default\\src\\app\\RelWithDebInfo\\Editor.exe"
+    },
+    {
+      "ProcessId": 40356,
+      "Name": "Editor.exe",
+      "ExecutablePath": "C:\\Rory\\Development\\AsAboveSoBelow\\Engine\\AetherCore\\build\\default\\src\\app\\RelWithDebInfo\\Editor.exe"
+    }
+  ],
+  "backgroundInventoryAfter": [
+    {
+      "ProcessId": 6888,
+      "Name": "Editor.exe",
+      "ExecutablePath": "C:\\Users\\rory0\\.codex\\worktrees\\gpu-cutaway\\AsAboveSoBelow\\Engine\\AetherCore\\build\\default\\src\\app\\RelWithDebInfo\\Editor.exe"
+    },
+    {
+      "ProcessId": 40356,
+      "Name": "Editor.exe",
+      "ExecutablePath": "C:\\Rory\\Development\\AsAboveSoBelow\\Engine\\AetherCore\\build\\default\\src\\app\\RelWithDebInfo\\Editor.exe"
+    }
+  ],
+  "limitations": [
+    "No foreground pacing or authored-world motion acceptance.",
+    "Original failed focus sample retained; guard hardens an activation path but exact cause of transient focus remains unestablished.",
+    "Render phase is elapsed time including overlay/secondary viewport waits, not thread CPU utilization.",
+    "Current timer/limiter jitter remains visible in runtime; telemetry corrections do not improve its frame pacing.",
+    "Full standalone managed networking suite previously had29 missing-AetherHost failures; no managed source changed or claim that suite is green."
+  ]
+}

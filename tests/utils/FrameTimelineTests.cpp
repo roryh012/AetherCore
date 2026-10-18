@@ -171,3 +171,33 @@ TEST_CASE("Render shutdown wakes frame-completion waiters racing with shutdown")
 		waiter.get();
 	}
 }
+
+TEST_CASE("Producer phase timings survive ring wrap and render completion")
+{
+	FrameTimeline timeline;
+	for (std::uint64_t frame = 0; frame <= FrameTimeline::kCapacity; ++frame)
+	{
+		FrameTiming timing;
+		timing.frameIndex = frame;
+		timing.frameBeginMs = 0.1f;
+		timing.eventPumpMs = 0.2f;
+		timing.updateMs = 0.3f;
+		timing.editorUiMs = 0.4f;
+		timing.extractionMs = 0.5f;
+		timing.sceneUiMs = 0.6f;
+		timing.submitMs = 0.7f;
+		timeline.RecordGameFrame(timing);
+	}
+	timeline.RecordRenderFrame(FrameTimeline::kCapacity, 3.0f, 4.0f);
+	std::array<FrameTiming, 1> out{};
+	REQUIRE(timeline.Snapshot(out) == 1);
+	CHECK(out[0].frameBeginMs == doctest::Approx(0.1f));
+	CHECK(out[0].eventPumpMs == doctest::Approx(0.2f));
+	CHECK(out[0].updateMs == doctest::Approx(0.3f));
+	CHECK(out[0].editorUiMs == doctest::Approx(0.4f));
+	CHECK(out[0].extractionMs == doctest::Approx(0.5f));
+	CHECK(out[0].sceneUiMs == doctest::Approx(0.6f));
+	CHECK(out[0].submitMs == doctest::Approx(0.7f));
+	CHECK(out[0].renderExecMs == doctest::Approx(3.0f));
+	CHECK(out[0].presentWaitMs == doctest::Approx(4.0f));
+}

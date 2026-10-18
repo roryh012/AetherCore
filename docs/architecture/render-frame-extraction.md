@@ -104,3 +104,47 @@ as an advisory. A paired smoke using the previous 1dd0c9ff executable reported
 the same findings. This is not a zero-validation-findings pass. Smoke evidence
 now uses a private per-run redirected console log, avoiding locked/interleaved
 logs from other live editors; smoke windows launch hidden.
+
+
+## Frame-report phase boundaries
+
+Set `AETHER_FRAME_REPORT=2` for periodic wall-frame and phase reports. The fixed
+600-frame timeline retains the producer measurements; `FramePhases` prints each
+phase's mean/maximum in milliseconds from that same snapshot:
+
+| Field | Measured interval |
+| --- | --- |
+| `begin` | Pre-frame retirement/control dispatch after the frame cap |
+| `pump` | OS event pumping |
+| `update` | Input tick, scene and application update |
+| `ui` | Editor UI, overlay frame lock/build and snapshot |
+| `extract` | `PrepareFrame` world/shadow/preview extraction |
+| `sceneui` | Packet setup and scene UI command-buffer build |
+| `submit` | Producer channel submission |
+| `render` | Render-thread elapsed time excluding main swapchain acquire/submit/present |
+
+`FrameReport`'s `present` now covers main swapchain acquire/fence work and the native
+`GpuDevice::SubmitAndPresent` call. It previously measured the entire `EndFrame`,
+incorrectly charging lighting, render-graph execution, editor overlay locking and
+secondary viewports to presentation. Old reports cannot establish a driver stall.
+The render elapsed phase includes overlay and secondary-viewport work/waits; it is
+not a GPU timestamp or a measurement of thread CPU utilization. Producer and render
+threads overlap, so their totals must not be added to infer wall latency.
+
+The report prints actual swapchain `mode` beside `requested`, and the FIFO occlusion
+heuristic uses the actual mode. A driver can reject MAILBOX and select FIFO. An
+unfocused FIFO sample is explicitly marked `foreground pacing unverified`, even
+when present-timing support is unavailable and the cadence heuristic cannot run.
+Do not turn that background diagnostic into a foreground acceptance result.
+
+Changing VSync, focus, competing editor workload, render resolution or quality can
+change timings independently. Retain those conditions and rejected samples. No
+presentation policy, render quality, focus behavior or frame budget changes are
+implied by enabling this report.
+
+Agent sessions additionally clear ImGui's OS platform-focus callback after backend
+initialization. This preserves internal dock/tab focus and leaves non-agent editor
+callbacks unchanged. The GLFW backend already creates secondary windows with focus
+on show disabled. External focus changes can still invalidate a background sample;
+the pacing harness stops only its own test session when it observes one. This guard
+is not evidence that the earlier transient focus event had a known cause.

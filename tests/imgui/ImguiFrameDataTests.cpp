@@ -4,6 +4,7 @@
 #include <imgui_internal.h>
 
 #include "imgui/ImguiFrameData.hpp"
+#include "imgui/ImguiSubsystem.hpp"
 
 using namespace aether;
 
@@ -35,4 +36,15 @@ TEST_CASE("ImguiFrameData clones do not attach to the live context draw-list reg
 
 	// Everything the test registered is scoped out; destroying the context must
 	ImGui::DestroyContext();
+}
+
+TEST_CASE("Agent ImGui platform focus cannot activate OS windows")
+{
+	ImGuiPlatformIO platform;
+	auto originalFocus = +[](ImGuiViewport*) {};
+	platform.Platform_SetWindowFocus = originalFocus;
+	ImguiSubsystem::ApplyAgentFocusPolicy(platform, false);
+	CHECK(platform.Platform_SetWindowFocus == originalFocus);
+	ImguiSubsystem::ApplyAgentFocusPolicy(platform, true);
+	CHECK(platform.Platform_SetWindowFocus == nullptr);
 }

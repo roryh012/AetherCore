@@ -30,6 +30,14 @@ namespace aether
 		// timings cannot see.
 		float tailMs = 0.0f;
 		float gameWorkMs = 0.0f;
+		// Producer phases exclude the cap, in-flight and latency-pacer waits above.
+		float frameBeginMs = 0.0f;
+		float eventPumpMs = 0.0f;
+		float updateMs = 0.0f;
+		float editorUiMs = 0.0f;
+		float extractionMs = 0.0f;
+		float sceneUiMs = 0.0f;
+		float submitMs = 0.0f;
 		float renderExecMs = 0.0f;
 		float presentWaitMs = 0.0f;
 		// How long the OS event queue sat un-drained between the poll and the input snapshot
