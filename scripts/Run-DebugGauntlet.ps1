@@ -328,9 +328,13 @@ function Invoke-UnitTests {
     # Same NativeCommandError trap as Invoke-Build: the exe logs to stderr and
     # $ErrorActionPreference="Stop" would terminate on the merge.
     $ErrorActionPreference = "Continue"
-    $output = & $exe 2>&1
+    # Match the CMake test working directory and keep native output off PowerShell's live pipeline.
+    $output = & ctest --test-dir $BuildRoot -C $Config -R '^EngineTests$' --no-tests=error --output-on-failure 2>&1
     $ErrorActionPreference = "Stop"
     $exit = $LASTEXITCODE
+    $nativeLog = Join-Path $BuildRoot "Testing/Temporary/LastTest.log"
+    if (Test-Path $nativeLog) { $output = Get-Content $nativeLog }
+    $output | Set-Content -Path (Join-Path $LogDir "unit.log") -Encoding utf8
     $summary = ($output | Where-Object { $_ -match "test cases:" }) | Select-Object -First 1
     $cases = 0; $passed = 0; $failed = 0
     if ($summary -match "test cases:\s*(\d+)\s*\|\s*(\d+)\s*passed\s*\|\s*(\d+)\s*failed") {
@@ -340,7 +344,7 @@ function Invoke-UnitTests {
     if ($ok) { Write-Ok "$passed/$cases test cases passed" }
     else {
         Write-Bad "Tests failed ($failed failed / $cases cases, exit $exit)"
-        $output | Where-Object { $_ -match "ERROR|FAILED|\.cpp:\d" } | Select-Object -First 15 | ForEach-Object { Write-Note $_ }
+        $output | Where-Object { $_ -cmatch "ERROR:|FATAL ERROR:|TEST CASE:|test cases:|assertions:|FAILED" } | Select-Object -First 15 | ForEach-Object { Write-Note $_ }
     }
     Add-Phase @{ name = "unit"; status = if ($ok) { "pass" } else { "fail" }; testCases = $cases; passed = $passed; failed = $failed }
     return $ok
