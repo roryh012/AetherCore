@@ -438,6 +438,55 @@ namespace aether::editor
 			                {"gamepads", gamepads}};
 		        }});
 
+		methods.push_back({"engine.frame_times",
+		        "engine_frame_times",
+		        "Read raw loop-frame timings since a cursor (not info.frameMs rolling medians). Omit cursor to mark now. Returns at most 600 frames; droppedFrames reports ring eviction. Read only, game-thread snapshot.",
+		        false,
+		        Obj({{"cursor", json{{"type", "integer"}, {"minimum", 0}}}}),
+		        [](const json& params, MethodContext& ctx) -> json
+		        {
+			        const auto* timeline = ctx.services.TryGet<FrameTimeline>();
+			        if (timeline == nullptr)
+			        {
+				        return json{{"error", "Frame timeline unavailable"}};
+			        }
+			        const std::uint64_t next = timeline->FrameCount();
+			        std::uint64_t cursor = next;
+			        if (const auto it = params.find("cursor"); it != params.end())
+			        {
+				        if (!it->is_number_integer() || (!it->is_number_unsigned() && it->get<std::int64_t>() < 0))
+				        {
+					        return json{{"error", "cursor must be a nonnegative integer"}};
+				        }
+				        cursor = it->get<std::uint64_t>();
+				        if (cursor > next)
+				        {
+					        return json{{"error", "cursor exceeds current timeline"}};
+				        }
+			        }
+			        std::array<FrameTiming, FrameTimeline::kCapacity> frames{};
+			        const std::size_t count = timeline->Snapshot(frames);
+			        const std::uint64_t oldest = next - count;
+			        json rows = json::array();
+			        for (std::size_t i = 0; i < count; ++i)
+			        {
+				        const std::uint64_t sequence = oldest + i;
+				        if (sequence < cursor)
+				        {
+					        continue;
+				        }
+				        const auto& frame = frames[i];
+				        rows.push_back(json{{"sequence", sequence}, {"frame", frame.frameIndex},
+				                {"wallMs", frame.wallMs}, {"gameMs", frame.gameWorkMs}, {"inflightMs", frame.inFlightWaitMs},
+				                {"presentMs", frame.presentWaitMs}, {"renderMs", frame.renderExecMs}, {"renderComplete", frame.renderComplete}});
+			        }
+			        auto* engine = ctx.services.TryGet<AetherCore>();
+			        return json{{"nextCursor", next}, {"oldestCursor", oldest},
+			                {"droppedFrames", cursor < oldest ? oldest - cursor : 0}, {"frames", std::move(rows)},
+			                {"focused", engine != nullptr && engine->IsWindowFocused()},
+			                {"focusChanges", engine != nullptr ? engine->FocusChangeCount() : 0}};
+		        }});
+
 		methods.push_back({"console.logs",
 		        "get_console_log",
 		        "Read a bounded tail of the live editor console. Filter by minimumLevel (verbose/info/warn/error), category, message text, or monotonic afterSeq for incremental polling. "

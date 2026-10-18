@@ -498,6 +498,21 @@
       "tool": "toggle_play"
     },
     {
+      "description": "Read raw loop-frame timings since a cursor (not info.frameMs rolling medians). Omit cursor to mark now. Returns at most 600 frames; droppedFrames reports ring eviction. Read only, game-thread snapshot.",
+      "mutates": false,
+      "name": "engine.frame_times",
+      "paramsSchema": {
+        "properties": {
+          "cursor": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "type": "object"
+      },
+      "tool": "engine_frame_times"
+    },
+    {
       "description": "Live editor summary: current scene name and kind, entity count, frame index, fps, and any connected gamepads with their live stick/trigger/button state - the first thing to check when a controller seems dead.",
       "mutates": false,
       "name": "info",

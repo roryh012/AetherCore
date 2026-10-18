@@ -32,6 +32,16 @@ with (case/'native.log').open('w') as log:
   else:raise AssertionError('Control endpoint did not start')
   assert not info.get('focused',False),'Background fixture unexpectedly focused'
   (case/'engine-info.json').write_text(json.dumps(info,indent=2))
+  marker=call('engine.frame_times');assert marker['frames']==[] and marker['nextCursor']>=0,marker
+  cursor=marker['nextCursor'];time.sleep(.12)
+  raw=call('engine.frame_times',dict(cursor=cursor));assert raw['nextCursor']>cursor and raw['droppedFrames']==0,raw
+  assert [r['sequence'] for r in raw['frames']]==list(range(cursor,raw['nextCursor'])),raw
+  assert all(r['wallMs']>0 and isinstance(r['renderComplete'],bool) for r in raw['frames']),raw
+  rejected=[]
+  for invalid in [True,False,'0',-1,1.5,None,18446744073709551615]:
+   result=call('engine.frame_times',dict(cursor=invalid));assert result and 'cursor' in str(result.get('error','')),result
+   rejected.append(dict(value=invalid,response=result))
+  (case/'frame-times-control.json').write_text(json.dumps(dict(marker=marker,raw=raw,rejected=rejected),indent=2))
   original=call('render.culling');assert isinstance(original.get('forceVisible'),bool) and original['scope']=='main',original
   try:
    changed=call('render.culling',dict(forceVisible=False));assert changed['forceVisible'] is False,changed

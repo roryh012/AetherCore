@@ -1,0 +1,324 @@
+{
+  "purpose": "Read-only raw-frame cursor correctness; not pacing acceptance",
+  "baseCommit": "dc249a7e1d3e81c87252677e648d26e3dd0e395b",
+  "cause": "info.frameMs exposes rolling median; p95 of those samples cannot establish true frame p95",
+  "contract": {
+    "default": "mark now; no historical rows",
+    "cursor": "sequence of FrameTimeline records, independent of frameIndex",
+    "capacity": 600,
+    "eviction": "droppedFrames reports skipped records; caller must reject for full-window acceptance",
+    "renderComplete": "Incomplete render phases remain zero; wall timing is valid"
+  },
+  "validation": {
+    "build": "Editor and StageAppBundle passed",
+    "canonicalGauntlet": {
+      "timestamp": "2026-10-18T19:56:57.2114234+11:00",
+      "repoRoot": "C:\\Users\\rory0\\.codex\\worktrees\\recovery-control\\AetherCore",
+      "buildDir": "C:\\Users\\rory0\\.codex\\worktrees\\recovery-control\\AetherCore\\build\\default",
+      "config": "RelWithDebInfo",
+      "mode": "full",
+      "overall": "PASS",
+      "phases": [
+        {
+          "status": "pass",
+          "name": "guard"
+        },
+        {
+          "status": "skip",
+          "name": "build"
+        },
+        {
+          "status": "pass",
+          "failed": 0,
+          "name": "unit",
+          "testCases": 1369,
+          "passed": 1369
+        },
+        {
+          "status": "skip",
+          "name": "editor"
+        },
+        {
+          "status": "skip",
+          "name": "runtime"
+        }
+      ]
+    },
+    "nativeStreamingWire": {
+      "status": "PASS",
+      "artifact": "artifacts\\procedural-streaming\\35bee339-7cd4-4004-9215-6ef38412f7bc",
+      "cursor": {
+        "marker": {
+          "droppedFrames": 0,
+          "focusChanges": 0,
+          "focused": false,
+          "frames": [],
+          "nextCursor": 9,
+          "oldestCursor": 0
+        },
+        "raw": {
+          "droppedFrames": 0,
+          "focusChanges": 0,
+          "focused": false,
+          "frames": [
+            {
+              "frame": 9,
+              "gameMs": 1.3753997087478638,
+              "inflightMs": 0.0003000000142492354,
+              "presentMs": 4.647000312805176,
+              "renderComplete": true,
+              "renderMs": 4.449399948120117,
+              "sequence": 9,
+              "wallMs": 8.3326997756958
+            },
+            {
+              "frame": 10,
+              "gameMs": 1.1384000778198242,
+              "inflightMs": 0.0003000000142492354,
+              "presentMs": 5.287399768829346,
+              "renderComplete": true,
+              "renderMs": 3.9258999824523926,
+              "sequence": 10,
+              "wallMs": 8.333499908447266
+            },
+            {
+              "frame": 11,
+              "gameMs": 1.4520001411437988,
+              "inflightMs": 0.0005000000237487257,
+              "presentMs": 6.33050012588501,
+              "renderComplete": true,
+              "renderMs": 4.109699726104736,
+              "sequence": 11,
+              "wallMs": 8.333399772644043
+            },
+            {
+              "frame": 12,
+              "gameMs": 1.4660000801086426,
+              "inflightMs": 0.00019999999494757503,
+              "presentMs": 5.769899845123291,
+              "renderComplete": true,
+              "renderMs": 3.291900157928467,
+              "sequence": 12,
+              "wallMs": 8.33430004119873
+            },
+            {
+              "frame": 13,
+              "gameMs": 1.1677998304367065,
+              "inflightMs": 0.00039999998989515007,
+              "presentMs": 6.7266998291015625,
+              "renderComplete": true,
+              "renderMs": 3.573500633239746,
+              "sequence": 13,
+              "wallMs": 8.332300186157227
+            },
+            {
+              "frame": 14,
+              "gameMs": 1.2375001907348633,
+              "inflightMs": 0.00019999999494757503,
+              "presentMs": 6.369699954986572,
+              "renderComplete": true,
+              "renderMs": 3.3159003257751465,
+              "sequence": 14,
+              "wallMs": 8.333999633789062
+            },
+            {
+              "frame": 15,
+              "gameMs": 1.2523001432418823,
+              "inflightMs": 0.00019999999494757503,
+              "presentMs": 6.754499912261963,
+              "renderComplete": true,
+              "renderMs": 3.349799633026123,
+              "sequence": 15,
+              "wallMs": 8.332599639892578
+            },
+            {
+              "frame": 16,
+              "gameMs": 1.184000015258789,
+              "inflightMs": 0.8766000270843506,
+              "presentMs": 6.653800010681152,
+              "renderComplete": true,
+              "renderMs": 3.7571001052856445,
+              "sequence": 16,
+              "wallMs": 8.33329963684082
+            },
+            {
+              "frame": 17,
+              "gameMs": 1.3009002208709717,
+              "inflightMs": 2.661099910736084,
+              "presentMs": 6.062699794769287,
+              "renderComplete": true,
+              "renderMs": 4.00439977645874,
+              "sequence": 17,
+              "wallMs": 8.333999633789062
+            },
+            {
+              "frame": 18,
+              "gameMs": 1.167000412940979,
+              "inflightMs": 4.749599933624268,
+              "presentMs": 6.088400363922119,
+              "renderComplete": true,
+              "renderMs": 3.4574999809265137,
+              "sequence": 18,
+              "wallMs": 8.333100318908691
+            },
+            {
+              "frame": 19,
+              "gameMs": 1.1349998712539673,
+              "inflightMs": 6.495800018310547,
+              "presentMs": 6.486999988555908,
+              "renderComplete": true,
+              "renderMs": 3.3750996589660645,
+              "sequence": 19,
+              "wallMs": 8.33240032196045
+            },
+            {
+              "frame": 20,
+              "gameMs": 1.1401002407073975,
+              "inflightMs": 7.718699932098389,
+              "presentMs": 6.679599761962891,
+              "renderComplete": true,
+              "renderMs": 4.612500190734863,
+              "sequence": 20,
+              "wallMs": 8.333499908447266
+            },
+            {
+              "frame": 21,
+              "gameMs": 1.1720001697540283,
+              "inflightMs": 8.732600212097168,
+              "presentMs": 5.242199897766113,
+              "renderComplete": true,
+              "renderMs": 3.3754005432128906,
+              "sequence": 21,
+              "wallMs": 8.861200332641602
+            },
+            {
+              "frame": 22,
+              "gameMs": 1.204500436782837,
+              "inflightMs": 10.14009952545166,
+              "presentMs": 6.667400360107422,
+              "renderComplete": true,
+              "renderMs": 3.184499740600586,
+              "sequence": 22,
+              "wallMs": 9.906200408935547
+            },
+            {
+              "frame": 23,
+              "gameMs": 1.1616003513336182,
+              "inflightMs": 7.419899940490723,
+              "presentMs": 7.035399913787842,
+              "renderComplete": true,
+              "renderMs": 3.923400402069092,
+              "sequence": 23,
+              "wallMs": 11.347100257873535
+            },
+            {
+              "frame": 24,
+              "gameMs": 1.237899899482727,
+              "inflightMs": 8.698100090026855,
+              "presentMs": 5.792799949645996,
+              "renderComplete": true,
+              "renderMs": 3.4369001388549805,
+              "sequence": 24,
+              "wallMs": 8.583499908447266
+            },
+            {
+              "frame": 25,
+              "gameMs": 1.194799780845642,
+              "inflightMs": 9.731800079345703,
+              "presentMs": 0.0,
+              "renderComplete": false,
+              "renderMs": 0.0,
+              "sequence": 25,
+              "wallMs": 9.93850040435791
+            }
+          ],
+          "nextCursor": 26,
+          "oldestCursor": 0
+        },
+        "rejected": [
+          {
+            "value": true,
+            "response": {
+              "error": "error: parameter 'cursor' of engine.frame_times must be integer, got boolean",
+              "clientExitCode": 1
+            }
+          },
+          {
+            "value": false,
+            "response": {
+              "error": "error: parameter 'cursor' of engine.frame_times must be integer, got boolean",
+              "clientExitCode": 1
+            }
+          },
+          {
+            "value": "0",
+            "response": {
+              "error": "error: parameter 'cursor' of engine.frame_times must be integer, got string",
+              "clientExitCode": 1
+            }
+          },
+          {
+            "value": -1,
+            "response": {
+              "error": "error: cursor must be a nonnegative integer",
+              "clientExitCode": 1
+            }
+          },
+          {
+            "value": 1.5,
+            "response": {
+              "error": "error: parameter 'cursor' of engine.frame_times must be integer, got number",
+              "clientExitCode": 1
+            }
+          },
+          {
+            "value": null,
+            "response": {
+              "error": "error: parameter 'cursor' of engine.frame_times must be integer, got null",
+              "clientExitCode": 1
+            }
+          },
+          {
+            "value": 18446744073709551615,
+            "response": {
+              "error": "error: cursor exceeds current timeline",
+              "clientExitCode": 1
+            }
+          }
+        ]
+      },
+      "windows": {
+        "windows": [
+          {
+            "pid": 22324,
+            "windowSamples": 894,
+            "visibleSamples": 0,
+            "foregroundSamples": 0,
+            "hwnds": [
+              13505700,
+              12719916,
+              8196560,
+              17563922,
+              20452308,
+              10029524,
+              17962136
+            ]
+          }
+        ],
+        "error": null,
+        "scope": "Hidden correctness only"
+      }
+    },
+    "nativeRingWrap": {
+      "status": "PASS",
+      "oldestCursor": 1146,
+      "nextCursor": 1746,
+      "droppedFrames": 1146,
+      "rows": 600,
+      "focused": false,
+      "focusChanges": 0,
+      "scope": "Own visible unfocused editor during setup before pacing windows"
+    }
+  },
+  "policy": "No managed API/ABI, scheduling, render quality, culling, default sync or normal per-frame work changed"
+}
