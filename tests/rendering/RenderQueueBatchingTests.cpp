@@ -1,5 +1,6 @@
 #include <doctest/doctest.h>
 #include "rendering/BatchRuns.hpp"
+#include "rendering/RenderQueue.hpp"
 
 using namespace aether::render_queue_batching;
 
@@ -109,4 +110,15 @@ TEST_CASE("Batch capacity grows to at least the requirement and amortises")
 	// A zero-capacity slot (never grown) starts from the config-scale default.
 	CHECK(GrownBatchCapacity(0, 1) == 1024);
 	CHECK(GrownBatchCapacity(0, 2000) == 2048);
+}
+
+TEST_CASE("Render queue culling override round trips independently of other debug state")
+{
+	aether::RenderQueue queue;
+	queue.SetDebugBypassIndirect(true);
+	queue.SetDebugForceVisible(true);
+	CHECK(queue.IsDebugForceVisible());
+	queue.SetDebugForceVisible(false);
+	CHECK_FALSE(queue.IsDebugForceVisible());
+	CHECK(queue.IsDebugBypassIndirect());
 }

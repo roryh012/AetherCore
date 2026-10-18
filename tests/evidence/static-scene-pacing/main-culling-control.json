@@ -1,0 +1,150 @@
+{
+  "date": "2026-10-18",
+  "sourceBase": "84e20fdfe4feef7309c600e5cdb95af44683e76f",
+  "defaultUnchanged": "Main queue still starts forceVisible=true. New optional render.culling is explicit debug policy, not enabled frustum rendering acceptance.",
+  "rpc": {
+    "original": {
+      "applies": "next prepared frame",
+      "forceVisible": true,
+      "scope": "main"
+    },
+    "changed": {
+      "applies": "next prepared frame",
+      "forceVisible": false,
+      "scope": "main"
+    },
+    "immediate": {
+      "applies": "next prepared frame",
+      "forceVisible": false,
+      "scope": "main"
+    },
+    "rejected": {
+      "error": "error: parameter 'forceVisible' of render.culling must be boolean, got string",
+      "clientExitCode": 1
+    }
+  },
+  "targetedNative": {
+    "cases": 2,
+    "assertions": 2460,
+    "passed": true
+  },
+  "gauntlet": {
+    "timestamp": "2026-10-18T18:25:04.2411551+11:00",
+    "repoRoot": "C:\\Users\\rory0\\.codex\\worktrees\\recovery-control\\AetherCore",
+    "buildDir": "C:\\Users\\rory0\\.codex\\worktrees\\recovery-control\\AetherCore\\build\\default",
+    "config": "RelWithDebInfo",
+    "mode": "full",
+    "overall": "PASS",
+    "phases": [
+      {
+        "name": "guard",
+        "status": "pass"
+      },
+      {
+        "name": "build",
+        "status": "skip"
+      },
+      {
+        "name": "unit",
+        "status": "pass",
+        "failed": 0,
+        "testCases": 1367,
+        "passed": 1367
+      },
+      {
+        "name": "editor",
+        "status": "skip"
+      },
+      {
+        "name": "runtime",
+        "status": "skip"
+      }
+    ]
+  },
+  "nativeStreaming": {
+    "case": "7ee1e23a-20ff-4f60-9bed-eef2ea618c51",
+    "result": {
+      "passed": true,
+      "frames": 22,
+      "visualBurstStarts": 32,
+      "burstFrames": 7,
+      "timings": [
+        {
+          "VisualReady": true,
+          "CollisionReady": true,
+          "State": 4,
+          "InputCopyMs": 0.0007,
+          "ColliderPreparationMs": 0.0567,
+          "AllocationCopyMs": 0.225,
+          "UploadCompletionMs": 4.945,
+          "ColliderCommitMs": 0.0687,
+          "CommitMs": 0.0693,
+          "ReservedBytes": 1272
+        },
+        {
+          "VisualReady": true,
+          "CollisionReady": true,
+          "State": 4,
+          "InputCopyMs": 0.0083,
+          "ColliderPreparationMs": 0,
+          "AllocationCopyMs": 0.3078,
+          "UploadCompletionMs": 18.0637,
+          "ColliderCommitMs": 0.0043,
+          "CommitMs": 0.0071,
+          "ReservedBytes": 1464
+        },
+        {
+          "VisualReady": true,
+          "CollisionReady": true,
+          "State": 4,
+          "InputCopyMs": 0.0029,
+          "ColliderPreparationMs": 0.0493,
+          "AllocationCopyMs": 0.0006,
+          "UploadCompletionMs": 0.0003,
+          "ColliderCommitMs": 0.0281,
+          "CommitMs": 0.0281,
+          "ReservedBytes": 1272
+        },
+        {
+          "VisualReady": true,
+          "CollisionReady": true,
+          "State": 4,
+          "InputCopyMs": 0.0011,
+          "ColliderPreparationMs": 0,
+          "AllocationCopyMs": 0.0003,
+          "UploadCompletionMs": 0.0005,
+          "ColliderCommitMs": 0.0142,
+          "CommitMs": 0.0175,
+          "ReservedBytes": 0
+        }
+      ],
+      "stats": {
+        "Jobs": 0,
+        "ReservedBytes": 0,
+        "Rejected": 0
+      }
+    },
+    "exit": {
+      "passed": true,
+      "frames": 24,
+      "stats": {
+        "Jobs": 0,
+        "ReservedBytes": 0,
+        "Rejected": 0
+      }
+    },
+    "errors": {
+      "entries": [],
+      "latestSeq": 95,
+      "matched": 0,
+      "oldestSeq": 0,
+      "truncated": false
+    }
+  },
+  "limits": [
+    "CPU plane test covers finite Vulkan ZO perspective, orthographic and reversed depth; not GPU visibility proof.",
+    "No frustum image parity or forest pacing win established yet. Historical main-force-visible override and displaced/animated/sky bounds need live testing.",
+    "Existing MCP server was not restarted; raw native CLI works independently of cached tool manifests.",
+    "Native verifier now captures CLI stderr errors and waits for complete exit JSON; earlier failed harness attempts retained under artifacts/procedural-streaming."
+  ]
+}

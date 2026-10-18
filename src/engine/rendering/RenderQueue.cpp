@@ -1160,7 +1160,7 @@ namespace aether
 			        .batchDescAddr = m_batchDesc[frameSlot].address + batchDescOffset,
 			        .totalDrawCount = totalDraws,
 			        .outputCascadeStride = static_cast<std::uint32_t>(cascadeStride),
-			        .debugFlags = m_debugForceVisible ? CullContracts::kDebugForceVisibleBit : 0u,
+			        .debugFlags = IsDebugForceVisible() ? CullContracts::kDebugForceVisibleBit : 0u,
 			};
 
 			{
@@ -1187,7 +1187,7 @@ namespace aether
 			        .batchDescAddr = m_batchDesc[frameSlot].address + batchDescOffset,
 			        .batchCountAddr = 0,
 			        .totalDrawCount = totalDraws,
-			        .debugFlags = m_debugForceVisible ? CullContracts::kDebugForceVisibleBit : 0u,
+			        .debugFlags = IsDebugForceVisible() ? CullContracts::kDebugForceVisibleBit : 0u,
 			};
 
 			{

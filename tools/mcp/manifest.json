@@ -922,6 +922,20 @@
       "tool": "publish_status"
     },
     {
+      "description": "Read or set the main scene queue's force-visible override. Omit forceVisible to read; false enables frustum tests on the next prepared frame. Experimental: validate bounds and displaced geometry before enabling.",
+      "mutates": true,
+      "name": "render.culling",
+      "paramsSchema": {
+        "properties": {
+          "forceVisible": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "tool": "render_culling"
+    },
+    {
       "description": "Per-pass GPU and CPU timing for the last rendered frame, sorted by GPU time (slowest first), plus the hottest pass, graph totals for both, and this frame's fps. GPU time is the one that answers \"what does this pass cost\" - CPU time here is only the cost of RECORDING the pass, so a heavy shader shows as expensive on gpuTimeMs and near-free on cpuTimeMs. Poll repeatedly to sample min/avg/max; single frames vary by ~10%.",
       "mutates": false,
       "name": "render.benchmark",

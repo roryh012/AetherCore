@@ -1221,7 +1221,7 @@ namespace aether::editor
 		const auto nameOf = [&world](const Entity entity)
 		{
 			const auto* name = world.TryGet<NameComponent>(entity);
-			return name != nullptr ? name->name : std::string{};
+			return name != nullptr ? std::string_view{name->name} : std::string_view{};
 		};
 		const auto isLeaf = [&world](const Entity entity)
 		{
@@ -1229,7 +1229,7 @@ namespace aether::editor
 			return hierarchy == nullptr || hierarchy->children.empty();
 		};
 
-		const std::string first = nameOf(siblings[start]);
+		const std::string_view first = nameOf(siblings[start]);
 		if (first.empty() || !isLeaf(siblings[start]))
 		{
 			return 1;

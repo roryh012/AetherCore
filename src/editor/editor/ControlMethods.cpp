@@ -59,6 +59,7 @@
 #include "layers/AppLayer.hpp"
 #include "rendering/RenderGraph.hpp"
 #include "rendering/Renderer.hpp"
+#include "rendering/RenderQueue.hpp"
 #include "rendering/RenderingSubsystem.hpp"
 #include "scene/Components.hpp"
 #include "scene/Entity.hpp"
@@ -2133,6 +2134,24 @@ namespace aether::editor
 				                {"gpuTimeMs", pass.lastGpuTimeMs}});
 			        }
 			        return json{{"passes", arr}};
+		        }});
+
+		methods.push_back({"render.culling",
+		        "render_culling",
+		        "Read or set the main scene queue's force-visible override. Omit forceVisible to read; false enables frustum tests on the next prepared frame. Experimental: validate bounds and displaced geometry before enabling.",
+		        true,
+		        Obj({{"forceVisible", json{{"type", "boolean"}}}}),
+		        [](const json& p, MethodContext& ctx) -> json
+		        {
+			        auto* queue = ctx.services.TryGet<RenderQueue>();
+			        if (queue == nullptr) return json{{"error", "no main render queue"}};
+			        if (p.contains("forceVisible"))
+			        {
+				        if (!p["forceVisible"].is_boolean()) return json{{"error", "forceVisible must be a boolean"}};
+				        queue->SetDebugForceVisible(p["forceVisible"].get<bool>());
+			        }
+			        return json{{"scope", "main"}, {"forceVisible", queue->IsDebugForceVisible()},
+			                {"applies", "next prepared frame"}};
 		        }});
 
 		methods.push_back({"render.stats",

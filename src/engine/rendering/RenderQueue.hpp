@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <array>
+#include <atomic>
 #include <condition_variable>
 #include <cstdint>
 #include <glm/glm.hpp>
@@ -130,12 +131,12 @@ namespace aether
 
 		void SetDebugForceVisible(bool enabled)
 		{
-			m_debugForceVisible = enabled;
+			m_debugForceVisible.store(enabled, std::memory_order_relaxed);
 		}
 
 		[[nodiscard]] bool IsDebugForceVisible() const
 		{
-			return m_debugForceVisible;
+			return m_debugForceVisible.load(std::memory_order_relaxed);
 		}
 
 		void SetDebugBypassIndirect(bool enabled)
@@ -371,7 +372,7 @@ namespace aether
 		std::array<PreparedFrame, kFramesInFlight> m_preparedFrames;
 
 		gpu::DeviceAddress m_multiFrameAddrs[3] = {};
-		bool m_debugForceVisible = false;
+		std::atomic_bool m_debugForceVisible{false};
 		bool m_debugBypassIndirect = false;
 		bool m_debugDisableAnimation = false;
 		std::uint32_t m_debugAnimPassMask = 0xFFFFFFFFu;

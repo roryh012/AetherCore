@@ -200,3 +200,25 @@ isolated case/file passed. These failures remain recorded, with no networking
 source change or claimed root cause. The gauntlet now invokes the standard CTest
 entrypoint and retains raw native output instead of processing it live in PowerShell.
 Build and GUI smokes are reported separately when skipped by a partial gauntlet.
+
+
+## Main-queue culling diagnostic control
+
+`render.culling {}` reads `{scope:"main", forceVisible:bool, applies:"next prepared frame"}`.
+`render.culling {"forceVisible":false}` requests the existing GPU frustum path;
+true restores the force-visible override. Values must be JSON booleans. The
+requested flag is atomic across control/UI and render threads; the getter confirms
+requested state immediately, not completion of an already queued GPU frame.
+Default startup remains force-visible. No shadow/collider policy changes.
+
+Use a private, unfocused windowed profile with ImGui viewports disabled. Verify
+session identity before writing, allow queued frames to drain, compare fixed camera
+views, and restore the original value. The historical override hid unresolved
+culling issues; CPU plane/clip-space tests do not prove displaced terrain, sky,
+billboard, shear or skinned bounds correct. Do not enable a new default from a
+performance-only result. The native CLI can exercise this wire method while an
+existing MCP server retains an older tool manifest; do not restart other sessions.
+
+Native bool round-trip, invalid-string rejection without state change and restore
+passed, followed by the Vulkan streaming/collider/section/cancellation replay.
+Evidence: `tests/evidence/static-scene-pacing/main-culling-control.json`.
