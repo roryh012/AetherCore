@@ -285,6 +285,22 @@ namespace aether
 		{
 			return 342;
 		}
+		struct NamedKey { std::string_view name; Key key; };
+		static constexpr NamedKey navigationAndFunctionKeys[] = {
+		        {"backspace", Key::Backspace}, {"delete", Key::Delete},
+		        {"home", Key::Home}, {"end", Key::End},
+		        {"pageup", Key::PageUp}, {"pagedown", Key::PageDown},
+		        {"f1", Key::F1}, {"f2", Key::F2}, {"f3", Key::F3}, {"f4", Key::F4},
+		        {"f5", Key::F5}, {"f6", Key::F6}, {"f7", Key::F7}, {"f8", Key::F8},
+		        {"f9", Key::F9}, {"f10", Key::F10}, {"f11", Key::F11}, {"f12", Key::F12},
+		};
+		for (const auto& key: navigationAndFunctionKeys)
+		{
+			if (name == key.name)
+			{
+				return static_cast<int>(key.key);
+			}
+		}
 		return -1;
 	}
 

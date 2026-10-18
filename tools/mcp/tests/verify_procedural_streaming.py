@@ -42,6 +42,13 @@ with (case/'native.log').open('w') as log:
    result=call('engine.frame_times',dict(cursor=invalid));assert result and 'cursor' in str(result.get('error','')),result
    rejected.append(dict(value=invalid,response=result))
   (case/'frame-times-control.json').write_text(json.dumps(dict(marker=marker,raw=raw,rejected=rejected),indent=2))
+  try:
+   home=call('engine.send_input',dict(clear=True,down=['home']));assert home['unknown']==[] and 'home' in home['applied'],home
+   released=call('engine.send_input',dict(up=['home']));assert released['unknown']==[] and 'home' in released['applied'],released
+   sequence=call('engine.play_input_sequence',dict(text='0 press home\n0.15 clear'));assert sequence.get('ok') and sequence['events']==3,sequence
+   (case/'home-control.json').write_text(json.dumps(dict(down=home,up=released,sequence=sequence),indent=2))
+  finally:
+   call('engine.play_input_sequence',dict(stop=True));call('engine.send_input',dict(clear=True))
   original=call('render.culling');assert isinstance(original.get('forceVisible'),bool) and original['scope']=='main',original
   try:
    changed=call('render.culling',dict(forceVisible=False));assert changed['forceVisible'] is False,changed

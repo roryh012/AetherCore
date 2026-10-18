@@ -5,6 +5,7 @@
 // device (a toggle bound to a key) silently stopped responding after the first one.
 // These assert the event SHAPE the parser must produce, not incidental defaults.
 #include <doctest/doctest.h>
+#include <utility>
 
 #include <glm/geometric.hpp>
 
@@ -121,4 +122,44 @@ TEST_CASE("play_input_sequence: events fire on the advanced game clock, not wall
 	input.AdvanceInputSequence(0.2);
 	input.Update();
 	CHECK(input.IsKeyDown(Key::W));
+}
+
+TEST_CASE("Synthetic key names cover the navigation and function keys advertised by control")
+{
+	const std::pair<const char*, Key> keys[] = {
+	        {"backspace", Key::Backspace}, {"delete", Key::Delete},
+	        {"home", Key::Home}, {"end", Key::End},
+	        {"pageup", Key::PageUp}, {"pagedown", Key::PageDown},
+	        {"f1", Key::F1}, {"f2", Key::F2}, {"f3", Key::F3}, {"f4", Key::F4},
+	        {"f5", Key::F5}, {"f6", Key::F6}, {"f7", Key::F7}, {"f8", Key::F8},
+	        {"f9", Key::F9}, {"f10", Key::F10}, {"f11", Key::F11}, {"f12", Key::F12},
+	};
+	for (const auto& [name, key]: keys)
+	{
+		CAPTURE(name);
+		CHECK(Input::KeyCodeFromName(name) == static_cast<int>(key));
+	}
+	CHECK(Input::KeyCodeFromName("HOME") == static_cast<int>(Key::Home));
+	CHECK(Input::KeyCodeFromName("F12") == static_cast<int>(Key::F12));
+	for (const char* invalid: {"f0", "f13", "f01", "homeward", "", "page up"})
+	{
+		CHECK(Input::KeyCodeFromName(invalid) == -1);
+	}
+}
+
+TEST_CASE("Home reaches the game key through both synthetic control and input sequences")
+{
+	std::string error;
+	const auto events = Input::ParseInputSequence("0 press home", error);
+	REQUIRE(error.empty());
+	REQUIRE(events.size() == 2);
+	CHECK(events[0].keyCode == static_cast<int>(Key::Home));
+	CHECK(events[1].keyCode == static_cast<int>(Key::Home));
+	Input input;
+	input.SetSyntheticKey(Input::KeyCodeFromName("home"), true);
+	input.Update();
+	CHECK(input.IsKeyDown(Key::Home));
+	input.SetSyntheticKey(Input::KeyCodeFromName("home"), false);
+	input.Update();
+	CHECK_FALSE(input.IsKeyDown(Key::Home));
 }

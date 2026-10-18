@@ -1,0 +1,97 @@
+{
+  "purpose": "Restore already advertised navigation/function synthetic key names in shared parser; no normal frame-flow change",
+  "sourceBase": "275868358e4228d43c272e4ddb214416ecaac052",
+  "callers": [
+    "engine.send_input",
+    "engine.play_input_sequence"
+  ],
+  "validation": {
+    "build": "Editor, EngineTests, StageAppBundle PASS",
+    "canonicalGauntlet": {
+      "timestamp": "2026-10-18T20:30:56.9806363+11:00",
+      "repoRoot": "C:\\Users\\rory0\\.codex\\worktrees\\recovery-control\\AetherCore",
+      "buildDir": "C:\\Users\\rory0\\.codex\\worktrees\\recovery-control\\AetherCore\\build\\default",
+      "config": "RelWithDebInfo",
+      "mode": "full",
+      "overall": "PASS",
+      "phases": [
+        {
+          "status": "pass",
+          "name": "guard"
+        },
+        {
+          "status": "skip",
+          "name": "build"
+        },
+        {
+          "passed": 1371,
+          "name": "unit",
+          "status": "pass",
+          "testCases": 1371,
+          "failed": 0
+        },
+        {
+          "status": "skip",
+          "name": "editor"
+        },
+        {
+          "status": "skip",
+          "name": "runtime"
+        }
+      ]
+    },
+    "unitCoverage": [
+      "All18 advertised nav/function mappings",
+      "Case folding and invalid names",
+      "Home parsed down/up sequence and actual Input key state"
+    ],
+    "nativeHome": {
+      "down": {
+        "applied": [
+          "home"
+        ],
+        "ok": true,
+        "unknown": []
+      },
+      "up": {
+        "applied": [
+          "home"
+        ],
+        "ok": true,
+        "unknown": []
+      },
+      "sequence": {
+        "duration": 0.15000000596046448,
+        "events": 3,
+        "ok": true
+      }
+    },
+    "nativeStreamingFixture": "PASS, SDK/ABI/collider/section/32burst/failure/cancel/pending-exit checks",
+    "windows": {
+      "windows": [
+        {
+          "pid": 40180,
+          "windowSamples": 828,
+          "visibleSamples": 0,
+          "foregroundSamples": 0,
+          "hwnds": [
+            17175234,
+            14356674,
+            13112866,
+            9442402,
+            10556714,
+            4593738,
+            16913068
+          ]
+        }
+      ],
+      "error": null,
+      "scope": "Hidden correctness only"
+    }
+  },
+  "limitations": [
+    "Native Home transport/input mapping is verified, not the game tutorial refocus behavior",
+    "Renderer was restored to275 baseline; rejected foliage prepass candidate is absent",
+    "No managed API/ABI, GPU scheduling, default sync/culling/quality or normal per-frame input behavior changed"
+  ]
+}
